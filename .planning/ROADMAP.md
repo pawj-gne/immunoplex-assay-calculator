@@ -28,12 +28,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Operator can select from available platforms (Milliplex, BioRad, ProCartaPlex, R&D)
   3. Platform selection loads correct stock concentrations for that platform
   4. Decimal arithmetic prevents floating-point errors in subsequent calculations
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: TBD (project scaffolding, Electron + React + TypeScript)
-- [ ] 01-02: TBD (database setup, data models with unit-aware types)
-- [ ] 01-03: TBD (platform configuration CRUD and seed data)
+- [ ] 01-01-PLAN.md - Project scaffolding with Electron + React + TypeScript, Tailwind CSS, app shell
+- [ ] 01-02-PLAN.md - Database setup with SQLite/Drizzle, IPC handlers, decimal utilities
+- [ ] 01-03-PLAN.md - Platform selection UI with Zustand state management
 
 ### Phase 2: Calculator Core
 **Goal**: Operators can enter inputs and see accurate reagent volumes calculated in real-time
@@ -91,7 +91,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Platform Configuration | 0/3 | Not started | - |
+| 1. Foundation & Platform Configuration | 0/3 | Planned | - |
 | 2. Calculator Core | 0/3 | Not started | - |
 | 3. Plate Visualization & Recipe Generation | 0/3 | Not started | - |
 | 4. Run Documentation & Persistence | 0/2 | Not started | - |
