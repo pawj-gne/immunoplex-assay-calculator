@@ -1,7 +1,7 @@
 # Requirements: Immunoplex Assay Calculator
 
 **Defined:** 2026-01-22
-**Core Value:** Accurate reagent calculations with clear prep recipes — operators must be able to trust the math and follow the instructions without second-guessing.
+**Core Value:** Accurate reagent calculations with clear prep recipes - operators must be able to trust the math and follow the instructions without second-guessing.
 
 ## v1 Requirements
 
@@ -10,7 +10,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Calculation Engine
 
 - [ ] **CALC-01**: App calculates total reagent volume based on sample count, replicate mode (singles/duplicates), and plate capacity (72/36 unknowns + 24 standards per plate)
-- [ ] **CALC-02**: App calculates single analyte addition volumes (master mix volume ÷ stock concentration)
+- [ ] **CALC-02**: App calculates single analyte addition volumes (master mix volume / stock concentration)
 - [ ] **CALC-03**: App includes dead volume in all volume calculations
 - [ ] **CALC-04**: App displays calculations in real-time as operator enters inputs
 - [ ] **CALC-05**: App enforces max 5 singles rule when premix is selected
@@ -80,27 +80,27 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CALC-01 | — | Pending |
-| CALC-02 | — | Pending |
-| CALC-03 | — | Pending |
-| CALC-04 | — | Pending |
-| CALC-05 | — | Pending |
-| CALC-06 | — | Pending |
-| CALC-07 | — | Pending |
-| PLAT-01 | — | Pending |
-| RECP-01 | — | Pending |
-| RECP-02 | — | Pending |
-| RECP-03 | — | Pending |
-| RECP-04 | — | Pending |
-| DOCM-01 | — | Pending |
-| PERS-01 | — | Pending |
-| PERS-02 | — | Pending |
+| CALC-01 | Phase 2 | Pending |
+| CALC-02 | Phase 2 | Pending |
+| CALC-03 | Phase 2 | Pending |
+| CALC-04 | Phase 2 | Pending |
+| CALC-05 | Phase 2 | Pending |
+| CALC-06 | Phase 2 | Pending |
+| CALC-07 | Phase 1 | Pending |
+| PLAT-01 | Phase 3 | Pending |
+| RECP-01 | Phase 3 | Pending |
+| RECP-02 | Phase 3 | Pending |
+| RECP-03 | Phase 3 | Pending |
+| RECP-04 | Phase 3 | Pending |
+| DOCM-01 | Phase 4 | Pending |
+| PERS-01 | Phase 4 | Pending |
+| PERS-02 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 15 total
-- Mapped to phases: 0
-- Unmapped: 15 (awaiting roadmap)
+- Mapped to phases: 15
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-22*
-*Last updated: 2026-01-22 after initial definition*
+*Last updated: 2026-01-22 after roadmap creation*
