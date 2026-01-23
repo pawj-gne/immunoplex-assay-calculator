@@ -1,15 +1,26 @@
-interface ElectronAPI {
-  ipcRenderer: {
-    send: (channel: string, ...args: unknown[]) => void
-    invoke: (channel: string, ...args: unknown[]) => Promise<unknown>
-    on: (channel: string, listener: (event: Electron.IpcRendererEvent, ...args: unknown[]) => void) => () => void
+// Placeholder types until Plan 02 defines proper Platform type
+interface Platform {
+  id: string
+  name: string
+  description: string | null
+  stockConcentration: number
+  createdAt: string
+  updatedAt: string
+}
+
+interface CustomElectronAPI {
+  platform: {
+    getAll: () => Promise<Platform[]>
+    getById: (id: string) => Promise<Platform | null>
+  }
+  db: {
+    health: () => Promise<{ ok: boolean }>
   }
 }
 
 declare global {
   interface Window {
-    electron: ElectronAPI
-    api: unknown
+    electronAPI: CustomElectronAPI
   }
 }
 
