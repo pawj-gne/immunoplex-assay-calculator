@@ -12,7 +12,7 @@ This roadmap delivers a desktop application for lab operators to calculate reage
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Platform Configuration** - Electron shell, data models, platform-specific parameters
+- [x] **Phase 1: Foundation & Platform Configuration** - Electron shell, data models, platform-specific parameters
 - [ ] **Phase 2: Calculator Core** - Volume calculations, dilutions, real-time display
 - [ ] **Phase 3: Plate Visualization & Recipe Generation** - Well display, printable prep sheets, bead regions
 - [ ] **Phase 4: Run Documentation & Persistence** - Metadata capture, save/load run records
@@ -31,9 +31,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md - Project scaffolding with Electron + React + TypeScript, Tailwind CSS, app shell
-- [ ] 01-02-PLAN.md - Database setup with SQLite/Drizzle, IPC handlers, decimal utilities
-- [ ] 01-03-PLAN.md - Platform selection UI with Zustand state management
+- [x] 01-01-PLAN.md - Project scaffolding with Electron + React + TypeScript, Tailwind CSS, app shell
+- [x] 01-02-PLAN.md - Database setup with SQLite/Drizzle, IPC handlers, decimal utilities
+- [x] 01-03-PLAN.md - Platform selection UI with Zustand state management
 
 ### Phase 2: Calculator Core
 **Goal**: Operators can enter inputs and see accurate reagent volumes calculated in real-time
@@ -91,11 +91,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Platform Configuration | 0/3 | Planned | - |
+| 1. Foundation & Platform Configuration | 3/3 | Complete | 2026-01-23 |
 | 2. Calculator Core | 0/3 | Not started | - |
 | 3. Plate Visualization & Recipe Generation | 0/3 | Not started | - |
 | 4. Run Documentation & Persistence | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-01-22*
+*Last updated: 2026-01-23*
