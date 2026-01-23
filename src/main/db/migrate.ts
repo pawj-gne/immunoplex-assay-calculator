@@ -7,10 +7,10 @@ export function runMigrations(): void {
   const db = getDatabase()
 
   // In production, migrations are bundled with the app
-  // In development, they're in the project root
+  // In development, __dirname is out/main/ after bundling, so go up 2 levels
   const migrationsFolder = app.isPackaged
     ? path.join(process.resourcesPath, 'drizzle', 'migrations')
-    : path.join(__dirname, '../../../drizzle/migrations')
+    : path.join(__dirname, '../../drizzle/migrations')
 
   try {
     migrate(db, { migrationsFolder })
