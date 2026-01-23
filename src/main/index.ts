@@ -1,16 +1,21 @@
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
+import { initializeDatabase, closeDatabase } from './db/client'
+import { runMigrations } from './db/migrate'
+import { seedPlatforms } from './db/seed'
+import { registerIpcHandlers } from './ipc'
 
 function createWindow(): void {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1200,
+    height: 800,
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      contextIsolation: true,
+      nodeIntegration: false
     }
   })
 
@@ -23,7 +28,7 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  // HMR for renderer base on electron-vite cli.
+  // HMR for renderer based on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
@@ -32,12 +37,17 @@ function createWindow(): void {
   }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  // Initialize database before anything else
+  initializeDatabase()
+  runMigrations()
+  seedPlatforms()
+
+  // Register IPC handlers
+  registerIpcHandlers()
+
   // Set app user model id for windows
-  app.setAppUserModelId('com.electron.immunoplex-assay-calculator')
+  app.setAppUserModelId('com.immunoplex.calculator')
 
   createWindow()
 
@@ -48,14 +58,9 @@ app.whenReady().then(() => {
   })
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
+  closeDatabase()
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.

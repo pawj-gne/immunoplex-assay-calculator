@@ -1,15 +1,16 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import { IPC_CHANNELS } from '../shared/constants/channels'
 
 // Expose protected methods that allow the renderer process to use
 // ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
-  // Platform operations (to be implemented in Plan 02)
   platform: {
-    getAll: (): Promise<unknown[]> => ipcRenderer.invoke('platform:get-all'),
-    getById: (id: string): Promise<unknown> => ipcRenderer.invoke('platform:get-by-id', id)
+    getAll: () => ipcRenderer.invoke(IPC_CHANNELS.PLATFORM_GET_ALL),
+    getById: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.PLATFORM_GET_BY_ID, id),
+    create: (data: unknown) => ipcRenderer.invoke(IPC_CHANNELS.PLATFORM_CREATE, data),
+    update: (data: unknown) => ipcRenderer.invoke(IPC_CHANNELS.PLATFORM_UPDATE, data)
   },
-  // Database health check (to be implemented in Plan 02)
   db: {
-    health: (): Promise<{ ok: boolean }> => ipcRenderer.invoke('db:health')
+    health: () => ipcRenderer.invoke(IPC_CHANNELS.DB_HEALTH)
   }
 })
