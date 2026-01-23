@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Accurate reagent calculations with clear prep recipes - operators must be able to trust the math and follow the instructions without second-guessing.
-**Current focus:** Phase 1 - Foundation & Platform Configuration
+**Current focus:** Phase 2 - Calculator Core
 
 ## Current Position
 
-Phase: 1 of 4 (Foundation & Platform Configuration) - COMPLETE
-Plan: 3 of 3 in current phase - COMPLETE
-Status: Ready for Phase 2
-Last activity: 2026-01-23 - Completed 01-03-PLAN.md (Platform Selection UI)
+Phase: 2 of 4 (Calculator Core)
+Plan: 0 of 3 in current phase
+Status: Planning complete, ready to execute
+Last activity: 2026-01-23 - Created Phase 2 plans (02-01, 02-02, 02-03)
 
 Progress: [###.......] 25%
 
@@ -65,5 +65,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: Completed Phase 1 (all 3 plans)
-Resume file: Phase 2 planning required (02-01 through 02-03 need detailed plans)
+Stopped at: Phase 2 planning complete
+Resume file: .planning/phases/02-calculator-core/02-01-PLAN.md

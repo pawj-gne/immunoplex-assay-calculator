@@ -45,12 +45,12 @@ Plans:
   3. Calculated volumes include dead volume and round up to nearest mL
   4. Calculations update immediately as operator changes inputs
   5. App prevents adding more than 5 singles when premix is selected
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD (total volume calculation with well math and dead volume)
-- [ ] 02-02: TBD (single analyte addition calculations)
-- [ ] 02-03: TBD (calculator UI with real-time updates and validation)
+- [ ] 02-01-PLAN.md - Calculation core with pure functions for well counting and volume math
+- [ ] 02-02-PLAN.md - Single analyte additions with max 5 rule enforcement
+- [ ] 02-03-PLAN.md - Calculator UI with Zustand store and real-time updates
 
 ### Phase 3: Plate Visualization & Recipe Generation
 **Goal**: Operators can see plate layout and print prep recipes with all calculated values
@@ -92,7 +92,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Platform Configuration | 3/3 | Complete | 2026-01-23 |
-| 2. Calculator Core | 0/3 | Not started | - |
+| 2. Calculator Core | 0/3 | In progress | - |
 | 3. Plate Visualization & Recipe Generation | 0/3 | Not started | - |
 | 4. Run Documentation & Persistence | 0/2 | Not started | - |
 
