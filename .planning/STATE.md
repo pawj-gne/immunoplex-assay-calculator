@@ -5,32 +5,33 @@
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Accurate reagent calculations with clear prep recipes - operators must be able to trust the math and follow the instructions without second-guessing.
-**Current focus:** Phase 2 - Calculator Core
+**Current focus:** Phase 3 - Plate Visualization & Recipe Generation
 
 ## Current Position
 
-Phase: 2 of 4 (Calculator Core)
+Phase: 3 of 4 (Plate Visualization & Recipe Generation)
 Plan: 0 of 3 in current phase
-Status: Planning complete, ready to execute
-Last activity: 2026-01-23 - Created Phase 2 plans (02-01, 02-02, 02-03)
+Status: Ready to plan/execute
+Last activity: 2026-01-26 - Released v0.1.0, completed Phase 2
 
-Progress: [###.......] 25%
+Progress: [######....] 55%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 19 min
-- Total execution time: 0.9 hours
+- Total plans completed: 6
+- Average duration: 17 min
+- Total execution time: ~1.7 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 3/3 | 56min | 19min |
+| 02-calculator-core | 3/3 | 52min | 17min |
 
 **Recent Trend:**
-- Last 5 plans: 32min, 9min, 15min
+- Last 5 plans: 32min, 9min, 15min, 15min, 12min, 25min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -53,6 +54,12 @@ Recent decisions affecting current work:
 - **01-03:** Zustand store holds platform list, selection state, loading/error state
 - **01-03:** Feature folder structure (features/platform/) for scalability
 - **01-03:** Migration path fix: __dirname in bundled code is out/main/, use ../../
+- **02-01:** Pure functions for all calculations (testable, reusable)
+- **02-01:** Final volume always rounds UP to nearest mL
+- **02-02:** Zod for runtime validation of calculator inputs
+- **02-02:** Single addition = master_mix_volume / stock_concentration
+- **02-03:** Zustand store for calculator with derived outputs
+- **02-03:** Default dead volume changed to 2000 µL (2 mL)
 
 ### Pending Todos
 
@@ -64,6 +71,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-23
-Stopped at: Phase 2 planning complete
-Resume file: .planning/phases/02-calculator-core/02-01-PLAN.md
+Last session: 2026-01-26
+Stopped at: Phase 2 complete, v0.1.0 released
+Resume file: .planning/phases/03-plate-visualization-recipe-generation/03-01-PLAN.md
+
+## Releases
+
+- **v0.1.0** (2026-01-26): Foundation + Calculator Core (Phases 1-2)
