@@ -1,6 +1,6 @@
 {
   "name": "immunoplex-assay-calculator",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Immunoplex Assay Calculator - Accurate reagent calculations for laboratory operations",
   "main": "./out/main/index.js",
   "author": "",
