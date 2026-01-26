@@ -19,7 +19,7 @@ export const UNKNOWN_WELLS_DUPLICATES = 36
  * These can be made configurable in future versions
  */
 export const DEFAULT_VOLUME_PER_WELL = 25 // µL
-export const DEFAULT_DEAD_VOLUME = 500 // µL
+export const DEFAULT_DEAD_VOLUME = 2000 // µL (2 mL)
 
 /**
  * Single analyte limits
