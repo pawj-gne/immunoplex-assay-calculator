@@ -31,6 +31,9 @@ npm-debug.log*
 # Testing
 coverage/
 
+# MCP config (may contain sensitive data)
+.mcp.json
+
 # Electron
 release/
 *.asar
