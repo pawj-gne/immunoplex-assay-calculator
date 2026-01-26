@@ -1,4 +1,4 @@
-import type { Platform } from '../../../../shared/types/platform'
+import type { Platform } from '../../../../../shared/types/platform'
 
 interface PlatformCardProps {
   platform: Platform
