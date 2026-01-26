@@ -12,7 +12,7 @@ This roadmap delivers a desktop application for lab operators to calculate reage
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Platform Configuration** - Electron shell, data models, platform-specific parameters
+- [x] **Phase 1: Foundation & Platform Configuration** - Electron shell, data models, platform-specific parameters
 - [ ] **Phase 2: Calculator Core** - Volume calculations, dilutions, real-time display
 - [ ] **Phase 3: Plate Visualization & Recipe Generation** - Well display, printable prep sheets, bead regions
 - [ ] **Phase 4: Run Documentation & Persistence** - Metadata capture, save/load run records
@@ -31,9 +31,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md - Project scaffolding with Electron + React + TypeScript, Tailwind CSS, app shell
-- [ ] 01-02-PLAN.md - Database setup with SQLite/Drizzle, IPC handlers, decimal utilities
-- [ ] 01-03-PLAN.md - Platform selection UI with Zustand state management
+- [x] 01-01-PLAN.md - Project scaffolding with Electron + React + TypeScript, Tailwind CSS, app shell
+- [x] 01-02-PLAN.md - Database setup with SQLite/Drizzle, IPC handlers, decimal utilities
+- [x] 01-03-PLAN.md - Platform selection UI with Zustand state management
 
 ### Phase 2: Calculator Core
 **Goal**: Operators can enter inputs and see accurate reagent volumes calculated in real-time
@@ -45,12 +45,12 @@ Plans:
   3. Calculated volumes include dead volume and round up to nearest mL
   4. Calculations update immediately as operator changes inputs
   5. App prevents adding more than 5 singles when premix is selected
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD (total volume calculation with well math and dead volume)
-- [ ] 02-02: TBD (single analyte addition calculations)
-- [ ] 02-03: TBD (calculator UI with real-time updates and validation)
+- [ ] 02-01-PLAN.md - Calculation core with pure functions for well counting and volume math
+- [ ] 02-02-PLAN.md - Single analyte additions with max 5 rule enforcement
+- [ ] 02-03-PLAN.md - Calculator UI with Zustand store and real-time updates
 
 ### Phase 3: Plate Visualization & Recipe Generation
 **Goal**: Operators can see plate layout and print prep recipes with all calculated values
@@ -62,12 +62,12 @@ Plans:
   3. Operator can follow step-by-step reagent preparation instructions
   4. Operator can see bead region list for plate reader instrument setup
   5. Prep sheet includes checkboxes for tracking preparation progress
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD (96-well plate visualization component)
-- [ ] 03-02: TBD (recipe generation with step-by-step instructions)
-- [ ] 03-03: TBD (PDF export and print functionality)
+- [ ] 03-01-PLAN.md - Plate visualization components (PlateGrid, WellCell, usePlateLayout) + Tailwind print variant
+- [ ] 03-02-PLAN.md - Recipe components (PrepSheet, ReagentChecklist, BeadRegionList, PrepInstructions)
+- [ ] 03-03-PLAN.md - Print integration (IPC handler, PrintButton) + App integration + verification
 
 ### Phase 4: Run Documentation & Persistence
 **Goal**: Operators can save and retrieve complete run records with all metadata
@@ -91,11 +91,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Platform Configuration | 0/3 | Planned | - |
-| 2. Calculator Core | 0/3 | Not started | - |
-| 3. Plate Visualization & Recipe Generation | 0/3 | Not started | - |
+| 1. Foundation & Platform Configuration | 3/3 | Complete | 2026-01-23 |
+| 2. Calculator Core | 0/3 | In progress | - |
+| 3. Plate Visualization & Recipe Generation | 0/3 | Planned | - |
 | 4. Run Documentation & Persistence | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-01-22*
+*Last updated: 2026-01-26*

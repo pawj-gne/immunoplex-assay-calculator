@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init:*)",
+      "mcp__github__create_repository",
+      "Bash(git remote add:*)",
+      "Bash(npm view:*)",
+      "Bash(git check-ignore:*)",
+      "Skill(gsd:plan-phase)",
+      "Skill(gsd:plan-phase:*)",
+      "Skill(gsd:execute-phase)",
+      "Skill(gsd:execute-phase:*)",
+      "Skill(gsd:progress)",
+      "Skill(gsd:progress:*)",
+      "Bash(npm run dev:*)",
+      "Bash(git push:*)",
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(test:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run build:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "github",
+    "sequential-thinking"
+  ]
+}
