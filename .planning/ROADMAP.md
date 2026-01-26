@@ -62,12 +62,12 @@ Plans:
   3. Operator can follow step-by-step reagent preparation instructions
   4. Operator can see bead region list for plate reader instrument setup
   5. Prep sheet includes checkboxes for tracking preparation progress
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD (96-well plate visualization component)
-- [ ] 03-02: TBD (recipe generation with step-by-step instructions)
-- [ ] 03-03: TBD (PDF export and print functionality)
+- [ ] 03-01-PLAN.md - Plate visualization components (PlateGrid, WellCell, usePlateLayout) + Tailwind print variant
+- [ ] 03-02-PLAN.md - Recipe components (PrepSheet, ReagentChecklist, BeadRegionList, PrepInstructions)
+- [ ] 03-03-PLAN.md - Print integration (IPC handler, PrintButton) + App integration + verification
 
 ### Phase 4: Run Documentation & Persistence
 **Goal**: Operators can save and retrieve complete run records with all metadata
@@ -93,9 +93,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 |-------|----------------|--------|-----------|
 | 1. Foundation & Platform Configuration | 3/3 | Complete | 2026-01-23 |
 | 2. Calculator Core | 0/3 | In progress | - |
-| 3. Plate Visualization & Recipe Generation | 0/3 | Not started | - |
+| 3. Plate Visualization & Recipe Generation | 0/3 | Planned | - |
 | 4. Run Documentation & Persistence | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-01-23*
+*Last updated: 2026-01-26*
