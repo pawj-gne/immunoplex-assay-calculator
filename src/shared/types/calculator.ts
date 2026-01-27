@@ -87,3 +87,33 @@ export interface CalculatorState {
   // Computed outputs (derived)
   outputs: CalculatorOutputs | null
 }
+
+/**
+ * A single line of reagent volume output
+ */
+export interface ReagentLine {
+  /** Reagent name (e.g., "IL-17" or "Panel I") */
+  name: string
+  /** Stock concentration (e.g., 20 for 20x) */
+  stockConc: number
+  /** Volume in µL */
+  volumeUL: Decimal
+  /** Bead region number (for singles only) */
+  beadRegion?: number
+  /** Whether this is from a premix panel */
+  isPremix: boolean
+}
+
+/**
+ * Itemized volume output for all reagent types
+ */
+export interface ItemizedVolumes {
+  /** Capture bead volumes */
+  captureBeads: ReagentLine[]
+  /** Detection antibody volumes */
+  detectionAntibodies: ReagentLine[]
+  /** Total SA-PE volume in µL */
+  saPEVolumeUL: Decimal
+  /** Total SA-PE volume in mL for display */
+  saPEVolumeML: number
+}

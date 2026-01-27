@@ -10,7 +10,25 @@ contextBridge.exposeInMainWorld('electronAPI', {
     create: (data: unknown) => ipcRenderer.invoke(IPC_CHANNELS.PLATFORM_CREATE, data),
     update: (data: unknown) => ipcRenderer.invoke(IPC_CHANNELS.PLATFORM_UPDATE, data)
   },
+  species: {
+    getByPlatformId: (platformId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SPECIES_GET_BY_PLATFORM, platformId)
+  },
+  panel: {
+    getByPlatformAndSpecies: (platformId: string, speciesId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.PANEL_GET_BY_PLATFORM_SPECIES, platformId, speciesId),
+    getWithAnalytes: (panelId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.PANEL_GET_WITH_ANALYTES, panelId)
+  },
+  analyte: {
+    getByPlatformAndSpecies: (platformId: string, speciesId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.ANALYTE_GET_BY_PLATFORM_SPECIES, platformId, speciesId),
+    getByPanelId: (panelId: string) => ipcRenderer.invoke(IPC_CHANNELS.ANALYTE_GET_BY_PANEL, panelId)
+  },
   db: {
     health: () => ipcRenderer.invoke(IPC_CHANNELS.DB_HEALTH)
+  },
+  print: {
+    prepSheet: () => ipcRenderer.invoke(IPC_CHANNELS.PRINT_PREP_SHEET)
   }
 })

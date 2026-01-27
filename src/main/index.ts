@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { initializeDatabase, closeDatabase } from './db/client'
 import { runMigrations } from './db/migrate'
-import { seedPlatforms } from './db/seed'
+import { seedAll } from './db/seed'
 import { registerIpcHandlers } from './ipc'
 
 function createWindow(): void {
@@ -41,7 +41,7 @@ app.whenReady().then(() => {
   // Initialize database before anything else
   initializeDatabase()
   runMigrations()
-  seedPlatforms()
+  seedAll()
 
   // Register IPC handlers
   registerIpcHandlers()

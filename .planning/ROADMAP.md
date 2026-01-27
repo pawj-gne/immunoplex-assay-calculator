@@ -13,7 +13,7 @@ This roadmap delivers a desktop application for lab operators to calculate reage
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Platform Configuration** - Electron shell, data models, platform-specific parameters
-- [ ] **Phase 2: Calculator Core** - Volume calculations, dilutions, real-time display
+- [x] **Phase 2: Calculator Core** - Volume calculations, dilutions, real-time display
 - [ ] **Phase 3: Plate Visualization & Recipe Generation** - Well display, printable prep sheets, bead regions
 - [ ] **Phase 4: Run Documentation & Persistence** - Metadata capture, save/load run records
 
@@ -48,9 +48,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md - Calculation core with pure functions for well counting and volume math
-- [ ] 02-02-PLAN.md - Single analyte additions with max 5 rule enforcement
-- [ ] 02-03-PLAN.md - Calculator UI with Zustand store and real-time updates
+- [x] 02-01-PLAN.md - Calculation core with pure functions for well counting and volume math
+- [x] 02-02-PLAN.md - Single analyte additions with max 5 rule enforcement
+- [x] 02-03-PLAN.md - Calculator UI with Zustand store and real-time updates
 
 ### Phase 3: Plate Visualization & Recipe Generation
 **Goal**: Operators can see plate layout and print prep recipes with all calculated values
@@ -92,8 +92,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Platform Configuration | 3/3 | Complete | 2026-01-23 |
-| 2. Calculator Core | 0/3 | In progress | - |
-| 3. Plate Visualization & Recipe Generation | 0/3 | Planned | - |
+| 2. Calculator Core | 3/3 | Complete | 2026-01-26 |
+| 3. Plate Visualization & Recipe Generation | 0/3 | Ready | - |
 | 4. Run Documentation & Persistence | 0/2 | Not started | - |
 
 ---
