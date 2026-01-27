@@ -12,5 +12,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   db: {
     health: () => ipcRenderer.invoke(IPC_CHANNELS.DB_HEALTH)
+  },
+  print: {
+    prepSheet: () => ipcRenderer.invoke(IPC_CHANNELS.PRINT_PREP_SHEET)
   }
 })

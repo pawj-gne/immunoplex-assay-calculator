@@ -1,6 +1,6 @@
 import type { Platform, PlatformCreate, PlatformUpdate } from '../shared/types/platform'
 
-interface CustomElectronAPI {
+export interface ElectronAPI {
   platform: {
     getAll: () => Promise<Platform[]>
     getById: (id: string) => Promise<Platform | null>
@@ -10,11 +10,14 @@ interface CustomElectronAPI {
   db: {
     health: () => Promise<{ ok: boolean }>
   }
+  print: {
+    prepSheet: () => Promise<{ success: boolean; error: string | null }>
+  }
 }
 
 declare global {
   interface Window {
-    electronAPI: CustomElectronAPI
+    electronAPI: ElectronAPI
   }
 }
 
