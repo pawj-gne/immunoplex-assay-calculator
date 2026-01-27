@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { usePlateLayout } from '../hooks/usePlateLayout'
 import { PlateGrid } from './PlateGrid'
 
@@ -11,6 +11,14 @@ export function PlatePanel() {
   const { layouts, hasOutputs } = usePlateLayout()
   const [currentPlate, setCurrentPlate] = useState(1)
 
+  // Reset to plate 1 if current plate no longer exists (sample count decreased)
+  // Must be before any early returns to satisfy rules of hooks
+  useEffect(() => {
+    if (currentPlate > layouts.length && layouts.length > 0) {
+      setCurrentPlate(1)
+    }
+  }, [currentPlate, layouts.length])
+
   if (!hasOutputs || layouts.length === 0) {
     return (
       <div className="text-center py-8 text-[var(--color-muted)]">
@@ -21,9 +29,8 @@ export function PlatePanel() {
 
   const currentLayout = layouts[currentPlate - 1]
 
-  // Reset to plate 1 if current plate no longer exists (sample count decreased)
+  // Safety check
   if (!currentLayout) {
-    setCurrentPlate(1)
     return null
   }
 

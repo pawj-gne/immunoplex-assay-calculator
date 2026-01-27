@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import type { WellData } from '../../../../../shared/types/plate'
 import { ROWS, COLS } from '../../../../../shared/types/plate'
 import { WellCell } from './WellCell'
@@ -44,12 +45,9 @@ export function PlateGrid({ wells, plateNumber }: PlateGridProps) {
 
           {/* Rows with labels and wells */}
           {ROWS.map((row, rowIndex) => (
-            <>
+            <Fragment key={`row-${row}`}>
               {/* Row label */}
-              <div
-                key={`row-${row}`}
-                className="w-7 h-7 flex items-center justify-center text-xs font-medium text-[var(--color-muted)]"
-              >
+              <div className="w-7 h-7 flex items-center justify-center text-xs font-medium text-[var(--color-muted)]">
                 {row}
               </div>
 
@@ -57,7 +55,7 @@ export function PlateGrid({ wells, plateNumber }: PlateGridProps) {
               {wells[rowIndex]?.map((well) => (
                 <WellCell key={well.id} well={well} />
               ))}
-            </>
+            </Fragment>
           ))}
         </div>
       </div>

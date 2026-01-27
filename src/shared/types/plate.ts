@@ -20,5 +20,5 @@ export interface PlateLayout {
 export const ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] as const
 export const COLS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const
 
-// Standards occupy columns 1-3 (24 wells per plate)
-export const STANDARD_COLS = [1, 2, 3] as const
+// Standards occupy columns 10-12 (24 wells per plate)
+export const STANDARD_COLS = [10, 11, 12] as const

@@ -12,119 +12,102 @@ interface UsePlateLayoutResult {
  * Hook that derives plate layout from calculator store state.
  *
  * Layout rules:
- * - Standards always occupy columns 1-3 (24 wells per plate)
- * - Unknown samples fill from column 4 onwards, row by row
+ * - Standards always occupy columns 10-12 (24 wells per plate)
+ * - Unknown samples fill from A1, going down column first, then across
  * - For singles mode: each sample uses 1 well
  * - For duplicates mode: each sample uses 2 adjacent wells in the same row
  * - Sample numbering continues across plates
  */
 export function usePlateLayout(): UsePlateLayoutResult {
-  const { sampleCount, replicateMode, plateCount } = useCalculatorStore()
-  const outputs = useCalculatorStore((state) => state.getOutputs())
+  const { sampleCount, replicateMode, plateCount, getOutputs } = useCalculatorStore()
+  const outputs = getOutputs()
 
   const layouts = useMemo(() => {
-    if (!outputs || sampleCount <= 0 || plateCount <= 0) {
+    // Defensive checks for invalid values
+    if (
+      !outputs ||
+      !Number.isFinite(sampleCount) ||
+      !Number.isFinite(plateCount) ||
+      sampleCount <= 0 ||
+      plateCount <= 0
+    ) {
       return []
     }
 
-    let sampleIndex = 1
+    // Unknown columns are 1-9 (standards in 10-12)
+    const unknownCols = COLS.filter(
+      (col) => !STANDARD_COLS.includes(col as (typeof STANDARD_COLS)[number])
+    )
 
     const plateLayouts: PlateLayout[] = []
 
     for (let p = 0; p < plateCount; p++) {
-      const wells: WellData[][] = []
+      // Initialize empty well grid
+      const wells: WellData[][] = ROWS.map((row) =>
+        COLS.map((col) => ({
+          id: `${row}${col}`,
+          row,
+          col,
+          type: STANDARD_COLS.includes(col as (typeof STANDARD_COLS)[number])
+            ? ('standard' as const)
+            : ('empty' as const)
+        }))
+      )
 
-      for (let rowIndex = 0; rowIndex < ROWS.length; rowIndex++) {
-        const row = ROWS[rowIndex]
-        const rowWells: WellData[] = []
+      if (replicateMode === 'singles') {
+        // Singles: fill down columns first, then across
+        // 9 unknown columns × 8 rows = 72 wells per plate
+        const wellsPerPlate = unknownCols.length * ROWS.length
+        const startSample = p * wellsPerPlate + 1
 
-        for (let colIndex = 0; colIndex < COLS.length; colIndex++) {
-          const col = COLS[colIndex]
-          const wellId = `${row}${col}`
-
-          // Standards occupy columns 1-3
-          if (STANDARD_COLS.includes(col as typeof STANDARD_COLS[number])) {
-            rowWells.push({
-              id: wellId,
-              row,
-              col,
-              type: 'standard'
-            })
-            continue
+        let wellIndex = 0
+        for (const col of unknownCols) {
+          for (let rowIndex = 0; rowIndex < ROWS.length; rowIndex++) {
+            const currentSample = startSample + wellIndex
+            if (currentSample <= sampleCount) {
+              wells[rowIndex][col - 1] = {
+                id: `${ROWS[rowIndex]}${col}`,
+                row: ROWS[rowIndex],
+                col,
+                type: 'unknown',
+                sampleIndex: currentSample
+              }
+            }
+            wellIndex++
           }
+        }
+      } else {
+        // Duplicates: each sample uses 2 wells horizontally (same row)
+        // Pairs: columns 1-2, 3-4, 5-6, 7-8 (column 9 unpaired, left empty)
+        // 4 pairs per row × 8 rows = 32 samples per plate
+        const pairsPerRow = 4
+        const samplesPerPlate = pairsPerRow * ROWS.length
+        const startSample = p * samplesPerPlate + 1
 
-          // Unknown wells in columns 4-12
-          // For singles: 1 well per sample
-          // For duplicates: 2 adjacent wells per sample (same row)
+        for (let rowIndex = 0; rowIndex < ROWS.length; rowIndex++) {
+          for (let pairIndex = 0; pairIndex < pairsPerRow; pairIndex++) {
+            const currentSample = startSample + rowIndex * pairsPerRow + pairIndex
+            const col1 = pairIndex * 2 + 1 // 1, 3, 5, 7
+            const col2 = col1 + 1 // 2, 4, 6, 8
 
-          if (replicateMode === 'singles') {
-            // Each sample uses 1 well
-            if (sampleIndex <= sampleCount) {
-              rowWells.push({
-                id: wellId,
-                row,
-                col,
+            if (currentSample <= sampleCount) {
+              wells[rowIndex][col1 - 1] = {
+                id: `${ROWS[rowIndex]}${col1}`,
+                row: ROWS[rowIndex],
+                col: col1,
                 type: 'unknown',
-                sampleIndex
-              })
-              sampleIndex++
-            } else {
-              rowWells.push({
-                id: wellId,
-                row,
-                col,
-                type: 'empty'
-              })
-            }
-          } else {
-            // Duplicates: each sample uses 2 wells
-            // Wells are filled in pairs: columns 4-5, 6-7, 8-9, 10-11
-            // Column 12 is unpaired, treat as empty
-
-            // Determine position within unknown columns (0-indexed)
-            const unknownColIndex = col - 4
-
-            // Handle the last column (12) which doesn't have a pair
-            if (unknownColIndex === 8) {
-              rowWells.push({
-                id: wellId,
-                row,
-                col,
-                type: 'empty'
-              })
-              continue
-            }
-
-            // Calculate which pair this column belongs to (0-indexed)
-            const pairIndex = Math.floor(unknownColIndex / 2)
-
-            // Calculate sample number for this pair
-            // 4 complete pairs per row (columns 4-11)
-            const pairsPerRow = 4
-            const pairsInPreviousPlates = p * pairsPerRow * ROWS.length
-            const pairsInPreviousRows = rowIndex * pairsPerRow
-            const currentPairSample = pairsInPreviousPlates + pairsInPreviousRows + pairIndex + 1
-
-            if (currentPairSample <= sampleCount) {
-              rowWells.push({
-                id: wellId,
-                row,
-                col,
+                sampleIndex: currentSample
+              }
+              wells[rowIndex][col2 - 1] = {
+                id: `${ROWS[rowIndex]}${col2}`,
+                row: ROWS[rowIndex],
+                col: col2,
                 type: 'unknown',
-                sampleIndex: currentPairSample
-              })
-            } else {
-              rowWells.push({
-                id: wellId,
-                row,
-                col,
-                type: 'empty'
-              })
+                sampleIndex: currentSample
+              }
             }
           }
         }
-
-        wells.push(rowWells)
       }
 
       plateLayouts.push({
