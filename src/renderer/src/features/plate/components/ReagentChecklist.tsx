@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useCalculator } from '../../calculator/hooks/useCalculator'
+import { volumeToDisplay } from '../../../lib/decimal'
 
 interface ReagentItem {
   id: string
@@ -15,7 +16,7 @@ interface ReagentItem {
  * Note: Checkbox state won't persist to print - operators check on paper
  */
 export function ReagentChecklist() {
-  const { outputs, singlesWithVolumes, requestType } = useCalculator()
+  const { outputs, itemizedVolumes, requestType } = useCalculator()
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({})
 
   if (!outputs) {
@@ -60,17 +61,31 @@ export function ReagentChecklist() {
     })
   }
 
-  // Add single analytes if present
-  if (singlesWithVolumes && singlesWithVolumes.length > 0) {
-    singlesWithVolumes.forEach((single) => {
-      reagents.push({
-        id: `single-${single.id}`,
-        name: single.name,
-        volume: single.additionVolumeUL,
-        unit: 'µL',
-        note: `${single.stockConcentration}x stock`
+  // Add single analytes from itemized volumes (if present)
+  if (itemizedVolumes) {
+    itemizedVolumes.captureBeads
+      .filter((line) => !line.isPremix && line.beadRegion !== undefined)
+      .forEach((line, idx) => {
+        reagents.push({
+          id: `single-bead-${idx}`,
+          name: `${line.name} (Beads)`,
+          volume: volumeToDisplay(line.volumeUL, 'uL', 1),
+          unit: 'µL',
+          note: `${line.stockConc}x stock, Region ${line.beadRegion}`
+        })
       })
-    })
+
+    itemizedVolumes.detectionAntibodies
+      .filter((line) => !line.isPremix && line.beadRegion !== undefined)
+      .forEach((line, idx) => {
+        reagents.push({
+          id: `single-ab-${idx}`,
+          name: `${line.name} (Antibody)`,
+          volume: volumeToDisplay(line.volumeUL, 'uL', 1),
+          unit: 'µL',
+          note: `${line.stockConc}x stock`
+        })
+      })
   }
 
   const handleCheck = (id: string) => {

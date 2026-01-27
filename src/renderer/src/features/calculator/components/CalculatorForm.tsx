@@ -9,9 +9,16 @@ export function CalculatorForm() {
     validationError,
     setSampleCount,
     setReplicateMode,
-    setPlateCount,
-    setRequestType
+    setPlateCount
   } = useCalculator()
+
+  // Display-friendly request type label
+  const requestTypeLabel =
+    requestType === 'premix'
+      ? 'Premix Panel Only'
+      : requestType === 'premix_singles'
+        ? 'Premix + Singles'
+        : 'Custom (Singles Only)'
 
   return (
     <div className="space-y-4">
@@ -85,20 +92,17 @@ export function CalculatorForm() {
         />
       </div>
 
-      {/* Request Type */}
+      {/* Request Type - Read-only, driven by selection */}
       <div>
         <label className="block text-sm font-medium text-[var(--color-foreground)] mb-1">
           Request Type
         </label>
-        <select
-          value={requestType}
-          onChange={(e) => setRequestType(e.target.value as typeof requestType)}
-          className="w-full px-3 py-2 border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
-        >
-          <option value="premix">Premix Only</option>
-          <option value="premix_singles">Premix + Singles (max 5)</option>
-          <option value="custom">Full Custom (unlimited)</option>
-        </select>
+        <div className="px-3 py-2 bg-gray-50 border border-[var(--color-border)] rounded-md text-sm text-[var(--color-foreground)]">
+          {requestTypeLabel}
+          <span className="text-xs text-[var(--color-muted)] ml-2">
+            (determined by analyte selection)
+          </span>
+        </div>
       </div>
 
       {/* Validation Error */}

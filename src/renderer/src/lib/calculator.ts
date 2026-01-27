@@ -6,7 +6,15 @@ import {
   type ReplicateMode,
   type RequestType
 } from '../../../shared/constants/calculator'
-import type { CalculatorInputs, CalculatorOutputs, SingleAnalyte } from '../../../shared/types/calculator'
+import type {
+  CalculatorInputs,
+  CalculatorOutputs,
+  SingleAnalyte,
+  ItemizedVolumes,
+  ReagentLine
+} from '../../../shared/types/calculator'
+import type { Analyte } from '../../../shared/types/analyte'
+import type { PanelWithAnalytes } from '../../../shared/types/panel'
 import { createVolume, roundUpToNearestML } from './decimal'
 
 /**
@@ -204,5 +212,89 @@ export function validateSinglesForRequestType(
     valid: false,
     excess,
     message: `${excess} single(s) must be removed for ${requestType} mode (max ${maxSingles})`
+  }
+}
+
+/**
+ * Calculate itemized volumes for all reagents based on selected analytes
+ *
+ * Output format:
+ * - Capture Beads: premix line (if panel selected) + individual lines for singles
+ * - Detection Antibodies: premix line (if panel selected) + individual lines for singles
+ * - SA-PE: total volume only
+ *
+ * Formula for single additions: finalVolume / stockConcentration
+ */
+export function calculateItemizedVolumes(
+  finalVolumeUL: Decimal,
+  panel: PanelWithAnalytes | null,
+  singleAnalytes: Analyte[]
+): ItemizedVolumes {
+  const captureBeads: ReagentLine[] = []
+  const detectionAntibodies: ReagentLine[] = []
+
+  // Add panel premix if selected
+  if (panel) {
+    // For premix, the stock concentration is 1x (ready to use)
+    captureBeads.push({
+      name: panel.name,
+      stockConc: 1,
+      volumeUL: finalVolumeUL,
+      isPremix: true
+    })
+
+    detectionAntibodies.push({
+      name: panel.name,
+      stockConc: 1,
+      volumeUL: finalVolumeUL,
+      isPremix: true
+    })
+  } else if (singleAnalytes.length === 0) {
+    // Custom assay buffer for beads when no panel and no singles
+    captureBeads.push({
+      name: 'Assay Buffer',
+      stockConc: 1,
+      volumeUL: finalVolumeUL,
+      isPremix: false
+    })
+
+    detectionAntibodies.push({
+      name: 'Assay Buffer',
+      stockConc: 1,
+      volumeUL: finalVolumeUL,
+      isPremix: false
+    })
+  }
+
+  // Add individual analytes (singles)
+  for (const analyte of singleAnalytes) {
+    // Capture beads
+    captureBeads.push({
+      name: analyte.name,
+      stockConc: analyte.beadStockConc,
+      volumeUL: finalVolumeUL.dividedBy(analyte.beadStockConc),
+      beadRegion: analyte.beadRegion,
+      isPremix: false
+    })
+
+    // Detection antibodies
+    detectionAntibodies.push({
+      name: analyte.name,
+      stockConc: analyte.antibodyStockConc,
+      volumeUL: finalVolumeUL.dividedBy(analyte.antibodyStockConc),
+      beadRegion: analyte.beadRegion,
+      isPremix: false
+    })
+  }
+
+  // SA-PE is always the full final volume
+  const saPEVolumeUL = finalVolumeUL
+  const saPEVolumeML = finalVolumeUL.dividedBy(1000).toNumber()
+
+  return {
+    captureBeads,
+    detectionAntibodies,
+    saPEVolumeUL,
+    saPEVolumeML
   }
 }

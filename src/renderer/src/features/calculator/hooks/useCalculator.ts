@@ -1,40 +1,49 @@
 import { useCalculatorStore } from '../../../stores/calculatorStore'
 import { usePlatformStore } from '../../../stores/platformStore'
+import { useSelectionStore } from '../../../stores/selectionStore'
 import { volumeToDisplay } from '../../../lib/decimal'
+import { calculateItemizedVolumes } from '../../../lib/calculator'
 
 /**
  * Hook to access calculator state with computed values
+ * Integrates selection store for analyte-based calculations
  */
 export function useCalculator() {
   const {
     sampleCount,
     replicateMode,
     plateCount,
-    requestType,
     volumePerWell,
     deadVolume,
-    singles,
     validationError,
     setSampleCount,
     setReplicateMode,
     setPlateCount,
-    setRequestType,
-    addSingle,
-    removeSingle,
-    clearSingles,
     reset,
-    getOutputs,
-    getSinglesWithVolumes,
-    canAddMoreSingles,
-    getRemainingSinglesCount
+    getOutputs
   } = useCalculatorStore()
 
   const { getSelectedPlatform } = usePlatformStore()
   const selectedPlatform = getSelectedPlatform()
 
+  const {
+    selectedPanel,
+    getSelectedSingles,
+    getRequestType,
+    canAddMoreSingles,
+    getRemainingSinglesCount
+  } = useSelectionStore()
+
   // Get calculated outputs
   const outputs = getOutputs()
-  const singlesWithVolumes = getSinglesWithVolumes()
+  const selectedSingles = getSelectedSingles()
+  const requestType = getRequestType()
+
+  // Calculate itemized volumes based on selection
+  const itemizedVolumes =
+    outputs && outputs.finalVolume
+      ? calculateItemizedVolumes(outputs.finalVolume, selectedPanel, selectedSingles)
+      : null
 
   // Format volumes for display
   const formattedOutputs = outputs
@@ -48,25 +57,22 @@ export function useCalculator() {
       }
     : null
 
-  // Format singles with volumes for display
-  const formattedSingles = singlesWithVolumes?.map((s) => ({
-    ...s,
-    additionVolumeUL: volumeToDisplay(s.additionVolume, 'uL', 1)
-  }))
-
   return {
     // Inputs
     sampleCount,
     replicateMode,
     plateCount,
-    requestType,
     volumePerWell,
     deadVolume,
-    singles,
 
     // Platform
     selectedPlatform,
     stockConcentration: selectedPlatform?.stockConcentration ?? null,
+
+    // Selection-driven values
+    requestType,
+    selectedPanel,
+    selectedSingles,
 
     // Validation
     validationError,
@@ -74,9 +80,10 @@ export function useCalculator() {
 
     // Outputs
     outputs: formattedOutputs,
-    singlesWithVolumes: formattedSingles,
+    rawOutputs: outputs,
+    itemizedVolumes,
 
-    // Singles helpers
+    // Singles helpers (from selection store now)
     canAddMoreSingles: canAddMoreSingles(),
     remainingSingles: getRemainingSinglesCount(),
 
@@ -84,10 +91,6 @@ export function useCalculator() {
     setSampleCount,
     setReplicateMode,
     setPlateCount,
-    setRequestType,
-    addSingle,
-    removeSingle,
-    clearSingles,
     reset
   }
 }

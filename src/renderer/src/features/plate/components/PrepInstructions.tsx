@@ -1,4 +1,5 @@
 import { useCalculator } from '../../calculator/hooks/useCalculator'
+import { volumeToDisplay } from '../../../lib/decimal'
 
 interface InstructionStep {
   id: number
@@ -13,7 +14,7 @@ interface InstructionStep {
  * Volumes are pulled from calculator state
  */
 export function PrepInstructions() {
-  const { outputs, singlesWithVolumes, requestType } = useCalculator()
+  const { outputs, itemizedVolumes, requestType } = useCalculator()
 
   if (!outputs) {
     return (
@@ -24,6 +25,11 @@ export function PrepInstructions() {
   }
 
   const finalVolumeML = outputs.finalVolumeML
+
+  // Get single additions from itemized volumes
+  const singleBeadAdditions = itemizedVolumes
+    ? itemizedVolumes.captureBeads.filter((line) => !line.isPremix && line.beadRegion !== undefined)
+    : []
 
   // Build instruction steps based on request type and singles
   const steps: InstructionStep[] = []
@@ -52,17 +58,17 @@ export function PrepInstructions() {
   })
 
   // Step 4: Add single analytes if present
-  if (singlesWithVolumes && singlesWithVolumes.length > 0) {
+  if (singleBeadAdditions.length > 0) {
     steps.push({
       id: stepNum++,
-      text: 'Add single analytes to the master mix:',
+      text: 'Add single analyte beads to the master mix:',
       highlight: true
     })
 
-    singlesWithVolumes.forEach((single) => {
+    singleBeadAdditions.forEach((line) => {
       steps.push({
         id: stepNum++,
-        text: `Add ${single.additionVolumeUL} µL of ${single.name} (${single.stockConcentration}x stock)`
+        text: `Add ${volumeToDisplay(line.volumeUL, 'uL', 1)} µL of ${line.name} beads (${line.stockConc}x stock, Region ${line.beadRegion})`
       })
     })
   }

@@ -1,11 +1,12 @@
 import { useCalculator } from '../../calculator/hooks/useCalculator'
+import { volumeToDisplay } from '../../../lib/decimal'
 
 /**
  * Summary of all calculated volumes for the prep sheet
  * Displays total wells, raw volume, and final volume in a clean table format
  */
 export function VolumesSummary() {
-  const { outputs, singlesWithVolumes } = useCalculator()
+  const { outputs, itemizedVolumes, selectedSingles } = useCalculator()
 
   if (!outputs) {
     return (
@@ -55,8 +56,8 @@ export function VolumesSummary() {
         </tbody>
       </table>
 
-      {/* Single analytes table (if present) */}
-      {singlesWithVolumes && singlesWithVolumes.length > 0 && (
+      {/* Single analyte additions (if present) */}
+      {itemizedVolumes && selectedSingles.length > 0 && (
         <div className="mt-4 print:mt-3">
           <h3 className="text-md font-medium text-gray-700 mb-2 print:text-sm">
             Single Analyte Additions
@@ -65,20 +66,24 @@ export function VolumesSummary() {
             <thead>
               <tr className="border-b border-gray-300">
                 <th className="text-left py-2 pr-4 font-medium text-gray-600">Analyte</th>
-                <th className="text-right py-2 px-4 font-medium text-gray-600">Stock Conc.</th>
+                <th className="text-right py-2 px-4 font-medium text-gray-600">Bead Region</th>
+                <th className="text-right py-2 px-4 font-medium text-gray-600">Bead Stock</th>
                 <th className="text-right py-2 pl-4 font-medium text-gray-600">Addition Volume</th>
               </tr>
             </thead>
             <tbody>
-              {singlesWithVolumes.map((single) => (
-                <tr key={single.id} className="border-b border-gray-200">
-                  <td className="py-2 pr-4 text-gray-700">{single.name}</td>
-                  <td className="py-2 px-4 text-right font-mono">{single.stockConcentration}x</td>
-                  <td className="py-2 pl-4 text-right font-mono font-medium">
-                    {single.additionVolumeUL} µL
-                  </td>
-                </tr>
-              ))}
+              {itemizedVolumes.captureBeads
+                .filter((line) => !line.isPremix && line.beadRegion !== undefined)
+                .map((line, idx) => (
+                  <tr key={`${line.name}-${idx}`} className="border-b border-gray-200">
+                    <td className="py-2 pr-4 text-gray-700">{line.name}</td>
+                    <td className="py-2 px-4 text-right font-mono">{line.beadRegion}</td>
+                    <td className="py-2 px-4 text-right font-mono">{line.stockConc}x</td>
+                    <td className="py-2 pl-4 text-right font-mono font-medium">
+                      {volumeToDisplay(line.volumeUL, 'uL', 1)} µL
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
