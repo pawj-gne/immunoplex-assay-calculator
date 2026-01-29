@@ -20,7 +20,10 @@ export const IPC_CHANNELS = {
   DB_HEALTH: 'db:health',
 
   // Print
-  PRINT_PREP_SHEET: 'print:prep-sheet'
+  PRINT_PREP_SHEET: 'print:prep-sheet',
+
+  // Import
+  IMPORT_PANEL_DATA: 'import:panel-data'
 } as const
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS]

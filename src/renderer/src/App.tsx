@@ -4,6 +4,7 @@ import { SpeciesSelector } from './features/selection/components/SpeciesSelector
 import { AnalyteSelectionPanel } from './features/selection/components/AnalyteSelectionPanel'
 import { CalculatorPanel } from './features/calculator/components/CalculatorPanel'
 import { PlatePanel } from './features/plate/components/PlatePanel'
+import { ImportButton } from './features/import/ImportButton'
 import { usePlatforms } from './features/platform/hooks/usePlatforms'
 import { useSpecies } from './features/selection/hooks/useSpecies'
 
@@ -19,10 +20,11 @@ function App(): JSX.Element {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-[var(--color-border)] px-6 py-4">
+      <header className="bg-white border-b border-[var(--color-border)] px-6 py-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-[var(--color-foreground)]">
           Immunoplex Assay Calculator
         </h1>
+        <ImportButton />
       </header>
 
       {/* Main content area */}

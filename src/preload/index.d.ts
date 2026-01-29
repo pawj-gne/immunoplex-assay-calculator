@@ -2,6 +2,7 @@ import type { Platform, PlatformCreate, PlatformUpdate } from '../shared/types/p
 import type { Species } from '../shared/types/species'
 import type { PremixPanel, PanelWithAnalytes } from '../shared/types/panel'
 import type { Analyte } from '../shared/types/analyte'
+import type { ImportResult } from '../main/import/importer'
 
 export interface ElectronAPI {
   platform: {
@@ -26,6 +27,9 @@ export interface ElectronAPI {
   }
   print: {
     prepSheet: () => Promise<{ success: boolean; error: string | null }>
+  }
+  import: {
+    panelData: () => Promise<ImportResult>
   }
 }
 

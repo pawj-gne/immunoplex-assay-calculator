@@ -30,5 +30,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   print: {
     prepSheet: () => ipcRenderer.invoke(IPC_CHANNELS.PRINT_PREP_SHEET)
+  },
+  import: {
+    panelData: () => ipcRenderer.invoke(IPC_CHANNELS.IMPORT_PANEL_DATA)
   }
 })
