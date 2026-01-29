@@ -18,12 +18,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getByPlatformAndSpecies: (platformId: string, speciesId: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.PANEL_GET_BY_PLATFORM_SPECIES, platformId, speciesId),
     getWithAnalytes: (panelId: string) =>
-      ipcRenderer.invoke(IPC_CHANNELS.PANEL_GET_WITH_ANALYTES, panelId)
+      ipcRenderer.invoke(IPC_CHANNELS.PANEL_GET_WITH_ANALYTES, panelId),
+    update: (data: unknown) => ipcRenderer.invoke(IPC_CHANNELS.PANEL_UPDATE, data),
+    delete: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.PANEL_DELETE, id),
+    addAnalyte: (panelId: string, analyteId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.PANEL_ADD_ANALYTE, panelId, analyteId),
+    removeAnalyte: (panelId: string, analyteId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.PANEL_REMOVE_ANALYTE, panelId, analyteId)
   },
   analyte: {
     getByPlatformAndSpecies: (platformId: string, speciesId: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.ANALYTE_GET_BY_PLATFORM_SPECIES, platformId, speciesId),
-    getByPanelId: (panelId: string) => ipcRenderer.invoke(IPC_CHANNELS.ANALYTE_GET_BY_PANEL, panelId)
+    getByPanelId: (panelId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.ANALYTE_GET_BY_PANEL, panelId),
+    update: (data: unknown) => ipcRenderer.invoke(IPC_CHANNELS.ANALYTE_UPDATE, data),
+    delete: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.ANALYTE_DELETE, id)
   },
   db: {
     health: () => ipcRenderer.invoke(IPC_CHANNELS.DB_HEALTH)
