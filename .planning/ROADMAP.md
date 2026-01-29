@@ -69,8 +69,8 @@ Plans:
 - [ ] 03-02-PLAN.md - Recipe components (PrepSheet, ReagentChecklist, BeadRegionList, PrepInstructions)
 - [ ] 03-03-PLAN.md - Print integration (IPC handler, PrintButton) + App integration + verification
 
-### Phase 4: Run Documentation & Persistence
-**Goal**: Operators can save and retrieve complete run records with all metadata
+### Phase 4: Run Documentation, Persistence & Deployment
+**Goal**: Operators can save/retrieve run records and install the app as a Windows .exe
 **Depends on**: Phase 3
 **Requirements**: DOCM-01, PERS-01, PERS-02
 **Success Criteria** (what must be TRUE):
@@ -78,11 +78,14 @@ Plans:
   2. Operator can save a run record to local storage
   3. Operator can load a previously saved run record and see all its data
   4. Saved runs persist across application restarts
-**Plans**: TBD
+  5. Application can be packaged as a Windows .exe installer
+  6. Installer can be deployed to the production PC and launched without dev tools
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: TBD (run metadata form with all required fields)
-- [ ] 04-02: TBD (run persistence to SQLite with save/load)
+- [ ] 04-01-PLAN.md — Run persistence layer (schema, repository, IPC handlers, preload bridge)
+- [ ] 04-02-PLAN.md — Run metadata form UI with Zustand store and run list
+- [ ] 04-03-PLAN.md — Windows .exe packaging with electron-builder
 
 ## Progress
 
@@ -94,8 +97,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 1. Foundation & Platform Configuration | 3/3 | Complete | 2026-01-23 |
 | 2. Calculator Core | 3/3 | Complete | 2026-01-26 |
 | 3. Plate Visualization & Recipe Generation | 0/3 | Ready | - |
-| 4. Run Documentation & Persistence | 0/2 | Not started | - |
+| 4. Run Documentation & Persistence | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-01-26*
+*Last updated: 2026-01-29*
