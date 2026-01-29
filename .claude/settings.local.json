@@ -20,7 +20,15 @@
       "Bash(npm install:*)",
       "Bash(npm run lint)",
       "Bash(npm run typecheck:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git branch:*)",
+      "Bash(git tag:*)",
+      "Bash(git checkout:*)",
+      "Bash(npx:*)",
+      "mcp__github__search_repositories",
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(npm run build:win:*)",
+      "WebSearch"
     ]
   },
   "enableAllProjectMcpServers": true,

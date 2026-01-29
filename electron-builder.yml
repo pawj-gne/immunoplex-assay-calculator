@@ -1,5 +1,5 @@
 appId: com.electron.immunoplex-assay-calculator
-productName: immunoplex-assay-calculator
+productName: Immunoplex Assay Calculator
 directories:
   buildResources: build
 files:
@@ -11,8 +11,13 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
   - resources/**
+  - node_modules/better-sqlite3/**
+extraResources:
+  - from: drizzle/migrations
+    to: drizzle/migrations
 win:
   executableName: immunoplex-assay-calculator
+  signAndEditExecutable: false
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
@@ -37,7 +42,7 @@ linux:
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
-npmRebuild: false
+npmRebuild: true
 publish:
   provider: generic
   url: https://example.com/auto-updates
