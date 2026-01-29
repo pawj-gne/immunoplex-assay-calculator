@@ -45,8 +45,8 @@ export const analyteRepository = {
       id,
       name: data.name,
       beadRegion: data.beadRegion,
-      beadStockConc: data.beadStockConc,
-      antibodyStockConc: data.antibodyStockConc,
+      premixConc: data.premixConc,
+      singleConc: data.singleConc,
       platformId: data.platformId,
       speciesId: data.speciesId,
       createdAt: now,
@@ -79,5 +79,26 @@ export const analyteRepository = {
       created.push(analyteRepository.create(item))
     }
     return created
+  },
+
+  update(
+    id: string,
+    data: Partial<Pick<Analyte, 'name' | 'beadRegion' | 'premixConc' | 'singleConc'>>
+  ): Analyte {
+    const db = getDatabase()
+    const now = new Date().toISOString()
+    db.update(analytes)
+      .set({ ...data, updatedAt: now })
+      .where(eq(analytes.id, id))
+      .run()
+    const updated = analyteRepository.getById(id)
+    if (!updated) throw new Error(`Analyte not found: ${id}`)
+    return updated
+  },
+
+  delete(id: string): void {
+    const db = getDatabase()
+    db.delete(panelAnalytes).where(eq(panelAnalytes.analyteId, id)).run()
+    db.delete(analytes).where(eq(analytes.id, id)).run()
   }
 }

@@ -84,6 +84,31 @@ export const panelRepository = {
     return panel
   },
 
+  update(id: string, data: Partial<Pick<PremixPanel, 'name' | 'description'>>): PremixPanel {
+    const db = getDatabase()
+    const now = new Date().toISOString()
+    db.update(premixPanels)
+      .set({ ...data, updatedAt: now })
+      .where(eq(premixPanels.id, id))
+      .run()
+    const updated = panelRepository.getById(id)
+    if (!updated) throw new Error(`Panel not found: ${id}`)
+    return updated
+  },
+
+  delete(id: string): void {
+    const db = getDatabase()
+    db.delete(panelAnalytes).where(eq(panelAnalytes.panelId, id)).run()
+    db.delete(premixPanels).where(eq(premixPanels.id, id)).run()
+  },
+
+  removeAnalyteFromPanel(panelId: string, analyteId: string): void {
+    const db = getDatabase()
+    db.delete(panelAnalytes)
+      .where(and(eq(panelAnalytes.panelId, panelId), eq(panelAnalytes.analyteId, analyteId)))
+      .run()
+  },
+
   addAnalyteToPanel(panelId: string, analyteId: string): void {
     const db = getDatabase()
 
