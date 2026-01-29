@@ -53,7 +53,7 @@ export function AnalyteSelector({
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto p-1">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1 max-h-64 overflow-y-auto p-1">
         {analytes.map((analyte) => {
           const isSelected = selectedIds.includes(analyte.id)
           const isDisabled = !canAddMore && !isSelected
@@ -62,9 +62,9 @@ export function AnalyteSelector({
             <label
               key={analyte.id}
               className={`
-                flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all duration-150
-                ${isSelected ? 'border-[var(--color-primary)] bg-blue-50' : 'border-[var(--color-border)] bg-white'}
-                ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-[var(--color-primary)]'}
+                flex items-center gap-2 py-1 px-2 rounded cursor-pointer transition-colors duration-150
+                ${isSelected ? 'bg-blue-50' : ''}
+                ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}
               `}
             >
               <input
@@ -72,16 +72,14 @@ export function AnalyteSelector({
                 checked={isSelected}
                 disabled={isDisabled}
                 onChange={() => onToggle(analyte.id)}
-                className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                className="h-3.5 w-3.5 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
               />
-              <div className="flex-1 min-w-0">
-                <span className="text-sm font-medium text-[var(--color-foreground)] truncate block">
-                  {analyte.name}
-                </span>
-                <span className="text-xs text-[var(--color-muted)]">
-                  Region {analyte.beadRegion}
-                </span>
-              </div>
+              <span className="text-sm text-[var(--color-foreground)] truncate">
+                {analyte.name}
+              </span>
+              <span className="ml-auto flex items-center justify-center h-6 min-w-6 px-1.5 rounded-full bg-[#6b2040] text-[0.65rem] font-semibold text-white leading-none">
+                {analyte.beadRegion}
+              </span>
             </label>
           )
         })}
