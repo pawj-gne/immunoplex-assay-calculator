@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 import { getDatabase } from '../client'
 import { analytes, panelAnalytes } from '../schema'
 import type { Analyte, AnalyteCreate } from '../../../shared/types/analyte'
@@ -55,5 +55,29 @@ export const analyteRepository = {
 
     db.insert(analytes).values(analyte).run()
     return analyte
+  },
+
+  findByNamePlatformSpecies(name: string, platformId: string, speciesId: string): Analyte | null {
+    const db = getDatabase()
+    const result = db
+      .select()
+      .from(analytes)
+      .where(
+        and(
+          sql`lower(${analytes.name}) = lower(${name})`,
+          eq(analytes.platformId, platformId),
+          eq(analytes.speciesId, speciesId)
+        )
+      )
+      .get()
+    return result ?? null
+  },
+
+  createMany(data: AnalyteCreate[]): Analyte[] {
+    const created: Analyte[] = []
+    for (const item of data) {
+      created.push(analyteRepository.create(item))
+    }
+    return created
   }
 }

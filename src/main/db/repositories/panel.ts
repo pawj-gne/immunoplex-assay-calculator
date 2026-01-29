@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 import { getDatabase } from '../client'
 import { premixPanels, panelAnalytes, analytes } from '../schema'
 import type { PremixPanel, PanelWithAnalytes } from '../../../shared/types/panel'
@@ -47,5 +47,62 @@ export const panelRepository = {
       ...panel,
       analytes: panelAnalytesList
     }
+  },
+
+  findByNamePlatformSpecies(name: string, platformId: string, speciesId: string): PremixPanel | null {
+    const db = getDatabase()
+    const result = db
+      .select()
+      .from(premixPanels)
+      .where(
+        and(
+          sql`lower(${premixPanels.name}) = lower(${name})`,
+          eq(premixPanels.platformId, platformId),
+          eq(premixPanels.speciesId, speciesId)
+        )
+      )
+      .get()
+    return result ?? null
+  },
+
+  create(data: { name: string; description?: string | null; platformId: string; speciesId: string }): PremixPanel {
+    const db = getDatabase()
+    const now = new Date().toISOString()
+    const id = crypto.randomUUID()
+
+    const panel: PremixPanel = {
+      id,
+      name: data.name,
+      description: data.description ?? null,
+      platformId: data.platformId,
+      speciesId: data.speciesId,
+      createdAt: now,
+      updatedAt: now
+    }
+
+    db.insert(premixPanels).values(panel).run()
+    return panel
+  },
+
+  addAnalyteToPanel(panelId: string, analyteId: string): void {
+    const db = getDatabase()
+
+    // Check if link already exists
+    const existing = db
+      .select()
+      .from(panelAnalytes)
+      .where(and(eq(panelAnalytes.panelId, panelId), eq(panelAnalytes.analyteId, analyteId)))
+      .get()
+
+    if (existing) return
+
+    db.insert(panelAnalytes)
+      .values({
+        id: crypto.randomUUID(),
+        panelId,
+        analyteId,
+        createdAt: new Date().toISOString()
+      })
+      .run()
   }
 }
