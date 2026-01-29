@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Accurate reagent calculations with clear prep recipes - operators must be able to trust the math and follow the instructions without second-guessing.
-**Current focus:** Phase 3 - Plate Visualization & Recipe Generation
+**Current focus:** Phase 3.1 - Panel Data Import
 
 ## Current Position
 
-Phase: 3 of 4 (Plate Visualization & Recipe Generation)
-Plan: 2 of 3 in current phase
+Phase: 3.1 (Panel Data Import - inserted)
+Plan: 1 of 2 in current phase
 Status: In progress
-Last activity: 2026-01-27 - Completed 03-02-PLAN.md
+Last activity: 2026-01-29 - Completed 03.1-01-PLAN.md
 
-Progress: [########..] 73%
+Progress: [#########.] 82%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 15 min
-- Total execution time: ~1.9 hours
+- Total plans completed: 9
+- Average duration: 14 min
+- Total execution time: ~2.0 hours
 
 **By Phase:**
 
@@ -30,10 +30,11 @@ Progress: [########..] 73%
 | 01-foundation | 3/3 | 56min | 19min |
 | 02-calculator-core | 3/3 | 52min | 17min |
 | 03-plate-visualization | 2/3 | 13min | 7min |
+| 03.1-panel-data-import | 1/2 | 8min | 8min |
 
 **Recent Trend:**
-- Last 5 plans: 15min, 15min, 12min, 25min, 8min, 5min
-- Trend: improving
+- Last 5 plans: 12min, 25min, 8min, 5min, 8min
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -60,13 +61,16 @@ Recent decisions affecting current work:
 - **02-02:** Zod for runtime validation of calculator inputs
 - **02-02:** Single addition = master_mix_volume / stock_concentration
 - **02-03:** Zustand store for calculator with derived outputs
-- **02-03:** Default dead volume changed to 2000 µL (2 mL)
+- **02-03:** Default dead volume changed to 2000 uL (2 mL)
 - **03-01:** Standards occupy columns 1-3 (24 wells per plate)
 - **03-01:** Column 12 empty in duplicates mode (unpaired wells)
 - **03-01:** Sample numbering continues across plates
 - **03-02:** Checkbox state is local (useState) - not persisted for print
 - **03-02:** BeadRegionList uses placeholder until Platform type extended
 - **03-02:** PrepSheet accepts contentRef prop for react-to-print integration
+- **03.1-01:** Used xlsx library for CSV/Excel parsing
+- **03.1-01:** Validation returns errors before any DB writes (fail-fast)
+- **03.1-01:** Panel description taken from first row in each panel group
 
 ### Pending Todos
 
@@ -78,9 +82,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-27
-Stopped at: Completed 03-02-PLAN.md (prep sheet components)
-Resume file: .planning/phases/03-plate-visualization-recipe-generation/03-03-PLAN.md
+Last session: 2026-01-29
+Stopped at: Completed 03.1-01-PLAN.md (core import pipeline)
+Resume file: .planning/phases/03.1-panel-data-import/03.1-02-PLAN.md
 
 ## Releases
 
