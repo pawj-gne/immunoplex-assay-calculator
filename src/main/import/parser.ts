@@ -6,9 +6,8 @@ export interface RawImportRow {
   panel_name: string
   analyte_name: string
   bead_region: number
-  bead_stock_conc: number
-  antibody_stock_conc: number
-  panel_description?: string
+  premix_conc: number
+  single_conc: number
 }
 
 export function parseImportFile(filePath: string): RawImportRow[] {

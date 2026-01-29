@@ -37,8 +37,8 @@ export const analytes = sqliteTable('analytes', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   beadRegion: integer('bead_region').notNull(),
-  beadStockConc: real('bead_stock_conc').notNull(),
-  antibodyStockConc: real('antibody_stock_conc').notNull(),
+  premixConc: real('premix_conc').notNull(),
+  singleConc: real('single_conc').notNull(),
   platformId: text('platform_id')
     .notNull()
     .references(() => platforms.id),

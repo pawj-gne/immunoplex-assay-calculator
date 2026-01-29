@@ -80,7 +80,7 @@ export function importPanelData(filePath: string): ImportResult {
       if (!panel) {
         panel = panelRepository.create({
           name: firstRow.panel_name,
-          description: firstRow.panel_description ?? null,
+          description: null,
           platformId: firstRow.platformId,
           speciesId: firstRow.speciesId
         })
@@ -98,8 +98,8 @@ export function importPanelData(filePath: string): ImportResult {
           analyte = analyteRepository.create({
             name: row.analyte_name,
             beadRegion: row.bead_region,
-            beadStockConc: row.bead_stock_conc,
-            antibodyStockConc: row.antibody_stock_conc,
+            premixConc: row.premix_conc,
+            singleConc: row.single_conc,
             platformId: row.platformId,
             speciesId: row.speciesId
           })

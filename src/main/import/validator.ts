@@ -6,9 +6,8 @@ export const importRowSchema = z.object({
   panel_name: z.string().min(1, 'panel_name is required'),
   analyte_name: z.string().min(1, 'analyte_name is required'),
   bead_region: z.number().int('bead_region must be an integer').positive('bead_region must be positive'),
-  bead_stock_conc: z.number().positive('bead_stock_conc must be positive'),
-  antibody_stock_conc: z.number().positive('antibody_stock_conc must be positive'),
-  panel_description: z.string().optional()
+  premix_conc: z.number().positive('premix_conc must be positive'),
+  single_conc: z.number().positive('single_conc must be positive')
 })
 
 export type ValidatedRow = z.infer<typeof importRowSchema>

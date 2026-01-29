@@ -271,8 +271,8 @@ export function calculateItemizedVolumes(
     // Capture beads
     captureBeads.push({
       name: analyte.name,
-      stockConc: analyte.beadStockConc,
-      volumeUL: finalVolumeUL.dividedBy(analyte.beadStockConc),
+      stockConc: analyte.singleConc,
+      volumeUL: finalVolumeUL.dividedBy(analyte.singleConc),
       beadRegion: analyte.beadRegion,
       isPremix: false
     })
@@ -280,8 +280,8 @@ export function calculateItemizedVolumes(
     // Detection antibodies
     detectionAntibodies.push({
       name: analyte.name,
-      stockConc: analyte.antibodyStockConc,
-      volumeUL: finalVolumeUL.dividedBy(analyte.antibodyStockConc),
+      stockConc: analyte.singleConc,
+      volumeUL: finalVolumeUL.dividedBy(analyte.singleConc),
       beadRegion: analyte.beadRegion,
       isPremix: false
     })
