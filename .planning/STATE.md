@@ -30,7 +30,7 @@ Progress: [############] 100%
 | 01-foundation | 3/3 | 56min | 19min |
 | 02-calculator-core | 3/3 | 52min | 17min |
 | 03-plate-visualization | 2/3 | 13min | 7min |
-| 03.1-panel-data-import | 1/2 | 8min | 8min |
+| 03.1-panel-data-import | 2/2 | 16min | 8min |
 | 03.2-panel-data-management | 3/3 | 18min | 6min |
 
 **Recent Trend:**
