@@ -12,7 +12,7 @@ const PLATFORM_SEED_DATA = [
   },
   {
     id: 'biorad',
-    name: 'BioRad',
+    name: 'Bio-Rad',
     description: 'Bio-Rad Bio-Plex immunoassay platform',
     stockConcentration: 20, // 20x stock
     createdAt: new Date().toISOString(),
