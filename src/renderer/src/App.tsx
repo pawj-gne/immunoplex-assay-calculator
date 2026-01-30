@@ -139,7 +139,7 @@ function App(): JSX.Element {
       {/* Footer */}
       <footer className="border-t border-[var(--color-border)] px-6 py-3">
         <p className="text-sm text-[var(--color-muted)]">
-          Immunoplex Assay Calculator v0.2.0
+          Immunoplex Assay Calculator v0.4.0
         </p>
       </footer>
     </div>
