@@ -4,7 +4,7 @@ import { platforms, species, premixPanels, analytes, panelAnalytes } from './sch
 const PLATFORM_SEED_DATA = [
   {
     id: 'milliplex',
-    name: 'Milliplex',
+    name: 'Millipore',
     description: 'Millipore Milliplex MAP immunoassay platform',
     stockConcentration: 25, // 25x stock
     createdAt: new Date().toISOString(),
@@ -20,20 +20,12 @@ const PLATFORM_SEED_DATA = [
   },
   {
     id: 'procartaplex',
-    name: 'ProCartaPlex',
+    name: 'Thermofisher',
     description: 'Thermo Fisher ProCartaPlex immunoassay platform',
     stockConcentration: 25, // 25x stock
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
-  {
-    id: 'rndsystems',
-    name: 'R&D Systems',
-    description: 'R&D Systems Luminex immunoassay platform',
-    stockConcentration: 20, // 20x stock
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
 ]
 
 const SPECIES_SEED_DATA = [
@@ -103,28 +95,6 @@ const SPECIES_SEED_DATA = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
-  // R&D Systems species
-  {
-    id: 'rndsystems-mouse',
-    name: 'Mouse',
-    platformId: 'rndsystems',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'rndsystems-human',
-    name: 'Human',
-    platformId: 'rndsystems',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'rndsystems-rat',
-    name: 'Rat',
-    platformId: 'rndsystems',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
 ]
 
 // Sample analytes for Milliplex Mouse (10 analytes for testing)
