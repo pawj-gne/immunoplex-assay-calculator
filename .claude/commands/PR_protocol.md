@@ -1,105 +1,144 @@
 # Release Protocol
 
-Execute each phase and confirm with the user before proceeding to the next.
+Execute each phase sequentially. Phases 1-2 are fully automated — run without stopping. Phase 3 requires user input for version. Phase 4 is post-merge.
 
-## Phase 1: Commit Outstanding Changes
+## Phase 1: Pre-Flight (Automated, No Stops)
 
-1. **Clean up temp files first** (silent, no output needed):
+1. **Clean up temp files**:
    ```bash
-   # Remove Claude Code temp files
    find . -name "tmpclaude-*" -type f -delete 2>/dev/null
+   find . -name "temp_*" -type f -delete 2>/dev/null
    ```
 
-2. Run `git status` to check for uncommitted changes
-3. **If NO uncommitted changes**: skip to Phase 2 immediately (no user confirmation needed)
-4. **If uncommitted changes exist**:
-   - Review and DELETE any test files, debug scripts, temporary code, or commented-out blocks
-   - Execute `/commit` (it will detect the release-protocol context and skip branch confirmation prompts)
-   - Confirm changes are committed before proceeding to Phase 2
-
----
-
-## Phase 2: Automated Verification
-
-<!-- Update this section once the tech stack and build process are defined -->
-
-1. Run linting/type checks:
+2. **Check for uncommitted changes**:
    ```bash
-   # npm run lint
-   # npm run typecheck
+   git status --porcelain
    ```
+   - If changes exist: review, delete any test/debug artifacts, then execute `/commit`
+   - If clean: continue
 
-2. Run tests:
+3. **Ensure branch is pushed**:
    ```bash
-   # npm test
+   git push -u origin HEAD
    ```
 
-3. Build for production:
+## Phase 2: Build Verification (Automated, No Stops)
+
+Run all checks sequentially. If ANY step fails, fix and re-run from the failed step.
+
+1. **TypeScript type check**:
    ```bash
-   # npm run build
+   npx tsc --noEmit
    ```
 
-If verification fails:
+2. **Production build** (renderer + main):
+   ```bash
+   npm run build
+   ```
+
+3. **Windows exe build**:
+   ```bash
+   npm run build:win
+   ```
+
+4. **Verify exe was created**:
+   ```bash
+   ls -la dist/*.exe
+   ```
+   Report the exe filename and size.
+
+If any step fails:
 - Document the specific failure
-- Do NOT proceed to PR creation
-- Fix issues and re-run verification
+- Fix the issue
+- Re-run from the failed step
+- Do NOT proceed to Phase 3 until all pass
 
-**STOP: Confirm all checks passed before proceeding**
+## Phase 3: Version Bump + PR Creation
 
----
+**STOP: Present version suggestion before proceeding.**
 
-## Phase 3: PR Creation
+1. **Determine version bump**:
+   - Read current version from `package.json`
+   - Analyze commits since last release: `git log dev/v1-01..HEAD --oneline`
+   - Suggest semver:
+     - **MAJOR** (X.0.0): Breaking changes
+     - **MINOR** (0.X.0): New features
+     - **PATCH** (0.0.X): Bug fixes, minor improvements
+   - Present suggestion with rationale and wait for user approval
 
-1. Analyze the nature of changes and suggest next semver version:
-   - **MAJOR** (X.0.0): Breaking changes, incompatible API/config changes
-   - **MINOR** (0.X.0): New features, backwards-compatible additions
-   - **PATCH** (0.0.X): Bug fixes, minor improvements, refactoring
-2. Present version suggestion with rationale for user approval
-3. Update version in the appropriate location (package.json, pyproject.toml, etc.)
-4. Create a "Prepare for vX.X.X release" commit
-5. Push branch to remote:
+2. **Bump version** (after approval):
    ```bash
-   git push -u origin <current-branch-name>
+   npm version <major|minor|patch> --no-git-tag-version
    ```
-6. Create PR to main with:
-   - **Title format: `vX.X.X - <summary of major changes>`**
-     - Summarize the most significant changes
-     - Prioritize major features/fixes over minor ones
-   - Summary of all changes (reference commits)
-   - Version bump with rationale
-   - Test plan checklist
+
+3. **Update footer version** in `src/renderer/src/App.tsx`:
+   - Find the version string in the footer (e.g., `v0.2.0`) and update to new version
+
+4. **Rebuild with new version** (so exe has correct version):
+   ```bash
+   npm run build && npm run build:win
+   ```
+
+5. **Commit version bump**:
+   ```bash
+   git add package.json package-lock.json src/renderer/src/App.tsx
+   git commit -m "chore: bump version to vX.X.X"
+   git push
+   ```
+
+6. **Create PR** to `dev/v1-01` (main branch):
+   ```bash
+   gh pr create --base dev/v1-01 --title "vX.X.X - <summary>" --body "$(cat <<'EOF'
+   ## Summary
+   - <bullet points of major changes>
+
+   ## Version
+   vX.X.X — <rationale>
+
+   ## Verification
+   - [x] TypeScript type check passes
+   - [x] Production build succeeds
+   - [x] Windows exe built successfully (<size>)
+
+   ## Test Plan
+   - [ ] Install exe on production PC
+   - [ ] Verify new features work
+   - [ ] Verify existing features unbroken
+
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)
+   EOF
+   )"
+   ```
+
 7. Return the PR URL
-
-**STOP: Confirm version suggestion and PR details before creating**
-
----
 
 ## Phase 4: Post-Merge Cleanup
 
 After the PR is merged:
 
-### Step 1: Update local main
+### Step 1: Update local base branch
 ```bash
-git checkout main
-git pull origin main
+git checkout dev/v1-01
+git pull origin dev/v1-01
 ```
 
-### Step 2: Delete merged dev branch and start next sequence
+### Step 2: Delete merged dev branch and start next
 ```bash
-# Delete the old run branch (main has the history now)
-git branch -D dev/v1-01
+# Delete the old branch
+git branch -D dev/v1-03
 
-# Start the next run
-git checkout -b dev/v1-02  # Increment the run number!
+# Create next branch
+git checkout -b dev/v1-04  # Increment!
 ```
 
-### Step 3: Create release/tag (if applicable)
+### Step 3: Tag the release
 ```bash
 git tag -a vX.X.X -m "Release vX.X.X"
 git push origin vX.X.X
 ```
 
-### Step 4: Build and deploy (if applicable)
-<!-- Update with project-specific build/deploy steps -->
+### Step 4: Deploy to production PC
+- The exe is in `dist/` — copy to network folder or production PC
+- Install by running the setup exe (NSIS installer handles upgrades in-place)
 
-**STOP: Confirm cleanup and release are complete**
+**STOP: Confirm cleanup and deployment are complete**
