@@ -15,6 +15,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation & Platform Configuration** - Electron shell, data models, platform-specific parameters
 - [x] **Phase 2: Calculator Core** - Volume calculations, dilutions, real-time display
 - [ ] **Phase 3: Plate Visualization & Recipe Generation** - Well display, printable prep sheets, bead regions
+- [x] **Phase 3.1: Panel Data Import** - INSERTED - CSV/Excel import for panel data across all platforms
+- [x] **Phase 3.2: Panel Data Management** - INSERTED - Edit/delete analytes and panels in-app
 - [ ] **Phase 4: Run Documentation & Persistence** - Metadata capture, save/load run records
 
 ## Phase Details
@@ -69,6 +71,40 @@ Plans:
 - [ ] 03-02-PLAN.md - Recipe components (PrepSheet, ReagentChecklist, BeadRegionList, PrepInstructions)
 - [ ] 03-03-PLAN.md - Print integration (IPC handler, PrintButton) + App integration + verification
 
+### Phase 3.1: Panel Data Import (INSERTED)
+**Goal**: Operators can import panel data from CSV/Excel files for all platforms, populating analytes, bead regions, and concentrations
+**Depends on**: Phase 2 (data models exist)
+**Requirements**: Supports CALC-07, RECP-03
+**Success Criteria** (what must be TRUE):
+  1. Operator can import a CSV/Excel file containing panel data (analyte names, bead regions, concentrations)
+  2. Imported data populates the existing analytes, panels, and panel_analytes tables
+  3. All 4 platforms (Milliplex, BioRad, ProCartaPlex, R&D Systems) can have panel data imported
+  4. Import validates data format and reports errors clearly
+  5. App can be rebuilt and deployed to production PC with import feature
+**Plans**: 2 plans
+
+Plans:
+- [x] 03.1-01-PLAN.md -- Import pipeline: xlsx parser, Zod validator, transactional importer
+- [x] 03.1-02-PLAN.md -- IPC handler, preload bridge, Import UI button, build verification
+
+### Phase 3.2: Panel Data Management (INSERTED)
+**Goal**: Operators can view, edit, and delete analytes and panels directly in the app UI
+**Depends on**: Phase 3.1 (panel data exists in DB)
+**Success Criteria** (what must be TRUE):
+  1. Operator can view all analytes for a selected platform/species
+  2. Operator can edit analyte properties (name, bead region, premix conc, single conc)
+  3. Operator can delete analytes
+  4. Operator can view panels and their analyte membership
+  5. Operator can edit panel names and add/remove analytes from panels
+  6. Operator can delete panels
+  7. Changes persist in the database immediately
+**Plans**: 3 plans
+
+Plans:
+- [x] 03.2-01-PLAN.md -- Backend CRUD: repository methods, IPC channels/handlers, preload bridge
+- [x] 03.2-02-PLAN.md -- Analyte management UI: table view with edit modal and delete
+- [x] 03.2-03-PLAN.md -- Panel management UI: list with membership editing, app navigation integration
+
 ### Phase 4: Run Documentation, Persistence & Deployment
 **Goal**: Operators can save/retrieve run records and install the app as a Windows .exe
 **Depends on**: Phase 3
@@ -90,13 +126,15 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Platform Configuration | 3/3 | Complete | 2026-01-23 |
 | 2. Calculator Core | 3/3 | Complete | 2026-01-26 |
 | 3. Plate Visualization & Recipe Generation | 0/3 | Ready | - |
+| 3.1. Panel Data Import | 2/2 | Complete | 2026-01-29 |
+| 3.2. Panel Data Management | 3/3 | Complete | 2026-01-29 |
 | 4. Run Documentation & Persistence | 0/3 | Not started | - |
 
 ---
