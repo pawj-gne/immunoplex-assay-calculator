@@ -1,27 +1,48 @@
 import { usePlateLayout } from '../hooks/usePlateLayout'
 import { usePlateStore } from '../../../stores/plateStore'
+import { useWellSelection } from '../hooks/useWellSelection'
 import { PlateGrid } from './PlateGrid'
 import { PlateToolbar } from './PlateToolbar'
+import { STANDARD_COLS } from '../../../../../shared/types/plate'
 
 /**
- * Panel displaying plate layout visualization with multi-plate support.
+ * Panel displaying interactive plate layout with multi-plate support.
  * Uses PlateToolbar for plate navigation and management.
+ * Wires useWellSelection hook to plateStore for interactive well click/drag.
  * Renders empty state when calculator has no outputs.
  */
 export function PlatePanel() {
   const { layouts, hasOutputs } = usePlateLayout()
   const {
     activePlate,
+    replicateMode,
     setActivePlate,
     addPlate,
     removePlate,
     clearPlate,
     getPlateCount,
-    getSamplesRemaining
+    getSamplesRemaining,
+    getPlateWells,
+    setWellRange
   } = usePlateStore()
 
   const plateCount = getPlateCount()
   const samplesRemaining = getSamplesRemaining()
+  const filledWells = getPlateWells(activePlate)
+
+  const { hoveredWells, handleMouseDown, handleMouseEnter, handleMouseUp } =
+    useWellSelection({
+      standardCols: STANDARD_COLS,
+      replicateMode,
+      filledWells,
+      onSelectionChange: (wellIds, action) => {
+        if (action === 'add') {
+          setWellRange(activePlate, wellIds, true)
+        } else {
+          setWellRange(activePlate, wellIds, false)
+        }
+      }
+    })
 
   if (!hasOutputs || layouts.length === 0) {
     return (
@@ -61,7 +82,15 @@ export function PlatePanel() {
         onClearPlate={handleClearPlate}
       />
 
-      <PlateGrid wells={layout.wells} />
+      <PlateGrid
+        wells={layout.wells}
+        selectedWells={filledWells}
+        hoveredWells={hoveredWells}
+        standardCols={STANDARD_COLS}
+        onCellMouseDown={handleMouseDown}
+        onCellMouseEnter={handleMouseEnter}
+        onCellMouseUp={handleMouseUp}
+      />
     </div>
   )
 }
