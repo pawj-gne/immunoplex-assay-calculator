@@ -136,15 +136,19 @@ Plans:
 *Plate Layout Corrections:*
   17. Standards occupy columns 1-3 (not 10-12)
   18. Singles: columns 4-12 = 72 wells per plate
-  19. Duplicates: horizontal pairs (4-5, 6-7, 8-9, 10-11) + vertical pairs (col 12 A-D→E-H) = 36 samples
+  19. Duplicates: horizontal pairs (4-5, 6-7, 8-9, 10-11) + vertical pairs (col 12 A-D->E-H) = 36 samples
 
 *Page Transitions:*
   20. Wizard pages transition smoothly with slide animations
 
-**Plans**: TBD (likely 3-4 plans)
+**Plans**: 5 plans
 
 Plans:
-- [ ] 03.3-01-PLAN.md -- TBD
+- [ ] 03.3-01-PLAN.md -- Foundation: fix plate constants (standards cols 1-3), plateStore, getDuplicatePair utility
+- [ ] 03.3-02-PLAN.md -- Analyte selection page redesign: card grid, panel grouping, sidebar layout
+- [ ] 03.3-03-PLAN.md -- Interactive plate grid: useWellSelection hook, WellCell/PlateGrid interactive mode
+- [ ] 03.3-04-PLAN.md -- Sample count slider+field, PlateToolbar, calculator form changes
+- [ ] 03.3-05-PLAN.md -- App integration: page transitions, interactive plate wiring, verification
 
 ### Phase 4: Run Documentation, Persistence & Deployment
 **Goal**: Operators can save/retrieve run records and install the app as a Windows .exe
@@ -160,9 +164,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Run persistence layer (schema, repository, IPC handlers, preload bridge)
-- [ ] 04-02-PLAN.md — Run metadata form UI with Zustand store and run list
-- [ ] 04-03-PLAN.md — Windows .exe packaging with electron-builder
+- [ ] 04-01-PLAN.md -- Run persistence layer (schema, repository, IPC handlers, preload bridge)
+- [ ] 04-02-PLAN.md -- Run metadata form UI with Zustand store and run list
+- [ ] 04-03-PLAN.md -- Windows .exe packaging with electron-builder
 
 ## Progress
 
@@ -176,9 +180,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4
 | 3. Plate Visualization & Recipe Generation | 2/3 | In Progress | - |
 | 3.1. Panel Data Import | 2/2 | Complete | 2026-01-29 |
 | 3.2. Panel Data Management | 3/3 | Complete | 2026-01-29 |
-| 3.3. Analyte Selection Redesign | 0/? | Not started | - |
+| 3.3. Analyte Selection Redesign | 0/5 | Not started | - |
 | 4. Run Documentation & Persistence | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-01-29*
+*Last updated: 2026-02-04*
