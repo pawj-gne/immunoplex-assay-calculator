@@ -51,8 +51,9 @@ export const WellCell = memo(function WellCell({
       return 'bg-blue-50 border-blue-300 ring-2 ring-blue-200'
     }
 
-    // Unknown well (from read-only usePlateLayout flow, no interactive props)
-    if (well.type === 'unknown') {
+    // Unknown well (from read-only usePlateLayout flow only)
+    // In interactive mode, unselected wells should be gray — fill state comes from isSelected
+    if (well.type === 'unknown' && isEditable === undefined) {
       return 'bg-green-100 border-green-400 text-green-700'
     }
 

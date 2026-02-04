@@ -95,15 +95,19 @@ export function useWellSelection({
    * with the hovered wells and resetting drag state.
    */
   const finalizeDrag = useCallback(() => {
-    // Read current hoveredWells via setState callback to get latest value
+    // Capture ref values synchronously BEFORE resetting them,
+    // because the setState callback runs asynchronously during React's render phase
+    const wasDragging = isDragging.current
+    const action = dragAction.current
+    isDragging.current = false
+    dragStart.current = null
+
     setHoveredWells((currentHovered) => {
-      if (isDragging.current && currentHovered.size > 0) {
-        onSelectionChange(currentHovered, dragAction.current)
+      if (wasDragging && currentHovered.size > 0) {
+        onSelectionChange(currentHovered, action)
       }
       return new Set()
     })
-    isDragging.current = false
-    dragStart.current = null
   }, [onSelectionChange])
 
   const handleMouseDown = useCallback(

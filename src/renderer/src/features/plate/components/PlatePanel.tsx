@@ -91,6 +91,10 @@ export function PlatePanel() {
         onCellMouseEnter={handleMouseEnter}
         onCellMouseUp={handleMouseUp}
       />
+
+      <p className="text-xs text-[var(--color-muted)]">
+        Click a well to toggle it. Click and drag to select a range. Ctrl+click to toggle individual wells. Shift+click to extend from last selection.
+      </p>
     </div>
   )
 }
