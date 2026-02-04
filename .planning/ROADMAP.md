@@ -17,6 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Plate Visualization & Recipe Generation** - Well display, printable prep sheets, bead regions
 - [x] **Phase 3.1: Panel Data Import** - INSERTED - CSV/Excel import for panel data across all platforms
 - [x] **Phase 3.2: Panel Data Management** - INSERTED - Edit/delete analytes and panels in-app
+- [ ] **Phase 3.3: Analyte Selection Redesign** - INSERTED - Visual grid layout with panel grouping, sidebar, transitions
 - [ ] **Phase 4: Run Documentation & Persistence** - Metadata capture, save/load run records
 
 ## Phase Details
@@ -105,6 +106,23 @@ Plans:
 - [x] 03.2-02-PLAN.md -- Analyte management UI: table view with edit modal and delete
 - [x] 03.2-03-PLAN.md -- Panel management UI: list with membership editing, app navigation integration
 
+### Phase 3.3: Analyte Selection Redesign (INSERTED)
+**Goal**: Operators can select premix panels and individual analytes from a visual grid with real-time sidebar feedback
+**Depends on**: Phase 3.2 (panel data management exists)
+**Requirements**: UX enhancement (no new functional requirements)
+**Success Criteria** (what must be TRUE):
+  1. Operator can select one premix panel from a top section showing available panels
+  2. Operator can see analyte cards (name, bead region, concentration) organized by panel membership in a grid
+  3. Selecting a premix grays out its member analytes in the grid (prevents double-selection)
+  4. Operator can add up to 5 individual singles on top of a premix selection
+  5. Right sidebar shows selected panel with nested member analytes + individual singles
+  6. Unselecting a premix removes its analytes from sidebar but keeps individual selections
+  7. Wizard pages transition smoothly with slide animations
+**Plans**: TBD
+
+Plans:
+- [ ] 03.3-01-PLAN.md -- TBD
+
 ### Phase 4: Run Documentation, Persistence & Deployment
 **Goal**: Operators can save/retrieve run records and install the app as a Windows .exe
 **Depends on**: Phase 3
@@ -126,15 +144,16 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Platform Configuration | 3/3 | Complete | 2026-01-23 |
 | 2. Calculator Core | 3/3 | Complete | 2026-01-26 |
-| 3. Plate Visualization & Recipe Generation | 0/3 | Ready | - |
+| 3. Plate Visualization & Recipe Generation | 2/3 | In Progress | - |
 | 3.1. Panel Data Import | 2/2 | Complete | 2026-01-29 |
 | 3.2. Panel Data Management | 3/3 | Complete | 2026-01-29 |
+| 3.3. Analyte Selection Redesign | 0/? | Not started | - |
 | 4. Run Documentation & Persistence | 0/3 | Not started | - |
 
 ---
