@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Phase: 3.3 (Analyte Selection Redesign)
-Plan: 2 of 5 in current phase
+Plan: 3 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-04 - Completed 03.3-02-PLAN.md
+Last activity: 2026-02-04 - Completed 03.3-03-PLAN.md
 
-Progress: [####        ] 40%
+Progress: [######      ] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 11 min
-- Total execution time: ~2.5 hours
+- Total plans completed: 15
+- Average duration: 10 min
+- Total execution time: ~2.6 hours
 
 **By Phase:**
 
@@ -32,10 +32,10 @@ Progress: [####        ] 40%
 | 03-plate-visualization | 2/3 | 13min | 7min |
 | 03.1-panel-data-import | 2/2 | 16min | 8min |
 | 03.2-panel-data-management | 3/3 | 18min | 6min |
-| 03.3-analyte-selection-redesign | 2/5 | 12min | 6min |
+| 03.3-analyte-selection-redesign | 3/5 | 16min | 5min |
 
 **Recent Trend:**
-- Last 5 plans: 8min, 6min, 6min, 4min, 8min
+- Last 5 plans: 6min, 6min, 4min, 8min, 4min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -81,6 +81,9 @@ Recent decisions affecting current work:
 - **03.3-02:** panelAnalyteMap stored as Record<string, string[]> in store, resolved via computed method
 - **03.3-02:** Unassigned analytes = availableAnalytes minus all panel member IDs
 - **03.3-02:** AnalyteSelector.tsx deleted, replaced by AnalyteCard + AnalyteGrid
+- **03.3-03:** useRef for isDragging/dragStart/dragAction, useState only for hoveredWells
+- **03.3-03:** useWellSelection delegates to onSelectionChange callback (does not own state)
+- **03.3-03:** Interactive mode on PlateGrid detected by presence of selectedWells/hoveredWells props
 
 ### Pending Todos
 
@@ -93,7 +96,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 03.3-02-PLAN.md (Analyte selection visual redesign)
+Stopped at: Completed 03.3-03-PLAN.md (Interactive plate grid selection)
 Resume file: None
 
 ## Releases
