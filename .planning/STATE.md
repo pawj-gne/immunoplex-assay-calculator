@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Phase: 3.3 (Analyte Selection Redesign)
-Plan: 0 of ? in current phase
-Status: Phase inserted, needs planning
-Last activity: 2026-02-03 - Inserted Phase 3.3
+Plan: 1 of 5 in current phase
+Status: In progress
+Last activity: 2026-02-04 - Completed 03.3-01-PLAN.md
 
-Progress: [            ] 0%
+Progress: [##          ] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
-- Average duration: 12 min
-- Total execution time: ~2.3 hours
+- Total plans completed: 13
+- Average duration: 11 min
+- Total execution time: ~2.4 hours
 
 **By Phase:**
 
@@ -32,10 +32,11 @@ Progress: [            ] 0%
 | 03-plate-visualization | 2/3 | 13min | 7min |
 | 03.1-panel-data-import | 2/2 | 16min | 8min |
 | 03.2-panel-data-management | 3/3 | 18min | 6min |
+| 03.3-analyte-selection-redesign | 1/5 | 4min | 4min |
 
 **Recent Trend:**
-- Last 5 plans: 8min, 5min, 8min, 6min, 6min
-- Trend: stable
+- Last 5 plans: 5min, 8min, 6min, 6min, 4min
+- Trend: stable/improving
 
 *Updated after each plan completion*
 
@@ -64,7 +65,7 @@ Recent decisions affecting current work:
 - **02-03:** Zustand store for calculator with derived outputs
 - **02-03:** Default dead volume changed to 2000 uL (2 mL)
 - **03-01:** Standards occupy columns 1-3 (24 wells per plate)
-- **03-01:** Column 12 empty in duplicates mode (unpaired wells)
+- **03-01:** Column 12 uses vertical pairs in duplicates mode (A/E, B/F, C/G, D/H)
 - **03-01:** Sample numbering continues across plates
 - **03-02:** Checkbox state is local (useState) - not persisted for print
 - **03-02:** BeadRegionList uses placeholder until Platform type extended
@@ -73,6 +74,10 @@ Recent decisions affecting current work:
 - **03.1-01:** Validation returns errors before any DB writes (fail-fast)
 - **03.1-01:** Panel description taken from first row in each panel group
 - **03.2-03:** Segmented button toggle in header for Calculator vs Manage Data mode
+- **03.3-01:** STANDARD_COLS corrected from [10,11,12] to [1,2,3]
+- **03.3-01:** Duplicate pairs: horizontal (4-5, 6-7, 8-9, 10-11) + vertical (col 12) = 36 samples
+- **03.3-01:** plateStore uses Set<string> for O(1) well toggle operations
+- **03.3-01:** getDuplicatePair utility with 0-indexed row/col input
 
 ### Pending Todos
 
@@ -84,8 +89,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-29
-Stopped at: Completed 03.2-03-PLAN.md (Panel management UI)
+Last session: 2026-02-04
+Stopped at: Completed 03.3-01-PLAN.md (Plate layout bug fixes + plateStore foundation)
 Resume file: None
 
 ## Releases
