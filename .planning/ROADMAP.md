@@ -106,19 +106,42 @@ Plans:
 - [x] 03.2-02-PLAN.md -- Analyte management UI: table view with edit modal and delete
 - [x] 03.2-03-PLAN.md -- Panel management UI: list with membership editing, app navigation integration
 
-### Phase 3.3: Analyte Selection Redesign (INSERTED)
-**Goal**: Operators can select premix panels and individual analytes from a visual grid with real-time sidebar feedback
+### Phase 3.3: Selection UX Redesign (INSERTED)
+**Goal**: Operators can select analytes visually from a grid and assign samples to plates interactively
 **Depends on**: Phase 3.2 (panel data management exists)
-**Requirements**: UX enhancement (no new functional requirements)
+**Requirements**: UX enhancement (improves CALC-01 sample count entry, PLAT-01 plate visualization)
+
 **Success Criteria** (what must be TRUE):
-  1. Operator can select one premix panel from a top section showing available panels
-  2. Operator can see analyte cards (name, bead region, concentration) organized by panel membership in a grid
-  3. Selecting a premix grays out its member analytes in the grid (prevents double-selection)
-  4. Operator can add up to 5 individual singles on top of a premix selection
-  5. Right sidebar shows selected panel with nested member analytes + individual singles
-  6. Unselecting a premix removes its analytes from sidebar but keeps individual selections
-  7. Wizard pages transition smoothly with slide animations
-**Plans**: TBD
+
+*Analyte Selection Page:*
+  1. Operator can select one premix panel from top section
+  2. Operator sees analyte cards (name, bead region, concentration) organized by panel membership
+  3. "All Analytes" section shows analytes not in any panel
+  4. Selecting a premix grays out its member analytes in the grid
+  5. Operator can add up to 5 singles on top of premix selection
+  6. Right sidebar shows selected panel (with nested members) + individual singles
+  7. Unselecting premix removes its analytes but keeps individual selections
+
+*Sample Count & Plate Assignment:*
+  8. Operator enters sample count via slider + editable number field (not ticker)
+  9. Number field starts blank, click-to-type without friction
+  10. Plate visualizer appears in sample selection section (not bottom of page)
+  11. UI auto-calculates minimum plates needed and pre-fills sequentially
+  12. Operator can page through multiple plates
+  13. "Samples Remaining" indicator shows unassigned sample count
+  14. Operator can click well to enter edit mode, then drag to select wells
+  15. Excel-style selection: click-drag ranges, Ctrl+click toggle, Shift+click extend
+  16. In duplicates mode, selecting a sample auto-fills both wells of the pair
+
+*Plate Layout Corrections:*
+  17. Standards occupy columns 1-3 (not 10-12)
+  18. Singles: columns 4-12 = 72 wells per plate
+  19. Duplicates: horizontal pairs (4-5, 6-7, 8-9, 10-11) + vertical pairs (col 12 A-D→E-H) = 36 samples
+
+*Page Transitions:*
+  20. Wizard pages transition smoothly with slide animations
+
+**Plans**: TBD (likely 3-4 plans)
 
 Plans:
 - [ ] 03.3-01-PLAN.md -- TBD
