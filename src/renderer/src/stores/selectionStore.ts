@@ -24,6 +24,9 @@ interface SelectionState {
   analytesLoading: boolean
   analytesError: string | null
 
+  // Panel-analyte mapping (panelId -> analyteId[])
+  panelAnalyteMap: Record<string, string[]>
+
   // Actions
   loadSpecies: (platformId: string) => Promise<void>
   selectSpecies: (speciesId: string) => void
@@ -47,6 +50,8 @@ interface SelectionState {
   canAddMoreSingles: () => boolean
   getRemainingSinglesCount: () => number
   getAvailableSingles: () => Analyte[]
+  getPanelAnalyteMap: () => Record<string, Analyte[]>
+  getUnassignedAnalytes: () => Analyte[]
 }
 
 const initialState = {
@@ -64,7 +69,9 @@ const initialState = {
   availableAnalytes: [] as Analyte[],
   selectedSingleIds: [] as string[],
   analytesLoading: false,
-  analytesError: null as string | null
+  analytesError: null as string | null,
+
+  panelAnalyteMap: {} as Record<string, string[]>
 }
 
 export const useSelectionStore = create<SelectionState>((set, get) => ({
@@ -93,7 +100,8 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
         selectedPanel: null,
         panels: [],
         availableAnalytes: [],
-        selectedSingleIds: []
+        selectedSingleIds: [],
+        panelAnalyteMap: {}
       })
     }
   },
@@ -105,7 +113,8 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
       selectedPanel: null,
       panels: [],
       availableAnalytes: [],
-      selectedSingleIds: []
+      selectedSingleIds: [],
+      panelAnalyteMap: {}
     })
   },
 
@@ -118,9 +127,21 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
         window.electronAPI.analyte.getByPlatformAndSpecies(platformId, speciesId)
       ])
 
+      // Build panel-analyte mapping by fetching each panel's analytes
+      const panelDetails = await Promise.all(
+        panels.map((p) => window.electronAPI.panel.getWithAnalytes(p.id))
+      )
+      const panelAnalyteMap: Record<string, string[]> = {}
+      for (const detail of panelDetails) {
+        if (detail) {
+          panelAnalyteMap[detail.id] = detail.analytes.map((a) => a.id)
+        }
+      }
+
       set({
         panels,
         availableAnalytes: analytes,
+        panelAnalyteMap,
         panelLoading: false,
         analytesLoading: false
       })
@@ -260,5 +281,22 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
 
     // If no panel, all analytes are available as singles
     return availableAnalytes
+  },
+
+  getPanelAnalyteMap: () => {
+    const { panelAnalyteMap, availableAnalytes } = get()
+    const result: Record<string, Analyte[]> = {}
+    for (const [panelId, analyteIds] of Object.entries(panelAnalyteMap)) {
+      result[panelId] = analyteIds
+        .map((id) => availableAnalytes.find((a) => a.id === id))
+        .filter((a): a is Analyte => a !== undefined)
+    }
+    return result
+  },
+
+  getUnassignedAnalytes: () => {
+    const { panelAnalyteMap, availableAnalytes } = get()
+    const allPanelAnalyteIds = new Set(Object.values(panelAnalyteMap).flat())
+    return availableAnalytes.filter((a) => !allPanelAnalyteIds.has(a.id))
   }
 }))
