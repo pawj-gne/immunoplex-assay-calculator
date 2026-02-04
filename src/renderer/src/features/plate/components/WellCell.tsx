@@ -6,6 +6,7 @@ interface WellCellProps {
   isSelected?: boolean // well is filled/assigned (green highlight)
   isHovered?: boolean // well is in drag preview (blue outline)
   isEditable?: boolean // false for standard wells
+  dynamicIndex?: number // sample index computed from plateStore selections
   onMouseDown?: (event: React.MouseEvent) => void
   onMouseEnter?: () => void
 }
@@ -29,6 +30,7 @@ export const WellCell = memo(function WellCell({
   isSelected,
   isHovered,
   isEditable,
+  dynamicIndex,
   onMouseDown,
   onMouseEnter
 }: WellCellProps) {
@@ -71,8 +73,12 @@ export const WellCell = memo(function WellCell({
       case 'standard':
         return 'S'
       case 'unknown':
-        // In interactive mode, only show sample number for selected wells
-        if (isEditable !== undefined && !isSelected) return ''
+        // In interactive mode, use dynamic index from plateStore selections
+        if (isEditable !== undefined) {
+          if (!isSelected) return ''
+          return dynamicIndex?.toString() ?? ''
+        }
+        // Non-interactive: use static layout index
         return well.sampleIndex?.toString() ?? ''
       case 'empty':
         return ''

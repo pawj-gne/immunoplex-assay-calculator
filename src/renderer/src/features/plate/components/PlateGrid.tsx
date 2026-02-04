@@ -10,6 +10,8 @@ interface PlateGridProps {
   selectedWells?: Set<string>
   hoveredWells?: Set<string>
   standardCols?: readonly number[] // 1-indexed cols that are standards
+  sampleIndexMap?: Map<string, number> // "plateNum:wellId" -> sample index
+  activePlate?: number // current plate number for index lookup
   onCellMouseDown?: (row: number, col: number, event: React.MouseEvent) => void
   onCellMouseEnter?: (row: number, col: number) => void
   onCellMouseUp?: () => void
@@ -35,6 +37,8 @@ export function PlateGrid({
   selectedWells,
   hoveredWells,
   standardCols,
+  sampleIndexMap,
+  activePlate,
   onCellMouseDown,
   onCellMouseEnter,
   onCellMouseUp
@@ -90,6 +94,9 @@ export function PlateGrid({
                     ? !standardCols.includes(well.col)
                     : false
 
+                  // Look up dynamic sample index from plateStore selections
+                  const dynamicIndex = sampleIndexMap?.get(`${activePlate}:${well.id}`)
+
                   return (
                     <WellCell
                       key={well.id}
@@ -97,6 +104,7 @@ export function PlateGrid({
                       isSelected={selectedWells?.has(well.id) ?? false}
                       isHovered={hoveredWells?.has(well.id) ?? false}
                       isEditable={isEditable}
+                      dynamicIndex={dynamicIndex}
                       onMouseDown={(e) => onCellMouseDown?.(rowIndex, colIndex, e)}
                       onMouseEnter={() => onCellMouseEnter?.(rowIndex, colIndex)}
                     />
