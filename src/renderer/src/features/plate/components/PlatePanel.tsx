@@ -1,23 +1,27 @@
-import { useState, useEffect } from 'react'
 import { usePlateLayout } from '../hooks/usePlateLayout'
+import { usePlateStore } from '../../../stores/plateStore'
 import { PlateGrid } from './PlateGrid'
+import { PlateToolbar } from './PlateToolbar'
 
 /**
  * Panel displaying plate layout visualization with multi-plate support.
- * Shows an interactive plate selector when multiple plates are needed.
+ * Uses PlateToolbar for plate navigation and management.
  * Renders empty state when calculator has no outputs.
  */
 export function PlatePanel() {
   const { layouts, hasOutputs } = usePlateLayout()
-  const [currentPlate, setCurrentPlate] = useState(1)
+  const {
+    activePlate,
+    setActivePlate,
+    addPlate,
+    removePlate,
+    clearPlate,
+    getPlateCount,
+    getSamplesRemaining
+  } = usePlateStore()
 
-  // Reset to plate 1 if current plate no longer exists (sample count decreased)
-  // Must be before any early returns to satisfy rules of hooks
-  useEffect(() => {
-    if (currentPlate > layouts.length && layouts.length > 0) {
-      setCurrentPlate(1)
-    }
-  }, [currentPlate, layouts.length])
+  const plateCount = getPlateCount()
+  const samplesRemaining = getSamplesRemaining()
 
   if (!hasOutputs || layouts.length === 0) {
     return (
@@ -27,41 +31,37 @@ export function PlatePanel() {
     )
   }
 
-  const currentLayout = layouts[currentPlate - 1]
+  const currentLayout = layouts[activePlate - 1]
 
-  // Safety check
-  if (!currentLayout) {
+  // Safety check: if activePlate is out of range, show first plate
+  const layout = currentLayout ?? layouts[0]
+  if (!layout) {
     return null
+  }
+
+  const handleRemovePlate = () => {
+    removePlate(activePlate)
+  }
+
+  const handleClearPlate = () => {
+    clearPlate(activePlate)
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-[var(--color-foreground)]">
-          Plate Layout
-        </h3>
-        {layouts.length > 1 && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-[var(--color-muted)]">Plate:</span>
-            <select
-              value={currentPlate}
-              onChange={(e) => setCurrentPlate(Number(e.target.value))}
-              className="border border-[var(--color-border)] rounded px-2 py-1 text-sm"
-            >
-              {layouts.map((_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-            <span className="text-sm text-[var(--color-muted)]">
-              of {layouts.length}
-            </span>
-          </div>
-        )}
-      </div>
+      <h3 className="text-lg font-medium text-[var(--color-foreground)]">Plate Layout</h3>
 
-      <PlateGrid wells={currentLayout.wells} />
+      <PlateToolbar
+        activePlate={activePlate}
+        plateCount={plateCount}
+        samplesRemaining={samplesRemaining}
+        onSetActivePlate={setActivePlate}
+        onAddPlate={addPlate}
+        onRemovePlate={handleRemovePlate}
+        onClearPlate={handleClearPlate}
+      />
+
+      <PlateGrid wells={layout.wells} />
     </div>
   )
 }

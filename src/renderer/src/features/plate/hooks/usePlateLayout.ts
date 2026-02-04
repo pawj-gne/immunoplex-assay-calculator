@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useCalculatorStore } from '../../../stores/calculatorStore'
+import { usePlateStore } from '../../../stores/plateStore'
 import type { WellData, PlateLayout } from '../../../../../shared/types/plate'
 import { ROWS, COLS, STANDARD_COLS } from '../../../../../shared/types/plate'
 import {
@@ -24,7 +25,8 @@ interface UsePlateLayoutResult {
  * - Sample numbering continues across plates
  */
 export function usePlateLayout(): UsePlateLayoutResult {
-  const { sampleCount, replicateMode, plateCount, getOutputs } = useCalculatorStore()
+  const { sampleCount, replicateMode, getOutputs } = useCalculatorStore()
+  const plateCount = usePlateStore().getPlateCount()
   const outputs = getOutputs()
 
   const layouts = useMemo(() => {
