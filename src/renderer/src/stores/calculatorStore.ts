@@ -61,31 +61,29 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
   ...initialState,
 
   setSampleCount: (count: number) => {
+    set({ sampleCount: count })
+
+    // Propagate to plateStore FIRST so it recalculates plate count
+    usePlateStore.getState().setSampleCount(count)
+
+    // Validate with updated plate count
     const { replicateMode } = get()
     const plateCount = usePlateStore.getState().getPlateCount()
     const validation = validateSampleCount(count, replicateMode, plateCount)
-
-    set({
-      sampleCount: count,
-      validationError: validation.valid ? null : validation.message ?? null
-    })
-
-    // Propagate to plateStore for auto-fill
-    usePlateStore.getState().setSampleCount(count)
+    set({ validationError: validation.valid ? null : validation.message ?? null })
   },
 
   setReplicateMode: (mode: ReplicateMode) => {
+    set({ replicateMode: mode })
+
+    // Propagate to plateStore FIRST so it recalculates plate count
+    usePlateStore.getState().setReplicateMode(mode)
+
+    // Validate with updated plate count
     const { sampleCount } = get()
     const plateCount = usePlateStore.getState().getPlateCount()
     const validation = validateSampleCount(sampleCount, mode, plateCount)
-
-    set({
-      replicateMode: mode,
-      validationError: validation.valid ? null : validation.message ?? null
-    })
-
-    // Propagate to plateStore for auto-fill
-    usePlateStore.getState().setReplicateMode(mode)
+    set({ validationError: validation.valid ? null : validation.message ?? null })
   },
 
   setRequestType: (type: RequestType) => {
