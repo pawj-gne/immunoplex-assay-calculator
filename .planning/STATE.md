@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Phase: 3.3 (Analyte Selection Redesign)
-Plan: 3 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-04 - Completed 03.3-03-PLAN.md
+Last activity: 2026-02-04 - Completed 03.3-04-PLAN.md
 
-Progress: [######      ] 60%
+Progress: [########    ] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
+- Total plans completed: 16
 - Average duration: 10 min
-- Total execution time: ~2.6 hours
+- Total execution time: ~2.7 hours
 
 **By Phase:**
 
@@ -32,10 +32,10 @@ Progress: [######      ] 60%
 | 03-plate-visualization | 2/3 | 13min | 7min |
 | 03.1-panel-data-import | 2/2 | 16min | 8min |
 | 03.2-panel-data-management | 3/3 | 18min | 6min |
-| 03.3-analyte-selection-redesign | 3/5 | 16min | 5min |
+| 03.3-analyte-selection-redesign | 4/5 | 22min | 6min |
 
 **Recent Trend:**
-- Last 5 plans: 6min, 6min, 4min, 8min, 4min
+- Last 5 plans: 6min, 4min, 8min, 4min, 6min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -84,6 +84,10 @@ Recent decisions affecting current work:
 - **03.3-03:** useRef for isDragging/dragStart/dragAction, useState only for hoveredWells
 - **03.3-03:** useWellSelection delegates to onSelectionChange callback (does not own state)
 - **03.3-03:** Interactive mode on PlateGrid detected by presence of selectedWells/hoveredWells props
+- **03.3-04:** Two-state input pattern for SampleCountInput (string displayValue for field, number value for slider)
+- **03.3-04:** calculatorStore reads plateCount from plateStore (removed manual plateCount input)
+- **03.3-04:** calculatorStore.setSampleCount/setReplicateMode propagate to plateStore for auto-fill
+- **03.3-04:** calculatorStore.reset cascades to plateStore.reset
 
 ### Pending Todos
 
@@ -96,7 +100,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 03.3-03-PLAN.md (Interactive plate grid selection)
+Stopped at: Completed 03.3-04-PLAN.md (Sample count input and plate management)
 Resume file: None
 
 ## Releases
