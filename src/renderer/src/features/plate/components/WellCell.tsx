@@ -69,20 +69,19 @@ export const WellCell = memo(function WellCell({
   }
 
   const getContent = () => {
-    switch (well.type) {
-      case 'standard':
-        return 'S'
-      case 'unknown':
-        // In interactive mode, use dynamic index from plateStore selections
-        if (isEditable !== undefined) {
-          if (!isSelected) return ''
-          return dynamicIndex?.toString() ?? ''
-        }
-        // Non-interactive: use static layout index
-        return well.sampleIndex?.toString() ?? ''
-      case 'empty':
-        return ''
+    // Standards always show "S"
+    if (well.type === 'standard') return 'S'
+
+    // In interactive mode, content is driven by selection state + dynamicIndex,
+    // not by the static well.type from usePlateLayout
+    if (isEditable !== undefined) {
+      if (!isSelected) return ''
+      return dynamicIndex?.toString() ?? ''
     }
+
+    // Non-interactive: use static layout type/index
+    if (well.type === 'unknown') return well.sampleIndex?.toString() ?? ''
+    return ''
   }
 
   return (
