@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Phase: 3.3 (Analyte Selection Redesign)
-Plan: 1 of 5 in current phase
+Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-04 - Completed 03.3-01-PLAN.md
+Last activity: 2026-02-04 - Completed 03.3-02-PLAN.md
 
-Progress: [##          ] 20%
+Progress: [####        ] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
+- Total plans completed: 14
 - Average duration: 11 min
-- Total execution time: ~2.4 hours
+- Total execution time: ~2.5 hours
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [##          ] 20%
 | 03-plate-visualization | 2/3 | 13min | 7min |
 | 03.1-panel-data-import | 2/2 | 16min | 8min |
 | 03.2-panel-data-management | 3/3 | 18min | 6min |
-| 03.3-analyte-selection-redesign | 1/5 | 4min | 4min |
+| 03.3-analyte-selection-redesign | 2/5 | 12min | 6min |
 
 **Recent Trend:**
-- Last 5 plans: 5min, 8min, 6min, 6min, 4min
-- Trend: stable/improving
+- Last 5 plans: 8min, 6min, 6min, 4min, 8min
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -78,6 +78,9 @@ Recent decisions affecting current work:
 - **03.3-01:** Duplicate pairs: horizontal (4-5, 6-7, 8-9, 10-11) + vertical (col 12) = 36 samples
 - **03.3-01:** plateStore uses Set<string> for O(1) well toggle operations
 - **03.3-01:** getDuplicatePair utility with 0-indexed row/col input
+- **03.3-02:** panelAnalyteMap stored as Record<string, string[]> in store, resolved via computed method
+- **03.3-02:** Unassigned analytes = availableAnalytes minus all panel member IDs
+- **03.3-02:** AnalyteSelector.tsx deleted, replaced by AnalyteCard + AnalyteGrid
 
 ### Pending Todos
 
@@ -90,7 +93,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 03.3-01-PLAN.md (Plate layout bug fixes + plateStore foundation)
+Stopped at: Completed 03.3-02-PLAN.md (Analyte selection visual redesign)
 Resume file: None
 
 ## Releases
