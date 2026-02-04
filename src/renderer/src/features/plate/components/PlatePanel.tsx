@@ -37,6 +37,7 @@ export function PlatePanel() {
       filledWells,
       onSelectionChange: (wellIds, action) => {
         if (action === 'add') {
+          if (getSamplesRemaining() <= 0) return // All samples assigned
           setWellRange(activePlate, wellIds, true)
         } else {
           setWellRange(activePlate, wellIds, false)

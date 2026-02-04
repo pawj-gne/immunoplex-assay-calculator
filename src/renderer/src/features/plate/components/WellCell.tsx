@@ -71,6 +71,8 @@ export const WellCell = memo(function WellCell({
       case 'standard':
         return 'S'
       case 'unknown':
+        // In interactive mode, only show sample number for selected wells
+        if (isEditable !== undefined && !isSelected) return ''
         return well.sampleIndex?.toString() ?? ''
       case 'empty':
         return ''
