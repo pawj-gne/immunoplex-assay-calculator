@@ -45,10 +45,11 @@ export function calculateTotalWells(
  * Calculate the maximum number of samples that fit on the given plates
  */
 export function calculateMaxSamples(replicateMode: ReplicateMode, plateCount: number): number {
-  const unknownWellsPerPlate = getUnknownWellsPerPlate(replicateMode)
-  const totalUnknownWells = unknownWellsPerPlate * plateCount
-  const replicateFactor = replicateMode === 'singles' ? 1 : 2
-  return Math.floor(totalUnknownWells / replicateFactor)
+  // getUnknownWellsPerPlate returns samples per plate:
+  //   singles: 72 (72 wells, 1 well per sample)
+  //   duplicates: 36 (72 wells, 2 wells per sample — already divided)
+  const samplesPerPlate = getUnknownWellsPerPlate(replicateMode)
+  return samplesPerPlate * plateCount
 }
 
 /**

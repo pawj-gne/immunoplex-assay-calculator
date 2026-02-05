@@ -30,7 +30,9 @@ export function useAnalyteSelection() {
     getRequestType,
     canAddMoreSingles,
     getRemainingSinglesCount,
-    getAvailableSingles
+    getAvailableSingles,
+    getPanelAnalyteMap,
+    getUnassignedAnalytes
   } = useSelectionStore()
 
   // Load panels and analytes when species changes
@@ -53,6 +55,8 @@ export function useAnalyteSelection() {
     selectedSingleIds,
     selectedSingles: getSelectedSingles(),
     allSelectedAnalytes: getAllSelectedAnalytes(),
+    panelAnalyteMap: getPanelAnalyteMap(),
+    unassignedAnalytes: getUnassignedAnalytes(),
 
     // Loading state
     isLoading: panelLoading || analytesLoading,

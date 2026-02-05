@@ -17,6 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Plate Visualization & Recipe Generation** - Well display, printable prep sheets, bead regions
 - [x] **Phase 3.1: Panel Data Import** - INSERTED - CSV/Excel import for panel data across all platforms
 - [x] **Phase 3.2: Panel Data Management** - INSERTED - Edit/delete analytes and panels in-app
+- [ ] **Phase 3.3: Analyte Selection Redesign** - INSERTED - Visual grid layout with panel grouping, sidebar, transitions
 - [ ] **Phase 4: Run Documentation & Persistence** - Metadata capture, save/load run records
 
 ## Phase Details
@@ -105,6 +106,50 @@ Plans:
 - [x] 03.2-02-PLAN.md -- Analyte management UI: table view with edit modal and delete
 - [x] 03.2-03-PLAN.md -- Panel management UI: list with membership editing, app navigation integration
 
+### Phase 3.3: Selection UX Redesign (INSERTED)
+**Goal**: Operators can select analytes visually from a grid and assign samples to plates interactively
+**Depends on**: Phase 3.2 (panel data management exists)
+**Requirements**: UX enhancement (improves CALC-01 sample count entry, PLAT-01 plate visualization)
+
+**Success Criteria** (what must be TRUE):
+
+*Analyte Selection Page:*
+  1. Operator can select one premix panel from top section
+  2. Operator sees analyte cards (name, bead region, concentration) organized by panel membership
+  3. "All Analytes" section shows analytes not in any panel
+  4. Selecting a premix grays out its member analytes in the grid
+  5. Operator can add up to 5 singles on top of premix selection
+  6. Right sidebar shows selected panel (with nested members) + individual singles
+  7. Unselecting premix removes its analytes but keeps individual selections
+
+*Sample Count & Plate Assignment:*
+  8. Operator enters sample count via slider + editable number field (not ticker)
+  9. Number field starts blank, click-to-type without friction
+  10. Plate visualizer appears in sample selection section (not bottom of page)
+  11. UI auto-calculates minimum plates needed and pre-fills sequentially
+  12. Operator can page through multiple plates
+  13. "Samples Remaining" indicator shows unassigned sample count
+  14. Operator can click well to enter edit mode, then drag to select wells
+  15. Excel-style selection: click-drag ranges, Ctrl+click toggle, Shift+click extend
+  16. In duplicates mode, selecting a sample auto-fills both wells of the pair
+
+*Plate Layout Corrections:*
+  17. Standards occupy columns 1-3 (not 10-12)
+  18. Singles: columns 4-12 = 72 wells per plate
+  19. Duplicates: horizontal pairs (4-5, 6-7, 8-9, 10-11) + vertical pairs (col 12 A-D->E-H) = 36 samples
+
+*Page Transitions:*
+  20. Wizard pages transition smoothly with slide animations
+
+**Plans**: 5 plans
+
+Plans:
+- [ ] 03.3-01-PLAN.md -- Foundation: fix plate constants (standards cols 1-3), plateStore, getDuplicatePair utility
+- [ ] 03.3-02-PLAN.md -- Analyte selection page redesign: card grid, panel grouping, sidebar layout
+- [ ] 03.3-03-PLAN.md -- Interactive plate grid: useWellSelection hook, WellCell/PlateGrid interactive mode
+- [ ] 03.3-04-PLAN.md -- Sample count slider+field, PlateToolbar, calculator form changes
+- [ ] 03.3-05-PLAN.md -- App integration: page transitions, interactive plate wiring, verification
+
 ### Phase 4: Run Documentation, Persistence & Deployment
 **Goal**: Operators can save/retrieve run records and install the app as a Windows .exe
 **Depends on**: Phase 3
@@ -119,24 +164,25 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Run persistence layer (schema, repository, IPC handlers, preload bridge)
-- [ ] 04-02-PLAN.md — Run metadata form UI with Zustand store and run list
-- [ ] 04-03-PLAN.md — Windows .exe packaging with electron-builder
+- [ ] 04-01-PLAN.md -- Run persistence layer (schema, repository, IPC handlers, preload bridge)
+- [ ] 04-02-PLAN.md -- Run metadata form UI with Zustand store and run list
+- [ ] 04-03-PLAN.md -- Windows .exe packaging with electron-builder
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Platform Configuration | 3/3 | Complete | 2026-01-23 |
 | 2. Calculator Core | 3/3 | Complete | 2026-01-26 |
-| 3. Plate Visualization & Recipe Generation | 0/3 | Ready | - |
+| 3. Plate Visualization & Recipe Generation | 2/3 | In Progress | - |
 | 3.1. Panel Data Import | 2/2 | Complete | 2026-01-29 |
 | 3.2. Panel Data Management | 3/3 | Complete | 2026-01-29 |
+| 3.3. Analyte Selection Redesign | 0/5 | Not started | - |
 | 4. Run Documentation & Persistence | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-01-29*
+*Last updated: 2026-02-04*

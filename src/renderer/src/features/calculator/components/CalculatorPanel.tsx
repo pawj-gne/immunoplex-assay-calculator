@@ -1,5 +1,6 @@
 import { CalculatorForm } from './CalculatorForm'
 import { ItemizedVolumeDisplay } from './ItemizedVolumeDisplay'
+import { PlatePanel } from '../../plate/components/PlatePanel'
 import { useCalculator } from '../hooks/useCalculator'
 
 export function CalculatorPanel() {
@@ -8,6 +9,8 @@ export function CalculatorPanel() {
   return (
     <div className="space-y-6">
       <CalculatorForm />
+      <hr className="border-[var(--color-border)]" />
+      <PlatePanel />
       <hr className="border-[var(--color-border)]" />
 
       {isValid && itemizedVolumes && outputs ? (

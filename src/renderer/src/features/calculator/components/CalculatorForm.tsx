@@ -1,15 +1,14 @@
 import { useCalculator } from '../hooks/useCalculator'
+import { SampleCountInput } from './SampleCountInput'
 
 export function CalculatorForm() {
   const {
     sampleCount,
     replicateMode,
-    plateCount,
     requestType,
     validationError,
     setSampleCount,
-    setReplicateMode,
-    setPlateCount
+    setReplicateMode
   } = useCalculator()
 
   // Display-friendly request type label
@@ -24,23 +23,8 @@ export function CalculatorForm() {
     <div className="space-y-4">
       <h3 className="font-medium text-[var(--color-foreground)]">Calculator Inputs</h3>
 
-      {/* Sample Count */}
-      <div>
-        <label
-          htmlFor="sampleCount"
-          className="block text-sm font-medium text-[var(--color-foreground)] mb-1"
-        >
-          Number of Samples
-        </label>
-        <input
-          id="sampleCount"
-          type="number"
-          min={1}
-          value={sampleCount}
-          onChange={(e) => setSampleCount(Number(e.target.value))}
-          className="w-full px-3 py-2 border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
-        />
-      </div>
+      {/* Sample Count - Slider + editable field */}
+      <SampleCountInput value={sampleCount} max={500} onChange={setSampleCount} />
 
       {/* Replicate Mode */}
       <div>
@@ -71,25 +55,6 @@ export function CalculatorForm() {
             <span className="text-sm">Duplicates (36 wells/plate)</span>
           </label>
         </div>
-      </div>
-
-      {/* Plate Count */}
-      <div>
-        <label
-          htmlFor="plateCount"
-          className="block text-sm font-medium text-[var(--color-foreground)] mb-1"
-        >
-          Number of Plates
-        </label>
-        <input
-          id="plateCount"
-          type="number"
-          min={1}
-          max={10}
-          value={plateCount}
-          onChange={(e) => setPlateCount(Number(e.target.value))}
-          className="w-full px-3 py-2 border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
-        />
       </div>
 
       {/* Request Type - Read-only, driven by selection */}

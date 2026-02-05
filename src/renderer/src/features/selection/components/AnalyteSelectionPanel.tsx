@@ -1,6 +1,6 @@
 import { useAnalyteSelection } from '../hooks/useAnalyteSelection'
 import { PremixPanelList } from './PremixPanelList'
-import { AnalyteSelector } from './AnalyteSelector'
+import { AnalyteGrid } from './AnalyteGrid'
 import { SelectedAnalytesList } from './SelectedAnalytesList'
 
 export function AnalyteSelectionPanel() {
@@ -9,14 +9,14 @@ export function AnalyteSelectionPanel() {
     selectedPanelId,
     selectedPanel,
     panelAnalytes,
-    availableSingles,
     selectedSingleIds,
     selectedSingles,
     isLoading,
     panelLoading,
-    analytesLoading,
     canAddMoreSingles,
     remainingSingles,
+    panelAnalyteMap,
+    unassignedAnalytes,
     selectPanel,
     toggleSingleAnalyte
   } = useAnalyteSelection()
@@ -30,43 +30,54 @@ export function AnalyteSelectionPanel() {
     )
   }
 
+  const isLimited = remainingSingles !== Infinity
+
   return (
     <div className="space-y-6">
-      <h3 className="text-sm font-medium text-[var(--color-foreground)]">
-        Select Analytes
-      </h3>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left column: Panel selection */}
-        <div className="space-y-4">
-          <PremixPanelList
-            panels={panels}
-            selectedPanelId={selectedPanelId}
-            isLoading={panelLoading}
-            onSelect={selectPanel}
-          />
-        </div>
-
-        {/* Right column: Individual analytes */}
-        <div className="space-y-4">
-          <AnalyteSelector
-            analytes={availableSingles}
-            selectedIds={selectedSingleIds}
-            isLoading={analytesLoading}
-            canAddMore={canAddMoreSingles}
-            remainingCount={remainingSingles}
-            onToggle={toggleSingleAnalyte}
-          />
-        </div>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-[var(--color-foreground)]">
+          Select Analytes
+        </h3>
+        {selectedPanelId && isLimited && (
+          <span
+            className={`text-xs ${remainingSingles > 0 ? 'text-[var(--color-muted)]' : 'text-amber-600'}`}
+          >
+            {remainingSingles} singles remaining
+          </span>
+        )}
       </div>
 
-      {/* Selected analytes summary */}
-      <SelectedAnalytesList
-        panelName={selectedPanel?.name ?? null}
-        panelAnalytes={panelAnalytes}
-        singleAnalytes={selectedSingles}
-        onRemoveSingle={toggleSingleAnalyte}
+      {/* Top section: Premix panel strip */}
+      <PremixPanelList
+        panels={panels}
+        selectedPanelId={selectedPanelId}
+        isLoading={panelLoading}
+        onSelect={selectPanel}
       />
+
+      {/* Middle section: Grid + Sidebar */}
+      <div className="flex gap-6">
+        {/* Left: Analyte grid */}
+        <div className="flex-1 min-w-0">
+          <AnalyteGrid
+            panels={panels}
+            panelAnalyteMap={panelAnalyteMap}
+            unassignedAnalytes={unassignedAnalytes}
+            selectedPanelId={selectedPanelId}
+            selectedSingleIds={selectedSingleIds}
+            canAddMoreSingles={canAddMoreSingles}
+            onToggleSingle={toggleSingleAnalyte}
+          />
+        </div>
+
+        {/* Right: Selected analytes sidebar */}
+        <SelectedAnalytesList
+          panelName={selectedPanel?.name ?? null}
+          panelAnalytes={panelAnalytes}
+          singleAnalytes={selectedSingles}
+          onRemoveSingle={toggleSingleAnalyte}
+        />
+      </div>
     </div>
   )
 }

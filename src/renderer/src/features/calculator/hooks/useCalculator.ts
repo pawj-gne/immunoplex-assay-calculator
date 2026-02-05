@@ -1,30 +1,33 @@
 import { useCalculatorStore } from '../../../stores/calculatorStore'
 import { usePlatformStore } from '../../../stores/platformStore'
 import { useSelectionStore } from '../../../stores/selectionStore'
+import { usePlateStore } from '../../../stores/plateStore'
 import { volumeToDisplay } from '../../../lib/decimal'
 import { calculateItemizedVolumes } from '../../../lib/calculator'
 
 /**
  * Hook to access calculator state with computed values
  * Integrates selection store for analyte-based calculations
+ * Reads plateCount from plateStore (auto-calculated, not manual input)
  */
 export function useCalculator() {
   const {
     sampleCount,
     replicateMode,
-    plateCount,
     volumePerWell,
     deadVolume,
     validationError,
     setSampleCount,
     setReplicateMode,
-    setPlateCount,
     reset,
     getOutputs
   } = useCalculatorStore()
 
   const { getSelectedPlatform } = usePlatformStore()
   const selectedPlatform = getSelectedPlatform()
+
+  // Read plateCount from plateStore (auto-calculated)
+  const plateCount = usePlateStore().getPlateCount()
 
   const {
     selectedPanel,
@@ -90,7 +93,6 @@ export function useCalculator() {
     // Actions
     setSampleCount,
     setReplicateMode,
-    setPlateCount,
     reset
   }
 }

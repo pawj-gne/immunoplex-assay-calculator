@@ -15,12 +15,12 @@ import {
   type RequestType
 } from '../../../shared/constants/calculator'
 import type { SingleAnalyte, CalculatorOutputs } from '../../../shared/types/calculator'
+import { usePlateStore } from './plateStore'
 
 interface CalculatorState {
   // Inputs
   sampleCount: number
   replicateMode: ReplicateMode
-  plateCount: number
   requestType: RequestType
   volumePerWell: number
   deadVolume: number
@@ -34,7 +34,6 @@ interface CalculatorState {
   // Actions
   setSampleCount: (count: number) => void
   setReplicateMode: (mode: ReplicateMode) => void
-  setPlateCount: (count: number) => void
   setRequestType: (type: RequestType) => void
   addSingle: (analyte: Omit<SingleAnalyte, 'id'>) => void
   removeSingle: (id: string) => void
@@ -51,7 +50,6 @@ interface CalculatorState {
 const initialState = {
   sampleCount: 1,
   replicateMode: 'singles' as ReplicateMode,
-  plateCount: 1,
   requestType: 'premix' as RequestType,
   volumePerWell: DEFAULT_VOLUME_PER_WELL,
   deadVolume: DEFAULT_DEAD_VOLUME,
@@ -63,33 +61,29 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
   ...initialState,
 
   setSampleCount: (count: number) => {
-    const { replicateMode, plateCount } = get()
-    const validation = validateSampleCount(count, replicateMode, plateCount)
+    set({ sampleCount: count })
 
-    set({
-      sampleCount: count,
-      validationError: validation.valid ? null : validation.message ?? null
-    })
+    // Propagate to plateStore FIRST so it recalculates plate count
+    usePlateStore.getState().setSampleCount(count)
+
+    // Validate with updated plate count
+    const { replicateMode } = get()
+    const plateCount = usePlateStore.getState().getPlateCount()
+    const validation = validateSampleCount(count, replicateMode, plateCount)
+    set({ validationError: validation.valid ? null : validation.message ?? null })
   },
 
   setReplicateMode: (mode: ReplicateMode) => {
-    const { sampleCount, plateCount } = get()
+    set({ replicateMode: mode })
+
+    // Propagate to plateStore FIRST so it recalculates plate count
+    usePlateStore.getState().setReplicateMode(mode)
+
+    // Validate with updated plate count
+    const { sampleCount } = get()
+    const plateCount = usePlateStore.getState().getPlateCount()
     const validation = validateSampleCount(sampleCount, mode, plateCount)
-
-    set({
-      replicateMode: mode,
-      validationError: validation.valid ? null : validation.message ?? null
-    })
-  },
-
-  setPlateCount: (count: number) => {
-    const { sampleCount, replicateMode } = get()
-    const validation = validateSampleCount(sampleCount, replicateMode, count)
-
-    set({
-      plateCount: count,
-      validationError: validation.valid ? null : validation.message ?? null
-    })
+    set({ validationError: validation.valid ? null : validation.message ?? null })
   },
 
   setRequestType: (type: RequestType) => {
@@ -136,11 +130,12 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
 
   reset: () => {
     set(initialState)
+    usePlateStore.getState().reset()
   },
 
   getOutputs: () => {
-    const { sampleCount, replicateMode, plateCount, volumePerWell, deadVolume, validationError } =
-      get()
+    const { sampleCount, replicateMode, volumePerWell, deadVolume, validationError } = get()
+    const plateCount = usePlateStore.getState().getPlateCount()
 
     if (validationError || sampleCount <= 0) {
       return null

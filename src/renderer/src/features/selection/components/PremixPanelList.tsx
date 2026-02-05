@@ -26,13 +26,13 @@ export function PremixPanelList({
     <div className="space-y-2">
       <h4 className="text-sm font-medium text-[var(--color-foreground)]">Premix Panels</h4>
 
-      <div className="space-y-2">
+      <div className="flex flex-wrap gap-3">
         {/* "None" option for custom assays */}
         <button
           type="button"
           onClick={() => onSelect(null)}
           className={`
-            w-full p-3 rounded-lg border-2 text-left transition-all duration-150
+            min-w-40 max-w-60 p-3 rounded-lg border-2 text-left transition-all duration-150
             hover:border-[var(--color-primary)] hover:shadow-sm
             focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2
             ${
@@ -42,14 +42,14 @@ export function PremixPanelList({
             }
           `}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <span
               className={`text-sm font-medium ${selectedPanelId === null ? 'text-[var(--color-primary)]' : 'text-[var(--color-foreground)]'}`}
             >
               No Premix (Custom Assay)
             </span>
             {selectedPanelId === null && (
-              <span className="text-xs px-2 py-0.5 rounded bg-[var(--color-primary)] text-white">
+              <span className="text-xs px-2 py-0.5 rounded bg-[var(--color-primary)] text-white whitespace-nowrap">
                 Selected
               </span>
             )}
@@ -65,7 +65,7 @@ export function PremixPanelList({
             type="button"
             onClick={() => onSelect(panel.id)}
             className={`
-              w-full p-3 rounded-lg border-2 text-left transition-all duration-150
+              min-w-40 max-w-60 p-3 rounded-lg border-2 text-left transition-all duration-150
               hover:border-[var(--color-primary)] hover:shadow-sm
               focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2
               ${
@@ -75,20 +75,22 @@ export function PremixPanelList({
               }
             `}
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <span
                 className={`text-sm font-medium ${panel.id === selectedPanelId ? 'text-[var(--color-primary)]' : 'text-[var(--color-foreground)]'}`}
               >
                 {panel.name}
               </span>
               {panel.id === selectedPanelId && (
-                <span className="text-xs px-2 py-0.5 rounded bg-[var(--color-primary)] text-white">
+                <span className="text-xs px-2 py-0.5 rounded bg-[var(--color-primary)] text-white whitespace-nowrap">
                   Selected
                 </span>
               )}
             </div>
             {panel.description && (
-              <p className="text-xs text-[var(--color-muted)] mt-1">{panel.description}</p>
+              <p className="text-xs text-[var(--color-muted)] mt-1 line-clamp-2">
+                {panel.description}
+              </p>
             )}
           </button>
         ))}
