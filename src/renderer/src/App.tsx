@@ -4,7 +4,7 @@ import { PlatformSelector } from './features/platform/components/PlatformSelecto
 import { SpeciesSelector } from './features/selection/components/SpeciesSelector'
 import { AnalyteSelectionPanel } from './features/selection/components/AnalyteSelectionPanel'
 import { CalculatorPanel } from './features/calculator/components/CalculatorPanel'
-import { PlatePanel } from './features/plate/components/PlatePanel'
+
 import { ImportButton } from './features/import/ImportButton'
 import { ManagePage } from './features/manage/ManagePage'
 import { usePlatforms } from './features/platform/hooks/usePlatforms'
@@ -43,19 +43,9 @@ function renderPage(
       )
     case 2:
       return (
-        <>
-          <div className="bg-white rounded-lg border border-[var(--color-border)] p-6">
-            <CalculatorPanel />
-          </div>
-          <div className="bg-white rounded-lg border border-[var(--color-border)] p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-[var(--color-foreground)]">
-                Plate Preview
-              </h2>
-            </div>
-            <PlatePanel />
-          </div>
-        </>
+        <div className="bg-white rounded-lg border border-[var(--color-border)] p-6">
+          <CalculatorPanel />
+        </div>
       )
     default:
       return <></>

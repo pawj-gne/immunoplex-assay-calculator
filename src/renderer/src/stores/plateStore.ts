@@ -218,7 +218,8 @@ export const usePlateStore = create<PlateState>((set, get) => ({
     const plateNumbers = Object.keys(plates).map(Number)
     const nextPlate = Math.max(...plateNumbers, 0) + 1
     set({
-      plates: { ...plates, [nextPlate]: new Set<string>() }
+      plates: { ...plates, [nextPlate]: new Set<string>() },
+      activePlate: nextPlate
     })
   },
 

@@ -15,6 +15,11 @@ interface PlateGridProps {
   onCellMouseDown?: (row: number, col: number, event: React.MouseEvent) => void
   onCellMouseEnter?: (row: number, col: number) => void
   onCellMouseUp?: () => void
+  // Column header interaction (optional)
+  highlightedColumn?: number | null // 1-indexed column being hovered
+  onColumnMouseDown?: (col: number) => void // 1-indexed column drag start
+  onColumnMouseEnter?: (col: number) => void // 1-indexed column entered (drag or hover)
+  onColumnMouseLeave?: (col: number) => void // 1-indexed column left
 }
 
 /**
@@ -41,7 +46,11 @@ export function PlateGrid({
   activePlate,
   onCellMouseDown,
   onCellMouseEnter,
-  onCellMouseUp
+  onCellMouseUp,
+  highlightedColumn,
+  onColumnMouseDown,
+  onColumnMouseEnter,
+  onColumnMouseLeave
 }: PlateGridProps) {
   // Determine if we're in interactive mode (any interactive prop provided)
   const isInteractive = selectedWells !== undefined || hoveredWells !== undefined
@@ -67,14 +76,29 @@ export function PlateGrid({
           <div className="w-7 h-7" />
 
           {/* Column headers (1-12) */}
-          {COLS.map((col) => (
-            <div
-              key={`col-${col}`}
-              className="w-7 h-7 flex items-center justify-center text-xs font-medium text-[var(--color-muted)]"
-            >
-              {col}
-            </div>
-          ))}
+          {COLS.map((col) => {
+            const isClickable =
+              isInteractive && standardCols && !standardCols.includes(col)
+            return (
+              <div
+                key={`col-${col}`}
+                className={`w-7 h-7 flex items-center justify-center text-xs font-medium ${
+                  isClickable
+                    ? 'cursor-pointer text-[var(--color-muted)] hover:text-blue-600 hover:font-semibold'
+                    : 'text-[var(--color-muted)]'
+                }`}
+                onMouseDown={isClickable ? () => onColumnMouseDown?.(col) : undefined}
+                onMouseEnter={
+                  isClickable ? () => onColumnMouseEnter?.(col) : undefined
+                }
+                onMouseLeave={
+                  isClickable ? () => onColumnMouseLeave?.(col) : undefined
+                }
+              >
+                {col}
+              </div>
+            )
+          })}
 
           {/* Rows with labels and wells */}
           {ROWS.map((row, rowIndex) => (
@@ -104,6 +128,9 @@ export function PlateGrid({
                       isSelected={selectedWells?.has(well.id) ?? false}
                       isHovered={hoveredWells?.has(well.id) ?? false}
                       isEditable={isEditable}
+                      isColumnHighlighted={
+                        highlightedColumn != null && well.col === highlightedColumn
+                      }
                       dynamicIndex={dynamicIndex}
                       onMouseDown={(e) => onCellMouseDown?.(rowIndex, colIndex, e)}
                       onMouseEnter={() => onCellMouseEnter?.(rowIndex, colIndex)}

@@ -28,7 +28,12 @@
       "mcp__github__search_repositories",
       "mcp__sequential-thinking__sequentialthinking",
       "Bash(npm run build:win:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(ls:*)",
+      "Bash(npm version:*)",
+      "Bash(gh pr create:*)",
+      "Bash(git pull:*)",
+      "Bash(findstr:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

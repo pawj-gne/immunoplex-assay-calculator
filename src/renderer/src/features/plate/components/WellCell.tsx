@@ -6,6 +6,7 @@ interface WellCellProps {
   isSelected?: boolean // well is filled/assigned (green highlight)
   isHovered?: boolean // well is in drag preview (blue outline)
   isEditable?: boolean // false for standard wells
+  isColumnHighlighted?: boolean // column header hover highlight
   dynamicIndex?: number // sample index computed from plateStore selections
   onMouseDown?: (event: React.MouseEvent) => void
   onMouseEnter?: () => void
@@ -30,6 +31,7 @@ export const WellCell = memo(function WellCell({
   isSelected,
   isHovered,
   isEditable,
+  isColumnHighlighted,
   dynamicIndex,
   onMouseDown,
   onMouseEnter
@@ -51,6 +53,11 @@ export const WellCell = memo(function WellCell({
     // Hovered well during drag preview (not already selected)
     if (isHovered) {
       return 'bg-blue-50 border-blue-300 ring-2 ring-blue-200'
+    }
+
+    // Column header hover highlight (not selected, not standard)
+    if (isColumnHighlighted) {
+      return 'bg-blue-50 border-blue-300'
     }
 
     // Unknown well (from read-only usePlateLayout flow only)

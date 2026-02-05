@@ -1,10 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useCallback, useRef, useEffect } from 'react'
 import { usePlateLayout } from '../hooks/usePlateLayout'
 import { usePlateStore } from '../../../stores/plateStore'
 import { useWellSelection } from '../hooks/useWellSelection'
 import { PlateGrid } from './PlateGrid'
 import { PlateToolbar } from './PlateToolbar'
-import { STANDARD_COLS } from '../../../../../shared/types/plate'
+import { ROWS, STANDARD_COLS } from '../../../../../shared/types/plate'
 import { getDuplicatePair } from '../../../../../shared/constants/calculator'
 
 /**
@@ -99,6 +99,68 @@ export function PlatePanel() {
     [plates, replicateMode]
   )
 
+  // Column header drag state
+  const [highlightedColumn, setHighlightedColumn] = useState<number | null>(null)
+  const columnDragRef = useRef<{ action: 'add' | 'remove' } | null>(null)
+
+  const applyColumnAction = useCallback(
+    (col: number, action: 'add' | 'remove') => {
+      const columnWellIds = ROWS.map((row) => `${row}${col}`)
+      if (action === 'add') {
+        if (getSamplesRemaining() <= 0) return
+        setWellRange(activePlate, new Set(columnWellIds), true)
+      } else {
+        setWellRange(activePlate, new Set(columnWellIds), false)
+      }
+    },
+    [activePlate, setWellRange, getSamplesRemaining]
+  )
+
+  const handleColumnMouseDown = useCallback(
+    (col: number) => {
+      const columnWellIds = ROWS.map((row) => `${row}${col}`)
+      const allFilled = columnWellIds.every((id) => filledWells.has(id))
+      const action = allFilled ? 'remove' : 'add'
+
+      columnDragRef.current = { action }
+      applyColumnAction(col, action)
+      setHighlightedColumn(col)
+    },
+    [filledWells, applyColumnAction]
+  )
+
+  const handleColumnMouseEnter = useCallback(
+    (col: number) => {
+      setHighlightedColumn(col)
+      if (columnDragRef.current) {
+        applyColumnAction(col, columnDragRef.current.action)
+      }
+    },
+    [applyColumnAction]
+  )
+
+  const handleColumnMouseLeave = useCallback(() => {
+    if (!columnDragRef.current) {
+      setHighlightedColumn(null)
+    }
+  }, [])
+
+  const endColumnDrag = useCallback(() => {
+    columnDragRef.current = null
+    setHighlightedColumn(null)
+  }, [])
+
+  // End column drag on mouseUp anywhere in the window
+  useEffect(() => {
+    const onMouseUp = () => {
+      if (columnDragRef.current) {
+        endColumnDrag()
+      }
+    }
+    window.addEventListener('mouseup', onMouseUp)
+    return () => window.removeEventListener('mouseup', onMouseUp)
+  }, [endColumnDrag])
+
   const { hoveredWells, handleMouseDown, handleMouseEnter, handleMouseUp } =
     useWellSelection({
       standardCols: STANDARD_COLS,
@@ -162,10 +224,14 @@ export function PlatePanel() {
         onCellMouseDown={handleMouseDown}
         onCellMouseEnter={handleMouseEnter}
         onCellMouseUp={handleMouseUp}
+        highlightedColumn={highlightedColumn}
+        onColumnMouseDown={handleColumnMouseDown}
+        onColumnMouseEnter={handleColumnMouseEnter}
+        onColumnMouseLeave={handleColumnMouseLeave}
       />
 
       <p className="text-xs text-[var(--color-muted)]">
-        Click a well to toggle it. Click and drag to select a range. Ctrl+click to toggle individual wells. Shift+click to extend from last selection.
+        Click a well to toggle it. Click and drag to select a range. Click or drag across column headers (4-12) to toggle entire columns.
       </p>
     </div>
   )
