@@ -5,40 +5,36 @@
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Accurate reagent calculations with clear prep recipes - operators must be able to trust the math and follow the instructions without second-guessing.
-**Current focus:** Phase 3.3 - Analyte Selection Redesign
+**Current focus:** Phase 4 - Run Documentation & Persistence (not yet started)
 
 ## Current Position
 
-Phase: 3.3 (Analyte Selection Redesign)
-Plan: 4 of 5 in current phase
-Status: In progress
-Last activity: 2026-02-04 - Completed 03.3-04-PLAN.md
+Phase: 3.3 complete; ready to start Phase 4
+Plan: Last executed 03.3-06 (ad-hoc, no plan file)
+Status: Phase 3.3 shipped as v0.5.0 on 2026-02-04
+Last activity: 2026-02-04 - Tagged v0.5.0 release
 
-Progress: [########    ] 80%
+Progress: [##########  ] 83% (5 of 6 phases code-complete; Phase 4 remaining)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
-- Average duration: 10 min
-- Total execution time: ~2.7 hours
+- Total plans completed: 18 (17 planned + 1 ad-hoc 03.3-06)
+- Released versions: v0.1.0, v0.2.0, v0.3.0, v0.4.0, v0.4.1, v0.4.2, v0.5.0
 
 **By Phase:**
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 01-foundation | 3/3 | 56min | 19min |
-| 02-calculator-core | 3/3 | 52min | 17min |
-| 03-plate-visualization | 2/3 | 13min | 7min |
-| 03.1-panel-data-import | 2/2 | 16min | 8min |
-| 03.2-panel-data-management | 3/3 | 18min | 6min |
-| 03.3-analyte-selection-redesign | 4/5 | 22min | 6min |
+| Phase | Plans | Status | Released |
+|-------|-------|--------|----------|
+| 01-foundation | 3/3 | Complete | v0.1.0 (2026-01-26) |
+| 02-calculator-core | 3/3 | Complete | v0.1.0 (2026-01-26) |
+| 03-plate-visualization | 3/3 | Complete | v0.2.0 (2026-01-27) |
+| 03.1-panel-data-import | 2/2 | Complete | v0.4.0 (2026-01-29) |
+| 03.2-panel-data-management | 3/3 | Complete | v0.4.0 (2026-01-29) |
+| 03.3-analyte-selection-redesign | 6/6 | Complete (includes ad-hoc 03.3-06) | v0.5.0 (2026-02-04) |
+| 04-run-documentation | 0/3 | Not started | - |
 
-**Recent Trend:**
-- Last 5 plans: 6min, 4min, 8min, 4min, 6min
-- Trend: stable
-
-*Updated after each plan completion*
+**Doc debt:** None — all SUMMARY files present. 03-03, 03.3-05, 03.3-06 were backfilled from git history on 2026-04-22; each carries a backfill banner noting that exact execution timing and live deviation notes are not available.
 
 ## Accumulated Context
 
@@ -88,10 +84,12 @@ Recent decisions affecting current work:
 - **03.3-04:** calculatorStore reads plateCount from plateStore (removed manual plateCount input)
 - **03.3-04:** calculatorStore.setSampleCount/setReplicateMode propagate to plateStore for auto-fill
 - **03.3-04:** calculatorStore.reset cascades to plateStore.reset
+- **03.3-05:** Decisions not captured in a SUMMARY doc (see commits 4ea29e1..b6b1f67 for changes)
+- **03.3-06:** Column header click-and-drag selection and layout consolidation (see commit d8e613a)
 
 ### Pending Todos
 
-None yet.
+- Start Phase 4: Run Documentation & Persistence (plans 04-01, 04-02, 04-03 already drafted)
 
 ### Blockers/Concerns
 
@@ -100,9 +98,16 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 03.3-04-PLAN.md (Sample count input and plate management)
+Stopped at: Shipped v0.5.0 (Phase 3.3 complete including ad-hoc 03.3-06 polish)
 Resume file: None
+Resume intent: Begin Phase 4 (Run Documentation, Persistence & Deployment)
 
 ## Releases
 
 - **v0.1.0** (2026-01-26): Foundation + Calculator Core (Phases 1-2)
+- **v0.2.0** (2026-01-27): Plate Visualization & Species/Analyte Selection (Phase 3 + species/analyte additions)
+- **v0.3.0** (2026-01-29): Wizard Navigation & Build Config
+- **v0.4.0** (2026-01-29): Panel Data Import and Management (Phases 3.1 + 3.2)
+- **v0.4.1** (2026-01-29): Fix Bio-Rad platform name in seed data
+- **v0.4.2** (2026-01-29): Remove R&D Systems, correct platform names
+- **v0.5.0** (2026-02-04): Selection UX Redesign & Interactive Plate Grid (Phase 3.3)

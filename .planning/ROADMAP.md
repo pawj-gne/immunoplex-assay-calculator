@@ -14,10 +14,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Platform Configuration** - Electron shell, data models, platform-specific parameters
 - [x] **Phase 2: Calculator Core** - Volume calculations, dilutions, real-time display
-- [ ] **Phase 3: Plate Visualization & Recipe Generation** - Well display, printable prep sheets, bead regions
+- [x] **Phase 3: Plate Visualization & Recipe Generation** - Well display, printable prep sheets, bead regions
 - [x] **Phase 3.1: Panel Data Import** - INSERTED - CSV/Excel import for panel data across all platforms
 - [x] **Phase 3.2: Panel Data Management** - INSERTED - Edit/delete analytes and panels in-app
-- [ ] **Phase 3.3: Analyte Selection Redesign** - INSERTED - Visual grid layout with panel grouping, sidebar, transitions
+- [x] **Phase 3.3: Analyte Selection Redesign** - INSERTED - Visual grid layout with panel grouping, sidebar, transitions
 - [ ] **Phase 4: Run Documentation & Persistence** - Metadata capture, save/load run records
 
 ## Phase Details
@@ -186,3 +186,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4
 ---
 *Roadmap created: 2026-01-22*
 *Last updated: 2026-02-04*
+*Plan template: see .planning/PLAN_TEMPLATE.md*
