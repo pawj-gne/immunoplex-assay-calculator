@@ -35,5 +35,5 @@ coverage/
 .mcp.json
 
 # Electron
-release/
+/release/
 *.asar
