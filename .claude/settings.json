@@ -2,7 +2,43 @@
   "permissions": {
     "allow": [
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git -C /Users/pawj/Lab_Dev/immunoplex-assay-calculator show --stat 6dce34f 96fb990)",
+      "Bash(git -C /Users/pawj/Lab_Dev/immunoplex-assay-calculator show --stat 4ea29e1 33f22fa cd2d84f 4039cc6 1a76688 b6b1f67)",
+      "Bash(git -C /Users/pawj/Lab_Dev/immunoplex-assay-calculator log --oneline 4ea29e1^..b6b1f67)",
+      "Bash(git -C /Users/pawj/Lab_Dev/immunoplex-assay-calculator show --stat d8e613a)",
+      "Bash(git -C /Users/pawj/Lab_Dev/immunoplex-assay-calculator show d8e613a)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(git -C /Users/pawj/Lab_Dev/immunoplex-assay-calculator remote -v)",
+      "Bash(git -C /Users/pawj/Lab_Dev/immunoplex-assay-calculator status --short)",
+      "Bash(git -C /Users/pawj/Lab_Dev/immunoplex-assay-calculator describe --tags --always)",
+      "Bash(gh release *)",
+      "Bash(wine --version)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/validate-commit-msg.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/check-plan-docs.sh"
+          }
+        ]
+      }
     ]
   }
 }
