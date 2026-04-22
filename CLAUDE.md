@@ -46,5 +46,10 @@ Key points:
 ### Releases
 See @.claude/release.md for the release workflow.
 
+### Testing (Windows-only)
+- Dev happens on macOS; no runtime testing on macOS (app is Windows-only for deployment).
+- Test cycle: `npm run build:win` -> download release artifact -> install on Windows workstation -> manual verification.
+- Note: ELECTRON_RUN_AS_NODE issue when running under Claude Code SDK means in-terminal test is unreliable anyway.
+
 ## Notes
 <!-- Any gotchas or non-obvious project details -->
