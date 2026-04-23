@@ -30,12 +30,15 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Run Documentation
 
-- [ ] **DOCM-01**: App captures run metadata (user name, date, operator, number of plates, number of samples, sample type, replicate mode, Hamilton assignment, tube block position, trough position, platform, species, panel selection, analyte count)
+- [x] **DOCM-01
+**: App captures run metadata (user name, date, operator, number of plates, number of samples, sample type, replicate mode, Hamilton assignment, tube block position, trough position, platform, species, panel selection, analyte count)
 
 ### Run Persistence
 
-- [ ] **PERS-01**: App saves run records to local storage
-- [ ] **PERS-02**: App loads previously saved run records
+- [x] **PERS-01
+**: App saves run records to local storage
+- [x] **PERS-02
+**: App loads previously saved run records
 
 ## v2 Requirements
 

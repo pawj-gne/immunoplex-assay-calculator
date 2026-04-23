@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase 3.3 shipped as v0.5.0 on 2026-02-04
-stopped_at: Phase 4 context gathered
-last_updated: "2026-04-23T04:04:10.555Z"
-last_activity: 2026-02-04 - Tagged v0.5.0 release
+status: executing
+stopped_at: Completed 04-01 backend persistence
+last_updated: "2026-04-23T04:17:19.147Z"
+last_activity: 2026-04-23
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 25
-  completed_plans: 19
-  percent: 76
+  completed_plans: 20
+  percent: 80
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Accurate reagent calculations with clear prep recipes - operators must be able to trust the math and follow the instructions without second-guessing.
-**Current focus:** Phase 4 - Run Documentation & Persistence (not yet started)
+**Current focus:** Phase 04 — run-documentation-persistence-deployment
 
 ## Current Position
 
-Phase: 3.3 complete; ready to start Phase 4
-Plan: Last executed 03.3-06 (ad-hoc, no plan file)
-Status: Phase 3.3 shipped as v0.5.0 on 2026-02-04
-Last activity: 2026-02-04 - Tagged v0.5.0 release
+Phase: 04 (run-documentation-persistence-deployment) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-04-23
 
-Progress: [##########  ] 83% (5 of 6 phases code-complete; Phase 4 remaining)
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Progress: [##########  ] 83% (5 of 6 phases code-complete; Phase 4 remaining)
 | 04-run-documentation | 0/3 | Not started | - |
 
 **Doc debt:** None — all SUMMARY files present. 03-03, 03.3-05, 03.3-06 were backfilled from git history on 2026-04-22; each carries a backfill banner noting that exact execution timing and live deviation notes are not available.
+| Phase 04-run-documentation-persistence-deployment P01 | 7m 17s | 5 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,11 @@ Recent decisions affecting current work:
 - **03.3-04:** calculatorStore.reset cascades to plateStore.reset
 - **03.3-05:** Decisions not captured in a SUMMARY doc (see commits 4ea29e1..b6b1f67 for changes)
 - **03.3-06:** Column header click-and-drag selection and layout consolidation (see commit d8e613a)
+- 04-01: RunUpdate = RunCreate alias propagated through type/schema/IPC/preload to keep contract internally consistent (ISSUE 3)
+- 04-01: requestType/platformId/speciesId immutable after create — enforced at repository layer by omitting from Drizzle SET clause
+- 04-01: Operators use soft-delete via active=0 to preserve FK integrity for historical runs (D-Discretion)
+- 04-01: Migration kept under drizzle-kit auto-generated name 0003_damp_prima.sql to avoid hand-editing _journal.json
+- 04-01: WELL_ID and PLATE_KEY regex validation in Zod for plates record catches malformed JSON before DB write
 
 ### Pending Todos
 
@@ -114,9 +120,9 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 4 context gathered
-Resume file: --resume-file
+Last session: 2026-04-23T04:17:19.143Z
+Stopped at: Completed 04-01 backend persistence
+Resume file: None
 Resume intent: Begin Phase 4 (Run Documentation, Persistence & Deployment)
 
 ## Releases
