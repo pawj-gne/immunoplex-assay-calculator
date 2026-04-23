@@ -183,10 +183,14 @@ Plans:
   3. Species appears in the summary/metadata header on the Document & Save and Finalized Run View steps (BUG-03)
   4. Selecting a premix panel scopes the analyte picker to that panel's analytes only; Panels I and II are mutually exclusive (UI-01)
   5. A fresh Windows .exe passes the original 14-step smoke test end-to-end
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 04.1 to break down)
+- [ ] 04.1-01-PLAN.md -- BUG-01: column-major duplicate fill in plateStore.autoFill (Wave 1)
+- [ ] 04.1-02-PLAN.md -- BUG-02: preserve existing plates across autoFill cascade (Wave 1)
+- [ ] 04.1-03-PLAN.md -- BUG-03: Species in RunList row + RunMetadataForm context banner (Wave 1)
+- [ ] 04.1-04-PLAN.md -- UI-01: scoped AnalyteGrid + clear stale singles on panel switch (Wave 1)
+- [ ] 04.1-05-PLAN.md -- Version bump to 0.6.0 + build:win + Windows HUMAN-UAT retest (Wave 2)
 
 **Source:** .planning/phases/04-run-documentation-persistence-deployment/04-SMOKE-TEST-RESULTS.md
 
@@ -204,9 +208,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1
 | 3.2. Panel Data Management | 3/3 | Complete | 2026-01-29 |
 | 3.3. Analyte Selection Redesign | 0/5 | Not started | - |
 | 4. Run Documentation, Persistence & Deployment | 5/5 | Code-complete; smoke test returned with blocking bugs | - |
-| 4.1. Smoke Test Fixes (INSERTED) | 0/? | Not planned | - |
+| 4.1. Smoke Test Fixes (INSERTED) | 0/5 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-04-23 (Phase 4.1 inserted for smoke test bug fixes; blocks v1.0 release)*
+*Last updated: 2026-04-23 (Phase 4.1 planned — 5 plans in 2 waves; blocks v1.0 release)*
 *Plan template: see .planning/PLAN_TEMPLATE.md*
