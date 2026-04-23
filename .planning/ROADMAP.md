@@ -155,18 +155,23 @@ Plans:
 **Depends on**: Phase 3
 **Requirements**: DOCM-01, PERS-01, PERS-02
 **Success Criteria** (what must be TRUE):
-  1. Operator can enter all run metadata (user, date, operator, sample count, sample type, replicate mode, platform, species, Hamilton assignment, positions, panel, analytes)
-  2. Operator can save a run record to local storage
-  3. Operator can load a previously saved run record and see all its data
+  1. Operator can enter all run metadata per CONTEXT.md §Required Metadata Fields (requestNumber + ad-hoc override, userName, operatorId, runDate, sampleType enum, dilutionFactor, sampleCount, replicateMode, platformId, speciesId, panelId, hamilton 1-5, runPlatePosition 1-4, standardPosition 1-2, troughPosition 1-2, comments, plex auto, plateCount auto)
+  2. Operator can save a run record to local storage; saves round-trip the plate layout with full fidelity (Record<plateNumber, well-ids>)
+  3. Operator can load a previously saved run record and see all its data rehydrated across the 4 existing stores + the plate grid
   4. Saved runs persist across application restarts
-  5. Application can be packaged as a Windows .exe installer
-  6. Installer can be deployed to the production PC and launched without dev tools
-**Plans**: 3 plans
+  5. Operator can edit a loaded run and re-save as UPDATE (createdAt preserved, updatedAt bumped); dirty-state tracking gates reloads and the wizard Back button from the finalized view
+  6. Wizard grows from 3 steps to 5 (Platform/Species → Analytes → Calculations → Document & Save → Finalized Run View); step 5 reuses Phase 3 recipe components in read-only mode with Print and Start New Run
+  7. Operators master list is seeded (9 names) and editable via a new section on the Manage page; soft-delete via `active` flag preserves historical run references
+  8. Application can be packaged as a Windows .exe installer (functional-only; custom appId, icon, signing, auto-updater all deferred per D-26)
+  9. Installer can be deployed to the production PC and launched without dev tools
+**Plans**: 5 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- Run persistence layer (schema, repository, IPC handlers, preload bridge)
-- [ ] 04-02-PLAN.md -- Run metadata form UI with Zustand store and run list
-- [ ] 04-03-PLAN.md -- Windows .exe packaging with electron-builder
+- [ ] 04-01-PLAN.md -- Backend: schema (runs, runSingleAnalytes, operators) + migration + repository + IPC + preload (Wave 1)
+- [ ] 04-02-PLAN.md -- Document & Save wizard step 4: runStore + RunMetadataForm + RunList + dirty tracking + save/update flow (Wave 3)
+- [ ] 04-03-PLAN.md -- Windows .exe packaging with electron-builder (functional-only, Wave 5)
+- [ ] 04-04-PLAN.md -- Finalized Run View wizard step 5: read-only PlateGrid + PrepSheet/ReagentChecklist/BeadRegionList reuse + Print + edit-warning modal + Start New Run (Wave 4)
+- [ ] 04-05-PLAN.md -- Operators Manage page + operatorsStore + OperatorEditModal + app-init load (Wave 2)
 
 ## Progress
 
@@ -181,9 +186,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4
 | 3.1. Panel Data Import | 2/2 | Complete | 2026-01-29 |
 | 3.2. Panel Data Management | 3/3 | Complete | 2026-01-29 |
 | 3.3. Analyte Selection Redesign | 0/5 | Not started | - |
-| 4. Run Documentation & Persistence | 0/3 | Not started | - |
+| 4. Run Documentation, Persistence & Deployment | 0/5 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-02-04*
+*Last updated: 2026-04-22*
 *Plan template: see .planning/PLAN_TEMPLATE.md*
