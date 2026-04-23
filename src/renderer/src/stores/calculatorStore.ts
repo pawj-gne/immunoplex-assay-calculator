@@ -131,6 +131,18 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
   reset: () => {
     set(initialState)
     usePlateStore.getState().reset()
+    // Clear the loaded-run pointer + dirty baseline so a Reset from the
+    // calculator behaves like a truly fresh run (no loaded run persists
+    // across a reset, per Plan 04-02 §"On Reset ... dirty tracker is also
+    // re-synced and currentRunId is cleared").
+    //
+    // Dynamic import keeps runStore out of the calculatorStore module graph
+    // in production bundling and avoids a potential circular: runStore
+    // imports calculatorStore, and importing back at module load would
+    // create a cycle. window.* lookup uses the already-initialized module.
+    void import('./runStore').then(({ useRunStore }) => {
+      useRunStore.getState().clearCurrentRun()
+    })
   },
 
   getOutputs: () => {
