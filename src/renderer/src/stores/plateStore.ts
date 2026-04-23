@@ -114,11 +114,12 @@ export const usePlateStore = create<PlateState>((set, get) => ({
           if (samplesAssigned >= sampleCount) break
         }
       } else {
-        // Duplicates mode: horizontal pairs first (cols 4-5, 6-7, 8-9, 10-11),
-        // then vertical pairs in col 12
-        // Fill row-by-row for horizontal: for each row, fill all 4 horizontal pairs
-        for (let rowIndex = 0; rowIndex < ROWS.length; rowIndex++) {
-          for (const [col1, col2] of DUPLICATE_HORIZONTAL_PAIRS) {
+        // Duplicates mode: horizontal pairs (cols 4-5, 6-7, 8-9, 10-11), then
+        // vertical pairs in col 12. Per D-4.1-01 (Phase 4.1), fill COLUMN-MAJOR:
+        // each column-pair fills top-to-bottom before moving to the next pair.
+        // This matches how Hamilton liquid handlers pipette (column-by-column).
+        for (const [col1, col2] of DUPLICATE_HORIZONTAL_PAIRS) {
+          for (let rowIndex = 0; rowIndex < ROWS.length; rowIndex++) {
             if (samplesAssigned >= sampleCount) break
             plateWells.add(wellId(rowIndex, col1))
             plateWells.add(wellId(rowIndex, col2))
