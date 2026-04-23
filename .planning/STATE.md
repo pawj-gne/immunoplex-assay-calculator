@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-02 Document & Save wizard page
-last_updated: "2026-04-23T04:38:45Z"
+stopped_at: Completed 04-04 Finalized Run View
+last_updated: "2026-04-23T04:53:31Z"
 last_activity: 2026-04-23
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 25
-  completed_plans: 22
-  percent: 88
+  completed_plans: 23
+  percent: 92
 ---
 
 # Project State
@@ -26,17 +26,17 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Phase: 04 (run-documentation-persistence-deployment) — EXECUTING
-Plan: 4 of 5 (next: 04-04 Finalized Run View, then 04-03 Windows installer)
+Plan: 5 of 5 (next: 04-03 Windows installer)
 Status: Ready to execute
 Last activity: 2026-04-23
 
-Progress: [████████▊░] 88%
+Progress: [█████████▏] 92%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 18 (17 planned + 1 ad-hoc 03.3-06)
+- Total plans completed: 19 (18 planned + 1 ad-hoc 03.3-06)
 - Released versions: v0.1.0, v0.2.0, v0.3.0, v0.4.0, v0.4.1, v0.4.2, v0.5.0
 
 **By Phase:**
@@ -49,12 +49,13 @@ Progress: [████████▊░] 88%
 | 03.1-panel-data-import | 2/2 | Complete | v0.4.0 (2026-01-29) |
 | 03.2-panel-data-management | 3/3 | Complete | v0.4.0 (2026-01-29) |
 | 03.3-analyte-selection-redesign | 6/6 | Complete (includes ad-hoc 03.3-06) | v0.5.0 (2026-02-04) |
-| 04-run-documentation-persistence-deployment | 3/5 | In Progress (04-01 + 04-02 + 04-05 complete) | - |
+| 04-run-documentation-persistence-deployment | 4/5 | In Progress (04-01 + 04-02 + 04-04 + 04-05 complete) | - |
 
 **Doc debt:** None — all SUMMARY files present. 03-03, 03.3-05, 03.3-06 were backfilled from git history on 2026-04-22; each carries a backfill banner noting that exact execution timing and live deviation notes are not available.
 | Phase 04-run-documentation-persistence-deployment P01 | 7m 17s | 5 tasks | 17 files |
 | Phase 04-run-documentation-persistence-deployment P05 | 4m 0s | 4 tasks | 5 files |
 | Phase 04-run-documentation-persistence-deployment P02 | 10m 39s | 6 tasks | 12 files |
+| Phase 04-run-documentation-persistence-deployment P04 | 9m 0s | 5 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -124,10 +125,17 @@ Recent decisions affecting current work:
 - 04-02: Wizard chrome + Next-button gating use PAGE_LABELS.length so Plan 04-04 can extend to 5 without revisiting App.tsx chrome
 - 04-02: Circular import (runStore → useRunSnapshot → calculatorStore → runStore) broken via registerRunStoreResetHook late-binding shim (avoids Vite dynamic-import chunking warning)
 - 04-02: useRunSnapshot uses useMemo wrapping buildRunSnapshot — passes tsconfig.web strict noUnusedLocals without eslint-disable comments on selector subscriptions
+- 04-04: PlateGrid read-only mode is a third rendering path gated on `interactive === false && selectedWells !== undefined` — keeps PlatePanel's step-3 behavior and the usePlateLayout fallback byte-for-byte identical
+- 04-04: FinalizedRunView builds its own 8x12 WellData grid rather than using usePlateLayout — preserves D-02 round-trip fidelity for operator-customized plate layouts (usePlateLayout regenerates the deterministic auto-fill output and would clobber any rearrangement)
+- 04-04: WellCell retains base green for filled cells in read-only mode (drops only the flashy ring-2 ring-green-300 selection indicator) so the finalized bench sheet clearly shows the saved layout — D-06 "no selection indicator" interpreted as dropping the ring, NOT dropping the fill coloring
+- 04-04: Start New Run uses inline multi-store reset (calculator cascade + platformStore.clearSelection + selectionStore.resetAllSelections) rather than extending calculatorStore.reset's cascade — minimal-intrusion path, keeps calculator reset contract narrow
+- 04-04: App.tsx handleBack reads useRunStore.getState().currentRunId imperatively instead of subscribing — the conditional only fires on explicit user click, no re-render needed
+- 04-04: Aggregate label in FinalizedRunHeader ("Request XXXXX — N plate(s)") + per-plate label in FinalizedRunView ("Request XXXXX — Plate N of M") split — identity in the header, layout scoping inline with each grid
+- 04-04: EditWarningModal is a thin ConfirmModal wrapper using the symmetric secondaryStyle='destructive' prop that Plan 04-02 Task 4 shipped — no inline JSX fallback needed for D-12 'Edit anyway' destructive rendering
+- 04-04: FinalizedRunView renders PrepSheet + ReagentChecklist + BeadRegionList as three separate sibling sections per D-06 even though PrepSheet already embeds the latter two — preserves PrepSheet's public API (plan truth #5) and satisfies Task 3 acceptance greps. Potential cosmetic revisit for Plan 04-03 Windows smoke test.
 
 ### Pending Todos
 
-- Plan 04-04: Finalized Run View (wizard step 5) — read-only PlateGrid + PrepSheet reuse, Print, D-12 edit-warning modal, Start New Run
 - Plan 04-03: Windows .exe packaging via electron-builder (functional-only, runtime smoke test against the full 04-01 / 04-02 / 04-04 / 04-05 stack)
 
 ### Blockers/Concerns
@@ -136,10 +144,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-23T04:38:45Z
-Stopped at: Completed 04-02 Document & Save wizard page
+Last session: 2026-04-23T04:53:31Z
+Stopped at: Completed 04-04 Finalized Run View
 Resume file: None
-Resume intent: Execute 04-04 Finalized Run View (wizard step 5) — consumes runStore.currentRunId from 04-02, ConfirmModal with secondaryStyle=destructive for D-12 'Edit anyway', and the existing Phase 3 recipe components in read-only mode
+Resume intent: Execute 04-03 Windows .exe packaging — electron-builder functional-only build, then Windows PC smoke test covering the full save / finalized-view / print / start-new-run / load / edit-warning-modal flow shipped by 04-01 + 04-02 + 04-04 + 04-05
 
 ## Releases
 

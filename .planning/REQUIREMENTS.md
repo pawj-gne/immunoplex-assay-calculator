@@ -95,9 +95,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RECP-02 | Phase 3 | Pending |
 | RECP-03 | Phase 3 | Pending |
 | RECP-04 | Phase 3 | Pending |
-| DOCM-01 | Phase 4 (04-01 + 04-02 + 04-05) | Complete |
+| DOCM-01 | Phase 4 (04-01 + 04-02 + 04-04 + 04-05) | Complete |
 | PERS-01 | Phase 4 (04-01 + 04-02) | Complete |
-| PERS-02 | Phase 4 (04-01 + 04-02; closes fully with 04-04) | In Progress |
+| PERS-02 | Phase 4 (04-01 + 04-02 + 04-04) | Complete |
 
 **Coverage:**
 - v1 requirements: 15 total

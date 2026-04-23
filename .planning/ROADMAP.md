@@ -170,7 +170,7 @@ Plans:
 - [x] 04-01-PLAN.md -- Backend: schema (runs, runSingleAnalytes, operators) + migration + repository + IPC + preload (Wave 1)
 - [x] 04-02-PLAN.md -- Document & Save wizard step 4: runStore + RunMetadataForm + RunList + dirty tracking + save/update flow (Wave 3)
 - [ ] 04-03-PLAN.md -- Windows .exe packaging with electron-builder (functional-only, Wave 5)
-- [ ] 04-04-PLAN.md -- Finalized Run View wizard step 5: read-only PlateGrid + PrepSheet/ReagentChecklist/BeadRegionList reuse + Print + edit-warning modal + Start New Run (Wave 4)
+- [x] 04-04-PLAN.md -- Finalized Run View wizard step 5: read-only PlateGrid + PrepSheet/ReagentChecklist/BeadRegionList reuse + Print + edit-warning modal + Start New Run (Wave 4)
 - [x] 04-05-PLAN.md -- Operators Manage page + operatorsStore + OperatorEditModal + app-init load (Wave 2)
 
 ## Progress
@@ -186,9 +186,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4
 | 3.1. Panel Data Import | 2/2 | Complete | 2026-01-29 |
 | 3.2. Panel Data Management | 3/3 | Complete | 2026-01-29 |
 | 3.3. Analyte Selection Redesign | 0/5 | Not started | - |
-| 4. Run Documentation, Persistence & Deployment | 3/5 | In Progress | - |
+| 4. Run Documentation, Persistence & Deployment | 4/5 | In Progress | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-04-23 (Plan 04-02 complete)*
+*Last updated: 2026-04-23 (Plan 04-04 complete)*
 *Plan template: see .planning/PLAN_TEMPLATE.md*
