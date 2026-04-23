@@ -22,7 +22,21 @@ Accurate reagent calculations with clear prep recipes — operators must be able
 
 ### Active
 
-(None — v1.0 milestone code-complete pending Windows smoke test)
+(None carried from v1.0 — v1.0 code-complete pending Windows smoke test HUMAN-UAT-04.1-05-01; see Current Milestone below for v2.0 scope)
+
+## Current Milestone: v2.0 Panel XLSX Upload + Master-Panel Data Model
+
+**Goal:** Replace the flat-CSV panel importer with a vendor-native multi-tab xlsx format, introduce a `master_panels` concept to anchor reagent volumes and vendor-specific terminology per (platform, species), and wire the calculator to read reagent volumes from the master panel when available.
+
+**Target features:**
+- **Panel XLSX upload** — multi-tab xlsx ingest replacing or coexisting with v1's flat CSV. Per-tab pipeline with metadata (B1–B4 + optional A6 vendor singles term), master analyte list (cols A/B/C), premix columns (E+), blank-stop rules, case-insensitive platform/species resolution, validation-before-write, upsert-on-re-import. Full spec in `.planning/PANEL-UPLOAD-V2-SPEC.md`.
+- **Vendor-specific singles term in UI** — once `vendor_singles_term` lands on master panels, replace the generic "Analytes" label in `AnalyteGrid` with the vendor term ("Singleplex", "Simplex", etc.) when available. Closes D-4.1-05.
+- **Calculator reagent-volume wiring** — calculator reads `reagent_volume_per_well` from the run's master panel first, falls back to platform default for full-custom and v1-imported panels. Documented behavior change.
+
+**Key context:**
+- Schema delta: new `master_panels` table; `master_panel_id` FK on `panels` and `analytes` (nullable for v1-imported rows).
+- v1 out-of-scope items (tablet support, barcode scanning, photo annotation, lab usage tracking) stay out of v2.0. If any are pulled forward after stakeholder feedback, they land as v2.1+.
+- 6 open decisions from `.planning/PANEL-UPLOAD-V2-SPEC.md` §Open decisions (replace-vs-coexist, calculator strictness, vendor-term UI placement, premix-drop semantics, validation strictness, file-level schema versioning) will be locked during `/gsd-discuss-phase` before planning the first phase.
 
 ### Out of Scope
 
@@ -74,5 +88,22 @@ Accurate reagent calculations with clear prep recipes — operators must be able
 | Manual lot number entry for v1 | Barcode scanning adds complexity; manual entry matches current workflow | — Pending |
 | Platform-specific configuration | Each vendor (Milliplex, BioRad, etc.) has different stock concentrations and analytes | — Pending |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-04-23 after Phase 4 completion — v1.0 milestone code-complete pending Windows smoke test HUMAN-UAT-04-03-01*
+*Last updated: 2026-04-23 — v2.0 milestone opened (Panel XLSX Upload + Master-Panel Data Model); v1.0 code-complete pending HUMAN-UAT-04.1-05-01*

@@ -1,7 +1,7 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
+milestone: v2.0
+milestone_name: panel-xlsx-upload
 status: executing
 stopped_at: Phase 4.1 code-complete on dev/v1-01; v0.6.0 installers built; Windows smoke retest deferred to HUMAN-UAT-04.1-05-01
 last_updated: "2026-04-23T22:15:00.000Z"
@@ -21,16 +21,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Accurate reagent calculations with clear prep recipes - operators must be able to trust the math and follow the instructions without second-guessing.
-**Current focus:** Phase 04.1 — smoke-test-fixes
+**Current focus:** Milestone v2.0 — Panel XLSX Upload + Master-Panel Data Model (planning)
 
 ## Current Position
 
-Phase: 04.1 (smoke-test-fixes) — EXECUTING
-Plan: 1 of 5
-Status: Executing Phase 04.1
-Last activity: 2026-04-23 -- Phase 04.1 execution started
+Milestone: v2.0 (Panel XLSX Upload + Master-Panel Data Model)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-23 -- Milestone v2.0 started
 
-Progress: [█████████▌] 96%
+Progress: [██████████] v1.0 code-complete (pending HUMAN-UAT-04.1-05-01); v2.0 requirements definition in progress
 
 ## Performance Metrics
 
