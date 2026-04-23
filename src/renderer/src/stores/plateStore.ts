@@ -86,9 +86,10 @@ export const usePlateStore = create<PlateState>((set, get) => ({
   },
 
   autoFill: () => {
-    const { sampleCount, replicateMode } = get()
+    const { sampleCount, replicateMode, plates: existingPlates, activePlate } = get()
 
     if (sampleCount <= 0) {
+      // sampleCount = 0 is the explicit "wipe" signal — operator zeroed the count.
       set({ plates: { 1: new Set<string>() }, activePlate: 1 })
       return
     }
@@ -97,21 +98,34 @@ export const usePlateStore = create<PlateState>((set, get) => ({
       replicateMode === 'singles' ? UNKNOWN_WELLS_SINGLES : UNKNOWN_WELLS_DUPLICATES
     const minPlates = Math.ceil(sampleCount / wellsPerPlate)
 
-    const newPlates: Record<number, Set<string>> = {}
+    // Start from existing plates so operator edits on any non-empty plate are preserved.
+    // Per D-4.1-02 (BUG-02 fix): autoFill only writes to plate slots that are missing
+    // or empty — it never clobbers a non-empty plate's wells.
+    const newPlates: Record<number, Set<string>> = { ...existingPlates }
+
+    // Count samples already represented by existing non-empty plates.
+    // In duplicates mode, two wells = one sample, so divide by 2.
     let samplesAssigned = 0
+    for (const wells of Object.values(newPlates)) {
+      if (wells.size > 0) {
+        samplesAssigned +=
+          replicateMode === 'duplicates' ? Math.floor(wells.size / 2) : wells.size
+      }
+    }
 
-    for (let p = 1; p <= minPlates; p++) {
-      const plateWells = new Set<string>()
-
+    // Helper: fill a single plate's Set<string> up to `sampleCount`, incrementing
+    // samplesAssigned. Uses the column-major duplicates loop landed by Plan 04.1-01
+    // (outer DUPLICATE_HORIZONTAL_PAIRS, inner rows A-H). Returns when
+    // samplesAssigned >= sampleCount or the plate is full.
+    const fillPlate = (plateWells: Set<string>): void => {
       if (replicateMode === 'singles') {
         // Fill column-first: A4, B4, C4... H4, A5, B5... for columns 4-12
         for (const col of UNKNOWN_COLS_ORDERED) {
           for (let rowIndex = 0; rowIndex < ROWS.length; rowIndex++) {
-            if (samplesAssigned >= sampleCount) break
+            if (samplesAssigned >= sampleCount) return
             plateWells.add(wellId(rowIndex, col))
             samplesAssigned++
           }
-          if (samplesAssigned >= sampleCount) break
         }
       } else {
         // Duplicates mode: horizontal pairs (cols 4-5, 6-7, 8-9, 10-11), then
@@ -120,31 +134,63 @@ export const usePlateStore = create<PlateState>((set, get) => ({
         // This matches how Hamilton liquid handlers pipette (column-by-column).
         for (const [col1, col2] of DUPLICATE_HORIZONTAL_PAIRS) {
           for (let rowIndex = 0; rowIndex < ROWS.length; rowIndex++) {
-            if (samplesAssigned >= sampleCount) break
+            if (samplesAssigned >= sampleCount) return
             plateWells.add(wellId(rowIndex, col1))
             plateWells.add(wellId(rowIndex, col2))
             samplesAssigned++
           }
-          if (samplesAssigned >= sampleCount) break
         }
 
         // Vertical pairs in column 12: A/E, B/F, C/G, D/H (4 pairs)
-        if (samplesAssigned < sampleCount) {
-          for (let topRow = 0; topRow < 4; topRow++) {
-            if (samplesAssigned >= sampleCount) break
-            plateWells.add(wellId(topRow, DUPLICATE_VERTICAL_COL))
-            plateWells.add(wellId(topRow + 4, DUPLICATE_VERTICAL_COL))
-            samplesAssigned++
-          }
+        for (let topRow = 0; topRow < 4; topRow++) {
+          if (samplesAssigned >= sampleCount) return
+          plateWells.add(wellId(topRow, DUPLICATE_VERTICAL_COL))
+          plateWells.add(wellId(topRow + 4, DUPLICATE_VERTICAL_COL))
+          samplesAssigned++
         }
       }
-
-      newPlates[p] = plateWells
     }
 
-    // Ensure activePlate is within range
-    const { activePlate } = get()
-    const validActivePlate = activePlate > minPlates ? 1 : activePlate
+    // Ensure at least `minPlates` plate slots exist (create empty Sets for any missing).
+    for (let p = 1; p <= minPlates; p++) {
+      if (!newPlates[p]) {
+        newPlates[p] = new Set<string>()
+      }
+    }
+
+    // Fill only plates that are CURRENTLY empty, walking p=1..minPlates.
+    // Non-empty plates are preserved (operator or prior auto-fill touched them).
+    for (let p = 1; p <= minPlates; p++) {
+      if (samplesAssigned >= sampleCount) break
+      const plateWells = newPlates[p]
+      if (plateWells.size > 0) continue // skip non-empty plates — preserve operator edits
+      fillPlate(plateWells)
+    }
+
+    // Overflow: if existing non-empty plates meant the main loop skipped slots and
+    // samplesAssigned still trails sampleCount, append new plates and fill them
+    // until every sample has a home. This handles Scenario D from the plan:
+    // plates={1: full, 2: empty}, bump sampleCount 32→33 — sample 33 needs a home
+    // and plate 1 is non-empty, so overflow creates/uses plate 2 or plate 3.
+    let nextPlate =
+      Object.keys(newPlates).length > 0
+        ? Math.max(...Object.keys(newPlates).map(Number)) + 1
+        : 1
+    while (samplesAssigned < sampleCount) {
+      // Prefer any existing empty slot (e.g. operator-added empty plate 2)
+      // before appending a new one, so we don't pointlessly grow the record.
+      const existingEmptySlot = Object.keys(newPlates)
+        .map(Number)
+        .sort((a, b) => a - b)
+        .find((n) => newPlates[n].size === 0)
+      const targetPlate = existingEmptySlot !== undefined ? existingEmptySlot : nextPlate++
+      if (!newPlates[targetPlate]) newPlates[targetPlate] = new Set<string>()
+      fillPlate(newPlates[targetPlate])
+    }
+
+    // activePlate stays as-is unless it now points past the last plate slot.
+    const maxPlate = Math.max(...Object.keys(newPlates).map(Number))
+    const validActivePlate = activePlate > maxPlate ? 1 : activePlate
 
     set({ plates: newPlates, activePlate: validActivePlate })
   },
