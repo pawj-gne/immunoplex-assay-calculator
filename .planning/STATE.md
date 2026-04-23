@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: milestone_complete
-stopped_at: Completed 04-03 Windows installer plan (smoke test pending HUMAN-UAT)
-last_updated: "2026-04-22T22:30:00Z"
-last_activity: 2026-04-22
+status: completed
+stopped_at: Completed 04-03 Windows installer plan (Tasks 1+2 implementation, Task 3 deferred to HUMAN-UAT-04-03-01)
+last_updated: "2026-04-23T21:24:40.159Z"
+last_activity: 2026-04-23
 progress:
-  total_phases: 7
+  total_phases: 8
   completed_phases: 6
-  total_plans: 25
+  total_plans: 30
   completed_plans: 24
-  percent: 86
+  percent: 80
 ---
 
 # Project State
@@ -170,4 +170,4 @@ Resume intent: Phase 4 verification pass — verifier should surface HUMAN-UAT-0
 - **v0.4.2** (2026-01-29): Remove R&D Systems, correct platform names
 - **v0.5.0** (2026-02-04): Selection UX Redesign & Interactive Plate Grid (Phase 3.3)
 
-**Planned Phase:** 04 (run-documentation-persistence-deployment) — 5 plans — 2026-04-23T04:04:10.542Z
+**Planned Phase:** 04.1 (smoke-test-fixes) — 5 plans — 2026-04-23T21:24:40.151Z
