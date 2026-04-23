@@ -20,6 +20,17 @@ interface PlateGridProps {
   onColumnMouseDown?: (col: number) => void // 1-indexed column drag start
   onColumnMouseEnter?: (col: number) => void // 1-indexed column entered (drag or hover)
   onColumnMouseLeave?: (col: number) => void // 1-indexed column left
+  /**
+   * Read-only rendering flag (Plan 04-04 D-06).
+   * When `interactive === false`:
+   *   - no grid-level onMouseUp handler
+   *   - no column-header click / drag handlers (and no header hover classes)
+   *   - no per-cell mouse handlers (forwarded via WellCell's `interactive` prop too)
+   *   - no selection ring / hover styling on cells (WellCell handles the visual)
+   * Defaults to true for backward compatibility — step-3 consumers
+   * (PlatePanel) omit the prop and keep full interactivity.
+   */
+  interactive?: boolean
 }
 
 /**
@@ -50,10 +61,17 @@ export function PlateGrid({
   highlightedColumn,
   onColumnMouseDown,
   onColumnMouseEnter,
-  onColumnMouseLeave
+  onColumnMouseLeave,
+  interactive = true
 }: PlateGridProps) {
-  // Determine if we're in interactive mode (any interactive prop provided)
-  const isInteractive = selectedWells !== undefined || hoveredWells !== undefined
+  // Determine if we're in interactive mode. Requires:
+  //   (a) `interactive` prop not explicitly set to false (Plan 04-04 read-only flag), AND
+  //   (b) at least one selection/hover set provided (existing step-3 signal).
+  // When `interactive === false` is passed, all mouse handlers + selection
+  // rings are suppressed even if `selectedWells` is passed (so the finalized
+  // bench sheet can show filled wells without interactive affordances).
+  const isInteractive =
+    interactive && (selectedWells !== undefined || hoveredWells !== undefined)
 
   return (
     <div className="space-y-4">
@@ -138,8 +156,33 @@ export function PlateGrid({
                   )
                 }
 
-                // Non-interactive (backward-compatible) rendering
-                return <WellCell key={well.id} well={well} />
+                // Read-only with store-driven fill state (Plan 04-04): if the
+                // caller passed `interactive={false}` alongside selectedWells +
+                // sampleIndexMap, render each cell with its filled state and
+                // sample number but WITHOUT any mouse handlers, selection
+                // rings, or hover affordances. This is the Finalized Run View
+                // mode.
+                if (!interactive && selectedWells !== undefined) {
+                  const isEditable = standardCols
+                    ? !standardCols.includes(well.col)
+                    : false
+                  const dynamicIndex = sampleIndexMap?.get(`${activePlate}:${well.id}`)
+
+                  return (
+                    <WellCell
+                      key={well.id}
+                      well={well}
+                      isSelected={selectedWells.has(well.id)}
+                      isEditable={isEditable}
+                      dynamicIndex={dynamicIndex}
+                      interactive={false}
+                    />
+                  )
+                }
+
+                // Non-interactive (backward-compatible) rendering from
+                // usePlateLayout — wells already carry static sampleIndex.
+                return <WellCell key={well.id} well={well} interactive={interactive} />
               })}
             </Fragment>
           ))}

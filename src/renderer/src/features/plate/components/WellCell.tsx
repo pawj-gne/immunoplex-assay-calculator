@@ -10,6 +10,17 @@ interface WellCellProps {
   dynamicIndex?: number // sample index computed from plateStore selections
   onMouseDown?: (event: React.MouseEvent) => void
   onMouseEnter?: () => void
+  /**
+   * Read-only rendering flag (Plan 04-04 D-06).
+   * When `interactive === false`:
+   *   - no cursor-pointer class (even if isEditable is true)
+   *   - no hover-based classes (isHovered / isColumnHighlighted are ignored)
+   *   - no selection ring (the flashy `ring-2 ring-green-300` is dropped)
+   *     — filled wells still render in green with their sample number so
+   *     the finalized bench sheet clearly shows the saved layout.
+   * Defaults to true for backward compatibility with step-3 consumers.
+   */
+  interactive?: boolean
 }
 
 /**
@@ -34,7 +45,8 @@ export const WellCell = memo(function WellCell({
   isColumnHighlighted,
   dynamicIndex,
   onMouseDown,
-  onMouseEnter
+  onMouseEnter,
+  interactive = true
 }: WellCellProps) {
   const baseClasses =
     'w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-medium select-none transition-colors duration-75'
@@ -45,18 +57,23 @@ export const WellCell = memo(function WellCell({
       return 'bg-blue-100 border-blue-400 text-blue-700'
     }
 
-    // Selected/filled well: green highlight with ring
+    // Selected/filled well: green highlight. In interactive mode we add a
+    // bright ring to signal interaction affordance; in read-only mode the
+    // ring is suppressed (D-06 "no selection indicator rendered") but the
+    // base green still communicates the saved layout on the bench sheet.
     if (isSelected) {
-      return 'bg-green-200 border-green-500 text-green-800 ring-2 ring-green-300'
+      return interactive
+        ? 'bg-green-200 border-green-500 text-green-800 ring-2 ring-green-300'
+        : 'bg-green-200 border-green-500 text-green-800'
     }
 
-    // Hovered well during drag preview (not already selected)
-    if (isHovered) {
+    // Hovered well during drag preview (not already selected) — interactive only.
+    if (interactive && isHovered) {
       return 'bg-blue-50 border-blue-300 ring-2 ring-blue-200'
     }
 
-    // Column header hover highlight (not selected, not standard)
-    if (isColumnHighlighted) {
+    // Column header hover highlight (not selected, not standard) — interactive only.
+    if (interactive && isColumnHighlighted) {
       return 'bg-blue-50 border-blue-300'
     }
 
@@ -71,6 +88,8 @@ export const WellCell = memo(function WellCell({
   }
 
   const getCursorClass = (): string => {
+    // Read-only mode: never show the pointer affordance.
+    if (!interactive) return 'cursor-default'
     if (isEditable) return 'cursor-pointer'
     return 'cursor-default'
   }
@@ -95,8 +114,8 @@ export const WellCell = memo(function WellCell({
     <div
       className={`${baseClasses} ${getTypeClasses()} ${getCursorClass()}`}
       title={`${well.id} - ${well.type}${well.sampleIndex ? ` (Sample ${well.sampleIndex})` : ''}`}
-      onMouseDown={onMouseDown}
-      onMouseEnter={onMouseEnter}
+      onMouseDown={interactive ? onMouseDown : undefined}
+      onMouseEnter={interactive ? onMouseEnter : undefined}
     >
       {getContent()}
     </div>
