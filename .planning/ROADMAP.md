@@ -187,10 +187,10 @@ Plans:
 
 Plans:
 - [ ] 04.1-01-PLAN.md -- BUG-01: column-major duplicate fill in plateStore.autoFill (Wave 1)
-- [ ] 04.1-02-PLAN.md -- BUG-02: preserve existing plates across autoFill cascade (Wave 1)
+- [ ] 04.1-02-PLAN.md -- BUG-02: preserve existing plates across autoFill cascade (Wave 2)
 - [ ] 04.1-03-PLAN.md -- BUG-03: Species in RunList row + RunMetadataForm context banner (Wave 1)
 - [ ] 04.1-04-PLAN.md -- UI-01: scoped AnalyteGrid + clear stale singles on panel switch (Wave 1)
-- [ ] 04.1-05-PLAN.md -- Version bump to 0.6.0 + build:win + Windows HUMAN-UAT retest (Wave 2)
+- [ ] 04.1-05-PLAN.md -- Version bump to 0.6.0 + build:win + Windows HUMAN-UAT retest (Wave 3)
 
 **Source:** .planning/phases/04-run-documentation-persistence-deployment/04-SMOKE-TEST-RESULTS.md
 
