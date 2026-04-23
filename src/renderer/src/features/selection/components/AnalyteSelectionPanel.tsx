@@ -9,14 +9,13 @@ export function AnalyteSelectionPanel() {
     selectedPanelId,
     selectedPanel,
     panelAnalytes,
+    availableAnalytes,
     selectedSingleIds,
     selectedSingles,
     isLoading,
     panelLoading,
     canAddMoreSingles,
     remainingSingles,
-    panelAnalyteMap,
-    unassignedAnalytes,
     selectPanel,
     toggleSingleAnalyte
   } = useAnalyteSelection()
@@ -60,10 +59,8 @@ export function AnalyteSelectionPanel() {
         {/* Left: Analyte grid */}
         <div className="flex-1 min-w-0">
           <AnalyteGrid
-            panels={panels}
-            panelAnalyteMap={panelAnalyteMap}
-            unassignedAnalytes={unassignedAnalytes}
-            selectedPanelId={selectedPanelId}
+            scopedAnalytes={selectedPanelId && selectedPanel ? selectedPanel.analytes : availableAnalytes}
+            sectionLabel={selectedPanelId && selectedPanel ? selectedPanel.name : 'Analytes'}
             selectedSingleIds={selectedSingleIds}
             canAddMoreSingles={canAddMoreSingles}
             onToggleSingle={toggleSingleAnalyte}

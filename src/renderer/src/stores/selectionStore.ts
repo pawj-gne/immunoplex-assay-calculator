@@ -158,13 +158,23 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
   },
 
   selectPanel: async (panelId: string | null) => {
+    // Per D-4.1-04: switching between premix selections (including to "No Premix")
+    // must clear stale singles so analytes scoped to the prior premix do not
+    // survive the switch. Clear optimistically; re-applied even on fetch error.
     if (panelId === null) {
-      // Deselect panel, keep singles
-      set({ selectedPanelId: null, selectedPanel: null })
+      set({
+        selectedPanelId: null,
+        selectedPanel: null,
+        selectedSingleIds: []
+      })
       return
     }
 
-    set({ panelLoading: true, panelError: null })
+    set({
+      panelLoading: true,
+      panelError: null,
+      selectedSingleIds: []
+    })
 
     try {
       const panelWithAnalytes = await window.electronAPI.panel.getWithAnalytes(panelId)
