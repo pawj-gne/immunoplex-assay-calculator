@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-04 Finalized Run View
-last_updated: "2026-04-23T04:53:31Z"
-last_activity: 2026-04-23
+stopped_at: Completed 04-03 Windows installer plan (smoke test pending HUMAN-UAT)
+last_updated: "2026-04-22T22:30:00Z"
+last_activity: 2026-04-22
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 25
-  completed_plans: 23
-  percent: 92
+  completed_plans: 24
+  percent: 96
 ---
 
 # Project State
@@ -25,18 +25,18 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 
 ## Current Position
 
-Phase: 04 (run-documentation-persistence-deployment) — EXECUTING
-Plan: 5 of 5 (next: 04-03 Windows installer)
-Status: Ready to execute
-Last activity: 2026-04-23
+Phase: 04 (run-documentation-persistence-deployment) — EXECUTING (final HUMAN-UAT pending)
+Plan: 5 of 5 complete (04-03 closed out 2026-04-22; Windows physical smoke test deferred to HUMAN-UAT)
+Status: All 5 Phase 4 plans complete on dev/v1-01; awaiting Windows workstation smoke test before phase verification
+Last activity: 2026-04-22
 
-Progress: [█████████▏] 92%
+Progress: [█████████▌] 96%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 19 (18 planned + 1 ad-hoc 03.3-06)
+- Total plans completed: 24 (23 planned + 1 ad-hoc 03.3-06); Phase 4 fully implemented; Windows physical smoke test pending HUMAN-UAT
 - Released versions: v0.1.0, v0.2.0, v0.3.0, v0.4.0, v0.4.1, v0.4.2, v0.5.0
 
 **By Phase:**
@@ -49,13 +49,14 @@ Progress: [█████████▏] 92%
 | 03.1-panel-data-import | 2/2 | Complete | v0.4.0 (2026-01-29) |
 | 03.2-panel-data-management | 3/3 | Complete | v0.4.0 (2026-01-29) |
 | 03.3-analyte-selection-redesign | 6/6 | Complete (includes ad-hoc 03.3-06) | v0.5.0 (2026-02-04) |
-| 04-run-documentation-persistence-deployment | 4/5 | In Progress (04-01 + 04-02 + 04-04 + 04-05 complete) | - |
+| 04-run-documentation-persistence-deployment | 5/5 | Code-complete (04-01 + 04-02 + 04-03 + 04-04 + 04-05); Windows smoke test pending HUMAN-UAT | - |
 
 **Doc debt:** None — all SUMMARY files present. 03-03, 03.3-05, 03.3-06 were backfilled from git history on 2026-04-22; each carries a backfill banner noting that exact execution timing and live deviation notes are not available.
 | Phase 04-run-documentation-persistence-deployment P01 | 7m 17s | 5 tasks | 17 files |
 | Phase 04-run-documentation-persistence-deployment P05 | 4m 0s | 4 tasks | 5 files |
 | Phase 04-run-documentation-persistence-deployment P02 | 10m 39s | 6 tasks | 12 files |
 | Phase 04-run-documentation-persistence-deployment P04 | 9m 0s | 5 tasks | 7 files |
+| Phase 04-run-documentation-persistence-deployment P03 | ~25m | 2 of 3 tasks (Task 3 deferred to HUMAN-UAT) | 1 file |
 
 ## Accumulated Context
 
@@ -133,10 +134,16 @@ Recent decisions affecting current work:
 - 04-04: Aggregate label in FinalizedRunHeader ("Request XXXXX — N plate(s)") + per-plate label in FinalizedRunView ("Request XXXXX — Plate N of M") split — identity in the header, layout scoping inline with each grid
 - 04-04: EditWarningModal is a thin ConfirmModal wrapper using the symmetric secondaryStyle='destructive' prop that Plan 04-02 Task 4 shipped — no inline JSX fallback needed for D-12 'Edit anyway' destructive rendering
 - 04-04: FinalizedRunView renders PrepSheet + ReagentChecklist + BeadRegionList as three separate sibling sections per D-06 even though PrepSheet already embeds the latter two — preserves PrepSheet's public API (plan truth #5) and satisfies Task 3 acceptance greps. Potential cosmetic revisit for Plan 04-03 Windows smoke test.
+- 04-03: Explicit win.target.arch [x64, arm64] in electron-builder.yml — electron-builder default behavior on Apple Silicon macOS hosts emits arm64-only installers, which would silently ship the wrong arch to Intel/AMD lab Windows PCs. Caught at config audit (Task 1) before any build pass.
+- 04-03: ${arch} added to nsis.artifactName so per-arch installers don't collide on the same output filename.
+- 04-03: D-26 deferrals (custom appId, icon, code signing, auto-updater URL) untouched as designed; Windows SmartScreen click-through accepted for v1 internal deployment.
+- 04-03: Windows physical workstation smoke test (14 steps from Plan 04-03 Task 3) deferred to HUMAN-UAT — macOS dev host cannot exercise a Windows .exe per CLAUDE.md §Testing Windows-only. Not a methodology failure; it is the documented project test cycle.
+- 04-03: Plan text labels build "v0.6.0 (Phase 4 bundle)" but package.json is still 0.5.0 — version bump and tag handled separately by .claude/release.md when ready to cut the actual v0.6.0 release.
 
 ### Pending Todos
 
-- Plan 04-03: Windows .exe packaging via electron-builder (functional-only, runtime smoke test against the full 04-01 / 04-02 / 04-04 / 04-05 stack)
+- HUMAN-UAT-04-03-01: Windows physical workstation smoke test (14 steps; full Phase 4 stack) — install dist/immunoplex-assay-calculator-0.5.0-x64-setup.exe on a Windows PC and walk the 5-step wizard + Finalized View + edit-warning modal + Operators CRUD + restart-persistence test. See 04-03-SUMMARY.md §"Gaps / Pending Verification" for the full test plan.
+- Phase 4 verification: pending the smoke test outcome above before phase can be marked Complete and a v0.6.0 release tagged.
 
 ### Blockers/Concerns
 
@@ -144,10 +151,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-23T04:53:31Z
-Stopped at: Completed 04-04 Finalized Run View
+Last session: 2026-04-22T22:30:00Z
+Stopped at: Completed 04-03 Windows installer plan (Tasks 1+2 implementation, Task 3 deferred to HUMAN-UAT-04-03-01)
 Resume file: None
-Resume intent: Execute 04-03 Windows .exe packaging — electron-builder functional-only build, then Windows PC smoke test covering the full save / finalized-view / print / start-new-run / load / edit-warning-modal flow shipped by 04-01 + 04-02 + 04-04 + 04-05
+Resume intent: Phase 4 verification pass — verifier should surface HUMAN-UAT-04-03-01 (Windows physical workstation smoke test) as the gate before phase can be marked Complete and a v0.6.0 release tagged. All 5 Phase 4 plans are code-complete on dev/v1-01.
 
 ## Releases
 

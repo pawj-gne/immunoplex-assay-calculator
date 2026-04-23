@@ -36,7 +36,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Run Persistence
 
 - [x] **PERS-01
-**: App saves run records to local storage
+**: App saves run records to local storage (code-complete + packaged in v0.5.0 Windows installer; runtime confirmation pending HUMAN-UAT-04-03-01)
 - [x] **PERS-02
 **: App loads previously saved run records
 
@@ -95,9 +95,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RECP-02 | Phase 3 | Pending |
 | RECP-03 | Phase 3 | Pending |
 | RECP-04 | Phase 3 | Pending |
-| DOCM-01 | Phase 4 (04-01 + 04-02 + 04-04 + 04-05) | Complete |
-| PERS-01 | Phase 4 (04-01 + 04-02) | Complete |
-| PERS-02 | Phase 4 (04-01 + 04-02 + 04-04) | Complete |
+| DOCM-01 | Phase 4 (04-01 + 04-02 + 04-04 + 04-05) | Complete (packaged in 04-03; runtime confirmation pending HUMAN-UAT-04-03-01) |
+| PERS-01 | Phase 4 (04-01 + 04-02 + 04-03) | Complete (packaged; runtime confirmation pending HUMAN-UAT-04-03-01) |
+| PERS-02 | Phase 4 (04-01 + 04-02 + 04-04 + 04-03) | Complete (packaged; runtime confirmation pending HUMAN-UAT-04-03-01) |
 
 **Coverage:**
 - v1 requirements: 15 total
@@ -106,4 +106,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-22*
-*Last updated: 2026-01-22 after roadmap creation*
+*Last updated: 2026-04-22 — PERS-01/PERS-02/DOCM-01 packaged via Plan 04-03; runtime confirmation pending HUMAN-UAT-04-03-01*
