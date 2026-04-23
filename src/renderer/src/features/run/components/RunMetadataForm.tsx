@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useOperatorsStore } from '../../../stores/operatorsStore'
+import { useSelectionStore } from '../../../stores/selectionStore'
+import { usePlatformStore } from '../../../stores/platformStore'
 import type { MetadataFields } from '../hooks/useRunSnapshot'
 
 // Sample type enum values — exactly the 5 options per CONTEXT.md §"Required
@@ -64,6 +66,19 @@ export function RunMetadataForm({
   initialValues
 }: RunMetadataFormProps): JSX.Element {
   const operators = useOperatorsStore((s) => s.operators)
+  const platforms = usePlatformStore((s) => s.platforms)
+  const selectedPlatformId = usePlatformStore((s) => s.selectedPlatformId)
+  const speciesList = useSelectionStore((s) => s.speciesList)
+  const selectedSpeciesId = useSelectionStore((s) => s.selectedSpeciesId)
+  const panels = useSelectionStore((s) => s.panels)
+  const selectedPanelId = useSelectionStore((s) => s.selectedPanelId)
+
+  const platformName = platforms.find((p) => p.id === selectedPlatformId)?.name ?? '—'
+  const speciesName = speciesList.find((s) => s.id === selectedSpeciesId)?.name ?? '—'
+  const panelName = selectedPanelId
+    ? (panels.find((p) => p.id === selectedPanelId)?.name ?? '—')
+    : 'Custom'
+
   const activeOperators = useMemo(
     () => operators.filter((o) => o.active).sort((a, b) => a.name.localeCompare(b.name)),
     [operators]
@@ -94,6 +109,20 @@ export function RunMetadataForm({
   return (
     <div className="rounded-lg border border-[var(--color-border)] bg-white p-4 space-y-4">
       <h3 className="text-sm font-semibold text-[var(--color-foreground)]">Metadata</h3>
+
+      {/* Read-only context banner — D-4.1-03 / BUG-03 fix. Keeps Platform,
+          Species, and Panel visible on the Document & Save step so the
+          operator doesn't have to flip back to Wizard step 1. */}
+      <div className="rounded-md bg-gray-50 border border-[var(--color-border)] px-3 py-2 text-xs text-[var(--color-muted)]">
+        <span className="font-medium text-[var(--color-foreground)]">Platform:</span>{' '}
+        {platformName}
+        {' · '}
+        <span className="font-medium text-[var(--color-foreground)]">Species:</span>{' '}
+        {speciesName}
+        {' · '}
+        <span className="font-medium text-[var(--color-foreground)]">Panel:</span>{' '}
+        {panelName}
+      </div>
 
       {/* 1. Request Number + Ad-hoc override */}
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
