@@ -3,6 +3,8 @@ import type { Species } from '../shared/types/species'
 import type { PremixPanel, PremixPanelUpdate, PanelWithAnalytes } from '../shared/types/panel'
 import type { Analyte, AnalyteUpdate } from '../shared/types/analyte'
 import type { ImportResult } from '../main/import/importer'
+import type { RunRecord, RunCreate, RunUpdate } from '../shared/types/run'
+import type { Operator, OperatorCreate, OperatorUpdate } from '../shared/types/operator'
 
 export interface ElectronAPI {
   platform: {
@@ -36,6 +38,19 @@ export interface ElectronAPI {
   }
   import: {
     panelData: () => Promise<ImportResult>
+  }
+  run: {
+    getAll: () => Promise<RunRecord[]>
+    getById: (id: string) => Promise<RunRecord | null>
+    create: (data: RunCreate) => Promise<RunRecord>
+    update: (id: string, data: RunUpdate) => Promise<RunRecord | null>
+    delete: (id: string) => Promise<void>
+  }
+  operator: {
+    getAll: (opts?: { includeInactive?: boolean }) => Promise<Operator[]>
+    create: (data: OperatorCreate) => Promise<Operator>
+    update: (id: string, data: OperatorUpdate) => Promise<Operator | null>
+    delete: (id: string) => Promise<Operator | null>
   }
 }
 

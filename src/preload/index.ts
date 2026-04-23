@@ -42,5 +42,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   import: {
     panelData: () => ipcRenderer.invoke(IPC_CHANNELS.IMPORT_PANEL_DATA)
+  },
+  run: {
+    getAll: () => ipcRenderer.invoke(IPC_CHANNELS.RUN_GET_ALL),
+    getById: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.RUN_GET_BY_ID, id),
+    create: (data: unknown) => ipcRenderer.invoke(IPC_CHANNELS.RUN_CREATE, data),
+    update: (id: string, data: unknown) =>
+      ipcRenderer.invoke(IPC_CHANNELS.RUN_UPDATE, id, data),
+    delete: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.RUN_DELETE, id)
+  },
+  operator: {
+    getAll: (opts?: { includeInactive?: boolean }) =>
+      ipcRenderer.invoke(IPC_CHANNELS.OPERATOR_GET_ALL, opts),
+    create: (data: unknown) => ipcRenderer.invoke(IPC_CHANNELS.OPERATOR_CREATE, data),
+    update: (id: string, data: unknown) =>
+      ipcRenderer.invoke(IPC_CHANNELS.OPERATOR_UPDATE, id, data),
+    delete: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.OPERATOR_DELETE, id)
   }
 })
