@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-01 backend persistence
-last_updated: "2026-04-23T04:17:19.147Z"
+stopped_at: Completed 04-05 operators manage page
+last_updated: "2026-04-23T04:23:37Z"
 last_activity: 2026-04-23
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 25
-  completed_plans: 20
-  percent: 80
+  completed_plans: 21
+  percent: 84
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Phase: 04 (run-documentation-persistence-deployment) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5 (next: 04-02 Document & Save form, now unblocked by 04-05)
 Status: Ready to execute
 Last activity: 2026-04-23
 
-Progress: [████████░░] 80%
+Progress: [████████▌░] 84%
 
 ## Performance Metrics
 
@@ -49,10 +49,11 @@ Progress: [████████░░] 80%
 | 03.1-panel-data-import | 2/2 | Complete | v0.4.0 (2026-01-29) |
 | 03.2-panel-data-management | 3/3 | Complete | v0.4.0 (2026-01-29) |
 | 03.3-analyte-selection-redesign | 6/6 | Complete (includes ad-hoc 03.3-06) | v0.5.0 (2026-02-04) |
-| 04-run-documentation | 0/3 | Not started | - |
+| 04-run-documentation-persistence-deployment | 2/5 | In Progress (04-01 + 04-05 complete) | - |
 
 **Doc debt:** None — all SUMMARY files present. 03-03, 03.3-05, 03.3-06 were backfilled from git history on 2026-04-22; each carries a backfill banner noting that exact execution timing and live deviation notes are not available.
 | Phase 04-run-documentation-persistence-deployment P01 | 7m 17s | 5 tasks | 17 files |
+| Phase 04-run-documentation-persistence-deployment P05 | 4m 0s | 4 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,10 @@ Recent decisions affecting current work:
 - 04-01: Operators use soft-delete via active=0 to preserve FK integrity for historical runs (D-Discretion)
 - 04-01: Migration kept under drizzle-kit auto-generated name 0003_damp_prima.sql to avoid hand-editing _journal.json
 - 04-01: WELL_ID and PLATE_KEY regex validation in Zod for plates record catches malformed JSON before DB write
+- 04-05: OperatorsSection rendered below existing platform/species-filtered ManagePage content (operators are global, not scoped)
+- 04-05: App.tsx init-time loadOperators({includeInactive:true}) so FinalizedRunHeader (04-04) resolves hidden operator names
+- 04-05: Refresh-after-mutate pattern in operatorsStore — every mutation awaits loadOperators with current includeInactive scope
+- 04-05: Hide-confirm copy carries D-20 explanatory sentence verbatim on a single source line for grep-verifiable acceptance
 
 ### Pending Todos
 
@@ -120,10 +125,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-23T04:17:19.143Z
-Stopped at: Completed 04-01 backend persistence
+Last session: 2026-04-23T04:23:37Z
+Stopped at: Completed 04-05 operators manage page
 Resume file: None
-Resume intent: Begin Phase 4 (Run Documentation, Persistence & Deployment)
+Resume intent: Execute 04-02 Document & Save wizard step (now unblocked — consumes useOperatorsStore for operator dropdown)
 
 ## Releases
 
