@@ -4,21 +4,28 @@ import { PlatformSelector } from './features/platform/components/PlatformSelecto
 import { SpeciesSelector } from './features/selection/components/SpeciesSelector'
 import { AnalyteSelectionPanel } from './features/selection/components/AnalyteSelectionPanel'
 import { CalculatorPanel } from './features/calculator/components/CalculatorPanel'
-import { DocumentAndSavePage } from './features/run'
+import { DocumentAndSavePage, FinalizedRunView, EditWarningModal } from './features/run'
 
 import { ImportButton } from './features/import/ImportButton'
 import { ManagePage } from './features/manage/ManagePage'
 import { usePlatforms } from './features/platform/hooks/usePlatforms'
 import { useSpecies } from './features/selection/hooks/useSpecies'
 import { useOperatorsStore } from './stores/operatorsStore'
+import { useRunStore } from './stores/runStore'
 
 type AppMode = 'calculator' | 'manage'
 
-// Wizard page labels. Plan 04-02 extends from 3 to 4 pages (adds 'Document &
-// Save' at index 3). Plan 04-04 will push this to 5 by appending the
-// Finalized Run View page at index 4. Step chrome and Next-button gating
-// use PAGE_LABELS.length so both plans compose cleanly.
-const PAGE_LABELS = ['Platform & Species', 'Analytes', 'Calculations', 'Document & Save']
+// Wizard page labels. Plan 04-02 extended from 3 to 4 pages (added
+// 'Document & Save' at index 3). Plan 04-04 pushes this to 5 by appending
+// the Finalized Run View page at index 4. Step chrome and Next-button
+// gating use PAGE_LABELS.length so both plans compose cleanly.
+const PAGE_LABELS = [
+  'Platform & Species',
+  'Analytes',
+  'Calculations',
+  'Document & Save',
+  'Finalized Run View'
+]
 
 /**
  * Render the content for a given wizard page index.
@@ -26,7 +33,8 @@ const PAGE_LABELS = ['Platform & Species', 'Analytes', 'Calculations', 'Document
 function renderPage(
   pageIndex: number,
   selectedPlatform: Platform | null,
-  onAfterSave: () => void
+  onAfterSave: () => void,
+  onStartNewRun: () => void
 ): JSX.Element {
   switch (pageIndex) {
     case 0:
@@ -60,6 +68,12 @@ function renderPage(
           <DocumentAndSavePage onAfterSave={onAfterSave} />
         </div>
       )
+    case 4:
+      return (
+        <div className="bg-white rounded-lg border border-[var(--color-border)] p-6">
+          <FinalizedRunView onStartNewRun={onStartNewRun} />
+        </div>
+      )
     default:
       return <></>
   }
@@ -83,6 +97,10 @@ function getExitClass(direction: 'forward' | 'backward'): string {
 function App(): JSX.Element {
   const [mode, setMode] = useState<AppMode>('calculator')
   const [currentPage, setCurrentPage] = useState(0)
+  // D-12: wizard Back button from step 5 (with a saved run loaded) opens
+  // this modal instead of decrementing currentPage. Top-level mode
+  // changes (Calculator <-> Manage) do NOT flip this flag.
+  const [editWarningOpen, setEditWarningOpen] = useState(false)
   const { selectedPlatform } = usePlatforms()
   const { selectedSpecies } = useSpecies()
 
@@ -118,9 +136,23 @@ function App(): JSX.Element {
   const canGoNext = currentPage === 0 ? !!(selectedPlatform && selectedSpecies) : true
 
   // D-08: DocumentAndSavePage calls this after a successful save so the
-  // wizard auto-navigates to step 5 (Finalized Run View). Plan 04-04 adds
-  // the step 5 render; this plan sends the operator there via setCurrentPage.
+  // wizard auto-navigates to step 5 (Finalized Run View).
   const handleAfterSave = (): void => setCurrentPage(4)
+
+  // D-10: Start New Run on step 5 resets all stores (done inside
+  // FinalizedRunView) and returns the wizard to step 1.
+  const handleStartNewRun = (): void => setCurrentPage(0)
+
+  // D-12: wizard Back button interception. From step 5, if a run is
+  // currently loaded (currentRunId !== null), open the EditWarningModal
+  // instead of decrementing. Every other back step behaves as before.
+  const handleBack = (): void => {
+    if (currentPage === 4 && useRunStore.getState().currentRunId !== null) {
+      setEditWarningOpen(true)
+    } else {
+      setCurrentPage((p) => p - 1)
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -171,7 +203,12 @@ function App(): JSX.Element {
                 {isTransitioning && (
                   <div className={`absolute inset-0 ${getExitClass(direction)}`}>
                     <div className="space-y-6">
-                      {renderPage(displayPage, selectedPlatform, handleAfterSave)}
+                      {renderPage(
+                        displayPage,
+                        selectedPlatform,
+                        handleAfterSave,
+                        handleStartNewRun
+                      )}
                     </div>
                   </div>
                 )}
@@ -182,7 +219,8 @@ function App(): JSX.Element {
                     {renderPage(
                       isTransitioning ? currentPage : displayPage,
                       selectedPlatform,
-                      handleAfterSave
+                      handleAfterSave,
+                      handleStartNewRun
                     )}
                   </div>
                 </div>
@@ -193,7 +231,7 @@ function App(): JSX.Element {
                 <div>
                   {currentPage > 0 && (
                     <button
-                      onClick={() => setCurrentPage((p) => p - 1)}
+                      onClick={handleBack}
                       className="px-4 py-2 text-sm font-medium rounded-md border border-[var(--color-border)] bg-white text-[var(--color-foreground)] hover:bg-gray-50"
                     >
                       &larr; Previous
@@ -229,6 +267,19 @@ function App(): JSX.Element {
           Immunoplex Assay Calculator v0.5.0
         </p>
       </footer>
+
+      {/* D-12: fired only from the wizard Back button on step 5 when a
+          run is currently loaded. "Keep viewing" is primary (stays on
+          step 5); "Edit anyway" is secondary (destructive) and proceeds
+          to step 4. Top-level mode toggle does NOT open this modal. */}
+      <EditWarningModal
+        open={editWarningOpen}
+        onKeepViewing={() => setEditWarningOpen(false)}
+        onEditAnyway={() => {
+          setEditWarningOpen(false)
+          setCurrentPage(3)
+        }}
+      />
     </div>
   )
 }
