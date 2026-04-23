@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-05 operators manage page
-last_updated: "2026-04-23T04:23:37Z"
+stopped_at: Completed 04-02 Document & Save wizard page
+last_updated: "2026-04-23T04:38:45Z"
 last_activity: 2026-04-23
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 25
-  completed_plans: 21
-  percent: 84
+  completed_plans: 22
+  percent: 88
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Phase: 04 (run-documentation-persistence-deployment) — EXECUTING
-Plan: 3 of 5 (next: 04-02 Document & Save form, now unblocked by 04-05)
+Plan: 4 of 5 (next: 04-04 Finalized Run View, then 04-03 Windows installer)
 Status: Ready to execute
 Last activity: 2026-04-23
 
-Progress: [████████▌░] 84%
+Progress: [████████▊░] 88%
 
 ## Performance Metrics
 
@@ -49,11 +49,12 @@ Progress: [████████▌░] 84%
 | 03.1-panel-data-import | 2/2 | Complete | v0.4.0 (2026-01-29) |
 | 03.2-panel-data-management | 3/3 | Complete | v0.4.0 (2026-01-29) |
 | 03.3-analyte-selection-redesign | 6/6 | Complete (includes ad-hoc 03.3-06) | v0.5.0 (2026-02-04) |
-| 04-run-documentation-persistence-deployment | 2/5 | In Progress (04-01 + 04-05 complete) | - |
+| 04-run-documentation-persistence-deployment | 3/5 | In Progress (04-01 + 04-02 + 04-05 complete) | - |
 
 **Doc debt:** None — all SUMMARY files present. 03-03, 03.3-05, 03.3-06 were backfilled from git history on 2026-04-22; each carries a backfill banner noting that exact execution timing and live deviation notes are not available.
 | Phase 04-run-documentation-persistence-deployment P01 | 7m 17s | 5 tasks | 17 files |
 | Phase 04-run-documentation-persistence-deployment P05 | 4m 0s | 4 tasks | 5 files |
+| Phase 04-run-documentation-persistence-deployment P02 | 10m 39s | 6 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -114,10 +115,20 @@ Recent decisions affecting current work:
 - 04-05: App.tsx init-time loadOperators({includeInactive:true}) so FinalizedRunHeader (04-04) resolves hidden operator names
 - 04-05: Refresh-after-mutate pattern in operatorsStore — every mutation awaits loadOperators with current includeInactive scope
 - 04-05: Hide-confirm copy carries D-20 explanatory sentence verbatim on a single source line for grep-verifiable acceptance
+- 04-02: runStore is an orchestrator — reads via .getState() on save, writes via action methods on load, never duplicates upstream state
+- 04-02: Dirty tracking centralized in runStore (D-22) — JSON.stringify of 4-store slices + metadata, cheap compare
+- 04-02: isDirtyNow returns currentRunId !== null when lastCleanSnapshot === null — closes the load-gap where a fast operator could click Load before markClean fires
+- 04-02: plex = getAllSelectedAnalytes().length (panel + singles); singleAnalyteIds holds only singles per D-19
+- 04-02: ConfirmModal exposes symmetric primaryStyle + secondaryStyle props — Plan 04-04's EditWarningModal consumes secondaryStyle=destructive for D-12 'Edit anyway'
+- 04-02: App.tsx owns setCurrentPage(4) via onAfterSave callback — keeps routing authoritative in App not scattered across feature components
+- 04-02: Wizard chrome + Next-button gating use PAGE_LABELS.length so Plan 04-04 can extend to 5 without revisiting App.tsx chrome
+- 04-02: Circular import (runStore → useRunSnapshot → calculatorStore → runStore) broken via registerRunStoreResetHook late-binding shim (avoids Vite dynamic-import chunking warning)
+- 04-02: useRunSnapshot uses useMemo wrapping buildRunSnapshot — passes tsconfig.web strict noUnusedLocals without eslint-disable comments on selector subscriptions
 
 ### Pending Todos
 
-- Start Phase 4: Run Documentation & Persistence (plans 04-01, 04-02, 04-03 already drafted)
+- Plan 04-04: Finalized Run View (wizard step 5) — read-only PlateGrid + PrepSheet reuse, Print, D-12 edit-warning modal, Start New Run
+- Plan 04-03: Windows .exe packaging via electron-builder (functional-only, runtime smoke test against the full 04-01 / 04-02 / 04-04 / 04-05 stack)
 
 ### Blockers/Concerns
 
@@ -125,10 +136,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-23T04:23:37Z
-Stopped at: Completed 04-05 operators manage page
+Last session: 2026-04-23T04:38:45Z
+Stopped at: Completed 04-02 Document & Save wizard page
 Resume file: None
-Resume intent: Execute 04-02 Document & Save wizard step (now unblocked — consumes useOperatorsStore for operator dropdown)
+Resume intent: Execute 04-04 Finalized Run View (wizard step 5) — consumes runStore.currentRunId from 04-02, ConfirmModal with secondaryStyle=destructive for D-12 'Edit anyway', and the existing Phase 3 recipe components in read-only mode
 
 ## Releases
 
