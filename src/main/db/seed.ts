@@ -1,5 +1,18 @@
 import { getDatabase } from './client'
-import { platforms, species, premixPanels, analytes, panelAnalytes } from './schema'
+import { platforms, species, premixPanels, analytes, panelAnalytes, operators } from './schema'
+
+// Phase 4 — D-20: 9-name operator roster seeded on first launch
+const OPERATOR_SEED_NAMES = [
+  'Joven',
+  'Terence',
+  'Jon',
+  'George',
+  'Cole',
+  'James',
+  'Alice',
+  'Kevin',
+  'CK'
+] as const
 
 const PLATFORM_SEED_DATA = [
   {
@@ -364,10 +377,36 @@ export function seedPanelAnalytes(): void {
   }
 }
 
+export function seedOperators(): void {
+  const db = getDatabase()
+  const existing = db.select().from(operators).all()
+
+  if (existing.length > 0) {
+    console.log('Operators already seeded, skipping')
+    return
+  }
+
+  console.log('Seeding operators...')
+  const now = new Date().toISOString()
+  for (const name of OPERATOR_SEED_NAMES) {
+    db.insert(operators)
+      .values({
+        id: crypto.randomUUID(),
+        name,
+        active: true,
+        createdAt: now,
+        updatedAt: now
+      })
+      .run()
+  }
+  console.log('Seeded', OPERATOR_SEED_NAMES.length, 'operators')
+}
+
 export function seedAll(): void {
   seedPlatforms()
   seedSpecies()
   seedAnalytes()
   seedPanels()
   seedPanelAnalytes()
+  seedOperators()
 }
