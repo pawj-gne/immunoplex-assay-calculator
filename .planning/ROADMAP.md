@@ -187,7 +187,7 @@ Plans:
 
 Plans:
 - [x] 04.1-01-PLAN.md -- BUG-01: column-major duplicate fill in plateStore.autoFill (Wave 1)
-- [ ] 04.1-02-PLAN.md -- BUG-02: preserve existing plates across autoFill cascade (Wave 2)
+- [x] 04.1-02-PLAN.md -- BUG-02: preserve existing plates across autoFill cascade (Wave 2)
 - [x] 04.1-03-PLAN.md -- BUG-03: Species in RunList row + RunMetadataForm context banner (Wave 1)
 - [x] 04.1-04-PLAN.md -- UI-01: scoped AnalyteGrid + clear stale singles on panel switch (Wave 1)
 - [ ] 04.1-05-PLAN.md -- Version bump to 0.6.0 + build:win + Windows HUMAN-UAT retest (Wave 3)
@@ -208,7 +208,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1
 | 3.2. Panel Data Management | 3/3 | Complete | 2026-01-29 |
 | 3.3. Analyte Selection Redesign | 0/5 | Not started | - |
 | 4. Run Documentation, Persistence & Deployment | 5/5 | Code-complete; smoke test returned with blocking bugs | - |
-| 4.1. Smoke Test Fixes (INSERTED) | 3/5 | In Progress (Wave 1 complete) | - |
+| 4.1. Smoke Test Fixes (INSERTED) | 4/5 | In Progress (Waves 1+2 complete; awaiting Windows smoke retest) | - |
 
 ---
 *Roadmap created: 2026-01-22*
