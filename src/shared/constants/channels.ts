@@ -29,7 +29,20 @@ export const IPC_CHANNELS = {
   PRINT_PREP_SHEET: 'print:prep-sheet',
 
   // Import
-  IMPORT_PANEL_DATA: 'import:panel-data'
+  IMPORT_PANEL_DATA: 'import:panel-data',
+
+  // Run
+  RUN_GET_ALL: 'run:get-all',
+  RUN_GET_BY_ID: 'run:get-by-id',
+  RUN_CREATE: 'run:create',
+  RUN_UPDATE: 'run:update',
+  RUN_DELETE: 'run:delete',
+
+  // Operator
+  OPERATOR_GET_ALL: 'operator:get-all',
+  OPERATOR_CREATE: 'operator:create',
+  OPERATOR_UPDATE: 'operator:update',
+  OPERATOR_DELETE: 'operator:delete'
 } as const
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS]
