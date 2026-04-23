@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 04-03 Windows installer plan (Tasks 1+2 implementation, Task 3 deferred to HUMAN-UAT-04-03-01)
-last_updated: "2026-04-23T21:24:40.159Z"
-last_activity: 2026-04-23
+status: executing
+stopped_at: Phase 4.1 code-complete on dev/v1-01; v0.6.0 installers built; Windows smoke retest deferred to HUMAN-UAT-04.1-05-01
+last_updated: "2026-04-23T22:15:00.000Z"
+last_activity: 2026-04-23 -- Phase 04.1 Waves 1+2 executed; Plan 04.1-05 Task 1 (version bump + build:win) complete; Tasks 2+3 deferred
 progress:
   total_phases: 8
   completed_phases: 6
   total_plans: 30
-  completed_plans: 24
-  percent: 80
+  completed_plans: 28
+  percent: 93
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Accurate reagent calculations with clear prep recipes - operators must be able to trust the math and follow the instructions without second-guessing.
-**Current focus:** Phase 04 — run-documentation-persistence-deployment
+**Current focus:** Phase 04.1 — smoke-test-fixes
 
 ## Current Position
 
-Phase: 04
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-04-23
+Phase: 04.1 (smoke-test-fixes) — EXECUTING
+Plan: 1 of 5
+Status: Executing Phase 04.1
+Last activity: 2026-04-23 -- Phase 04.1 execution started
 
 Progress: [█████████▌] 96%
 
@@ -146,8 +146,8 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- HUMAN-UAT-04-03-01: Windows physical workstation smoke test (14 steps; full Phase 4 stack) — install dist/immunoplex-assay-calculator-0.5.0-x64-setup.exe on a Windows PC and walk the 5-step wizard + Finalized View + edit-warning modal + Operators CRUD + restart-persistence test. See 04-03-SUMMARY.md §"Gaps / Pending Verification" for the full test plan.
-- Phase 4 verification: pending the smoke test outcome above before phase can be marked Complete and a v0.6.0 release tagged.
+- HUMAN-UAT-04.1-05-01: Windows physical workstation smoke retest (14 steps + Phase 4.1 fix acceptance for BUG-01/02/03 + UI-01) — install dist/immunoplex-assay-calculator-0.6.0-x64-setup.exe (or arm64) on the Windows PC and follow `04.1-05-PLAN.md` Task 2 `<how-to-verify>`. This SUPERSEDES HUMAN-UAT-04-03-01 (the Phase 4.1 retest is the same 14-step smoke test + 4 fix acceptances, run on a bundle containing both the Phase 4 feature set and the Phase 4.1 fixes). Results recorded to `.planning/phases/04.1-smoke-test-fixes/04.1-SMOKE-TEST-RETEST.md` with `## Overall: PASS` or `## Overall: FAIL`. On PASS → resume Plan 04.1-05 Task 3; on FAIL → `/gsd-plan-phase 4.1 --gaps`.
+- Phase 4.1 verification: pending the smoke retest outcome above before phase 4.1 can be marked Complete and a v0.6.0 release tagged.
 
 ### Blockers/Concerns
 

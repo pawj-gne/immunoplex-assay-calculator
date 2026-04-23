@@ -208,9 +208,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1
 | 3.2. Panel Data Management | 3/3 | Complete | 2026-01-29 |
 | 3.3. Analyte Selection Redesign | 0/5 | Not started | - |
 | 4. Run Documentation, Persistence & Deployment | 5/5 | Code-complete; smoke test returned with blocking bugs | - |
-| 4.1. Smoke Test Fixes (INSERTED) | 4/5 | In Progress (Waves 1+2 complete; awaiting Windows smoke retest) | - |
+| 4.1. Smoke Test Fixes (INSERTED) | 4/5 (plan 05 partial: v0.6.0 installers built, Windows retest deferred to HUMAN-UAT-04.1-05-01) | Code-complete; awaiting Windows smoke retest | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-04-23 (Phase 4.1 planned — 5 plans in 2 waves; blocks v1.0 release)*
+*Last updated: 2026-04-23 (Phase 4.1 executed — Waves 1+2 complete, Wave 3 version bump + build done, Windows retest deferred)*
 *Plan template: see .planning/PLAN_TEMPLATE.md*
