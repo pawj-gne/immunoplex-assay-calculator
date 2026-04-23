@@ -38,6 +38,7 @@ interface PlateState {
   clearPlate: (plateNumber: number) => void
   setActivePlate: (plateNumber: number) => void
   reset: () => void
+  loadPlates: (plates: Record<number, string[]>) => void
 
   // Computed
   getPlateCount: () => number
@@ -45,6 +46,7 @@ interface PlateState {
   getSamplesRemaining: () => number
   getMinPlatesNeeded: () => number
   getPlateWells: (plateNumber: number) => Set<string>
+  getPlatesSnapshot: () => Record<number, string[]>
 }
 
 /**
@@ -262,6 +264,19 @@ export const usePlateStore = create<PlateState>((set, get) => ({
     })
   },
 
+  // Replace the plates state with an incoming Record<number, string[]> snapshot.
+  // Converts each string[] to a Set<string>. Does NOT mutate sampleCount or
+  // replicateMode — per D-24, those are set by the caller BEFORE loadPlates
+  // runs so the auto-fill cascade has already completed; loadPlates then
+  // overwrites the cascade's output with the saved layout. See runStore.loadRun.
+  loadPlates: (plates: Record<number, string[]>) => {
+    const converted: Record<number, Set<string>> = {}
+    for (const [k, v] of Object.entries(plates)) {
+      converted[Number(k)] = new Set(v)
+    }
+    set({ plates: converted })
+  },
+
   // Computed
   getPlateCount: () => {
     return Object.keys(get().plates).length
@@ -294,5 +309,17 @@ export const usePlateStore = create<PlateState>((set, get) => ({
 
   getPlateWells: (plateNumber: number) => {
     return get().plates[plateNumber] ?? new Set<string>()
+  },
+
+  // Snapshot the current plates state as a plain Record<number, string[]>
+  // suitable for Zod-serializable IPC transport. Sets cannot traverse the
+  // IPC bridge (structured-clone drops them).
+  getPlatesSnapshot: () => {
+    const { plates } = get()
+    const out: Record<number, string[]> = {}
+    for (const [k, v] of Object.entries(plates)) {
+      out[Number(k)] = Array.from(v)
+    }
+    return out
   }
 }))
