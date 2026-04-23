@@ -3,6 +3,7 @@ import type { RunRecord } from '../../../../../shared/types/run'
 import { useRunStore } from '../../../stores/runStore'
 import { useOperatorsStore } from '../../../stores/operatorsStore'
 import { usePlatformStore } from '../../../stores/platformStore'
+import { useSelectionStore } from '../../../stores/selectionStore'
 import { ConfirmModal } from './ConfirmModal'
 import type { MetadataFields } from '../hooks/useRunSnapshot'
 
@@ -33,6 +34,7 @@ export function RunList({ currentMetadata }: RunListProps): JSX.Element {
   const error = useRunStore((s) => s.error)
   const operators = useOperatorsStore((s) => s.operators)
   const platforms = usePlatformStore((s) => s.platforms)
+  const speciesList = useSelectionStore((s) => s.speciesList)
 
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
 
@@ -73,6 +75,9 @@ export function RunList({ currentMetadata }: RunListProps): JSX.Element {
   const platformName = (id: string): string =>
     platforms.find((p) => p.id === id)?.name ?? '—'
 
+  const speciesName = (id: string): string =>
+    speciesList.find((s) => s.id === id)?.name ?? '—'
+
   if (isLoading && runs.length === 0) {
     return <p className="text-sm text-[var(--color-muted)]">Loading saved runs...</p>
   }
@@ -96,7 +101,7 @@ export function RunList({ currentMetadata }: RunListProps): JSX.Element {
           key={run.id}
           className="flex items-center justify-between gap-3 px-3 py-2 border border-[var(--color-border)] rounded-md bg-white"
         >
-          <div className="grid grid-cols-6 gap-3 flex-1 text-xs">
+          <div className="grid grid-cols-7 gap-3 flex-1 text-xs">
             <div>
               <div className="text-[var(--color-muted)]">Request #</div>
               <div className="text-[var(--color-foreground)] font-medium">
@@ -124,6 +129,10 @@ export function RunList({ currentMetadata }: RunListProps): JSX.Element {
             <div>
               <div className="text-[var(--color-muted)]">Platform</div>
               <div className="text-[var(--color-foreground)]">{platformName(run.platformId)}</div>
+            </div>
+            <div>
+              <div className="text-[var(--color-muted)]">Species</div>
+              <div className="text-[var(--color-foreground)]">{speciesName(run.speciesId)}</div>
             </div>
           </div>
           <div className="flex gap-2">
