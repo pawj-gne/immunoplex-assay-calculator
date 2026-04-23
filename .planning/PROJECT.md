@@ -12,17 +12,17 @@ Accurate reagent calculations with clear prep recipes — operators must be able
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Calculate total reagent volumes based on sample count, replicate mode, and plate capacity (Phases 1-2, shipped v0.1.0)
+- [x] Calculate single-analyte additions to master mix (volume = total / stock concentration) (Phase 2, shipped v0.1.0)
+- [x] Handle three request types: premix-only, premix + singles (max 5), full custom (no limit) (Phase 2, shipped v0.1.0)
+- [x] Support multiple platforms with platform-specific stock concentrations (Milliplex, BioRad, ProCartaPlex) (Phases 1, 3.1, 3.2, shipped v0.4.x — R&D removed)
+- [x] Generate clear reagent prep recipe for operator to follow (Phase 3, shipped v0.2.0)
+- [x] Display bead regions for plate reader instrument setup (Phase 3, shipped v0.2.0)
+- [x] Capture run metadata (user, date, operator, sample count, sample type, replicate mode, platform, species, Hamilton assignment, positions, panel, analytes) (Phase 4, code-complete — pending Windows smoke test HUMAN-UAT-04-03-01)
 
 ### Active
 
-- [ ] Calculate total reagent volumes based on sample count, replicate mode, and plate capacity
-- [ ] Calculate single-analyte additions to master mix (volume = total / stock concentration)
-- [ ] Handle three request types: premix-only, premix + singles (max 5), full custom (no limit)
-- [ ] Support multiple platforms with platform-specific stock concentrations (Milliplex, BioRad, ProCartaPlex, R&D)
-- [ ] Generate clear reagent prep recipe for operator to follow
-- [ ] Display bead regions for plate reader instrument setup
-- [ ] Capture run metadata (user, date, operator, sample count, sample type, replicate mode, platform, species, Hamilton assignment, positions, panel, analytes)
+(None — v1.0 milestone code-complete pending Windows smoke test)
 
 ### Out of Scope
 
@@ -75,4 +75,4 @@ Accurate reagent calculations with clear prep recipes — operators must be able
 | Platform-specific configuration | Each vendor (Milliplex, BioRad, etc.) has different stock concentrations and analytes | — Pending |
 
 ---
-*Last updated: 2026-01-22 after initialization*
+*Last updated: 2026-04-23 after Phase 4 completion — v1.0 milestone code-complete pending Windows smoke test HUMAN-UAT-04-03-01*
