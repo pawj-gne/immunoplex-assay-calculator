@@ -9,6 +9,7 @@ import { ImportButton } from './features/import/ImportButton'
 import { ManagePage } from './features/manage/ManagePage'
 import { usePlatforms } from './features/platform/hooks/usePlatforms'
 import { useSpecies } from './features/selection/hooks/useSpecies'
+import { useOperatorsStore } from './stores/operatorsStore'
 
 type AppMode = 'calculator' | 'manage'
 
@@ -72,6 +73,14 @@ function App(): JSX.Element {
   const [currentPage, setCurrentPage] = useState(0)
   const { selectedPlatform } = usePlatforms()
   const { selectedSpecies } = useSpecies()
+
+  // Prime the operators store with ALL operators (includeInactive:true) at mount
+  // so FinalizedRunHeader (Plan 04-04) can resolve names for hidden operators on
+  // historical runs. OperatorsSection's local 'Show hidden' toggle calls
+  // loadOperators again and overwrites the list as needed.
+  useEffect(() => {
+    void useOperatorsStore.getState().loadOperators({ includeInactive: true })
+  }, [])
 
   // Transition state
   const [displayPage, setDisplayPage] = useState(currentPage)

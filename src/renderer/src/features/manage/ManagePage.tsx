@@ -3,6 +3,7 @@ import type { Platform } from '../../../../shared/types/platform'
 import type { Species } from '../../../../shared/types/species'
 import { AnalyteTable } from './AnalyteTable'
 import { PanelList } from './PanelList'
+import { OperatorsSection } from './OperatorsSection'
 
 const api = (window as any).electronAPI
 
@@ -95,6 +96,11 @@ export function ManagePage(): JSX.Element {
           Select a platform and species to manage data.
         </p>
       )}
+
+      {/* Operators (global — not scoped to platform/species) */}
+      <div className="pt-6 border-t border-[var(--color-border)]">
+        <OperatorsSection />
+      </div>
     </div>
   )
 }
