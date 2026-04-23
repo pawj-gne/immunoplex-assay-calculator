@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Immunoplex Assay Calculator — Smoke Test Guide</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Arial, sans-serif; max-width: 780px; margin: 2em auto; padding: 0 1em; line-height: 1.5; color: #222; }
+  h1 { border-bottom: 2px solid #444; padding-bottom: .2em; }
+  h2 { border-bottom: 1px solid #ccc; padding-bottom: .15em; margin-top: 2em; }
+  h3 { margin-top: 1.5em; }
+  table { border-collapse: collapse; margin: 1em 0; }
+  th, td { border: 1px solid #bbb; padding: .4em .7em; text-align: left; vertical-align: top; }
+  th { background: #f0f0f0; }
+  code { background: #f4f4f4; padding: 1px 4px; border-radius: 3px; font-size: 0.95em; }
+  pre { background: #f4f4f4; padding: .7em; border-radius: 4px; overflow-x: auto; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 2em 0; }
+  blockquote { border-left: 3px solid #ccc; margin: 0; padding-left: 1em; color: #555; }
+</style>
+</head>
+<body>
+<h1>Immunoplex Assay Calculator — Smoke Test Guide</h1>
+<p>Thanks for helping test this! The app is a calculator + run documentation tool for our Luminex/Immunoplex assays. It replaces the paper workflow: pick platform → pick analytes → enter sample count → get reagent volumes → save the run for later.</p>
+<p>This is the first time it&#39;s ever been installed on a Windows PC, so I need you to walk through a full run end-to-end and make sure everything works. <strong>It should take ~15 minutes.</strong></p>
+<hr>
+<h2>What you need</h2>
+<ul>
+<li>The installer: <code>immunoplex-assay-calculator-0.5.0-x64-setup.exe</code> (87 MB)</li>
+<li>A Windows PC (any recent Intel/AMD Windows laptop or workstation — not ARM)</li>
+<li>~15 min</li>
+</ul>
+<hr>
+<h2>1. Install the app</h2>
+<ol>
+<li>Double-click <code>immunoplex-assay-calculator-0.5.0-x64-setup.exe</code>.</li>
+<li>Windows SmartScreen will probably complain (&quot;Windows protected your PC&quot; / &quot;unrecognized app&quot;). Click <strong>More info</strong> → <strong>Run anyway</strong>. This is expected — the installer isn&#39;t code-signed yet (that&#39;s a later polish task).</li>
+<li>Click through the installer with defaults. It should create a desktop shortcut and a Start Menu entry.</li>
+</ol>
+<p><strong>✅ Pass:</strong> Installer finishes without errors. Desktop + Start Menu shortcuts appear.</p>
+<p><strong>❌ Report if:</strong> Installer errors out, hangs, or you don&#39;t see shortcuts.</p>
+<hr>
+<h2>2. First launch</h2>
+<ol>
+<li>Double-click the desktop shortcut.</li>
+<li>The app window should appear within ~5 seconds. You should see a wizard-style interface with step labels at the top (&quot;Platform &amp; Species&quot;, &quot;Analytes&quot;, &quot;Calculations&quot;, &quot;Document &amp; Save&quot;, &quot;Finalized Run&quot;).</li>
+</ol>
+<p><strong>✅ Pass:</strong> App opens, main UI is visible, no flash-and-crash.</p>
+<p><strong>❌ Report if:</strong> Window flashes and disappears, a Windows error dialog pops up, or the UI renders but is broken (blank, missing text, etc.). <strong>If you see any error text, please screenshot it.</strong></p>
+<hr>
+<h2>3. Walk through a full run — &quot;Request 9421&quot;</h2>
+<p>Please use this exact test data so the results are consistent and I can reproduce any issue you hit.</p>
+<h3>Step 3a — Pick platform &amp; species</h3>
+<ul>
+<li>Pick <strong>Milliplex</strong> as the platform.</li>
+<li>Pick <strong>Human</strong> as the species (or whatever species shows up first — the app was seeded with our standard list).</li>
+<li>Click <strong>Next</strong> (should enable once both are picked).</li>
+</ul>
+<h3>Step 3b — Pick analytes</h3>
+<ul>
+<li>Pick any premix panel (whichever is in the list — e.g., a cytokine panel). You should see the selected analytes render in a sidebar or summary.</li>
+<li>Alternatively, toggle on at least one single analyte.</li>
+<li>Click <strong>Next</strong>.</li>
+</ul>
+<h3>Step 3c — Calculations</h3>
+<ul>
+<li>Enter sample count = <strong>40</strong>.</li>
+<li>The plate grid should auto-fill, and you should see itemized reagent volumes display (master mix volume, per-analyte singles volume if any, dead volume, etc. — the usual prep sheet numbers).</li>
+<li>Click <strong>Next</strong>.</li>
+</ul>
+<h3>Step 3d — Document &amp; Save</h3>
+<p>This is the new part — fill out the run metadata form with these exact values:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Request Number</td>
+<td><code>9421</code></td>
+</tr>
+<tr>
+<td>&quot;Ad-hoc run (no request number)&quot; checkbox</td>
+<td>leave <strong>unchecked</strong></td>
+</tr>
+<tr>
+<td>User</td>
+<td>your name</td>
+</tr>
+<tr>
+<td>Operator</td>
+<td>pick <strong>Joven</strong> from the dropdown</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>today (should be default)</td>
+</tr>
+<tr>
+<td>Sample Type</td>
+<td><strong>Supernatant</strong></td>
+</tr>
+<tr>
+<td>Dilution Factor</td>
+<td><code>5</code></td>
+</tr>
+<tr>
+<td>Hamilton</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td>Run Plate Position</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td>Standard Position</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td>Trough Position</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td>Comments</td>
+<td><code>smoke test run</code></td>
+</tr>
+</tbody></table>
+<p>Click <strong>Save</strong>.</p>
+<p><strong>✅ Pass:</strong> No error toast. The app automatically navigates you to step 5 (Finalized Run View).</p>
+<p><strong>❌ Report if:</strong> Save button does nothing, an error appears, or you stay on step 4.</p>
+<h3>Step 3e — Finalized Run View</h3>
+<p>You should now see a read-only &quot;bench sheet&quot; view of the run. Check these:</p>
+<ul>
+<li>The header shows <strong><code>Request 09421</code></strong> (with leading zero padding to 5 digits).</li>
+<li>You can see the prep sheet with reagent volumes, the reagent checklist, the bead region list, and the plate grid(s).</li>
+<li>The plate grid is <strong>not clickable</strong> (read-only — this is intentional; it&#39;s the &quot;take this to the bench&quot; view).</li>
+<li>Each plate is labeled <strong><code>Request 09421 — Plate 1 of N</code></strong>.</li>
+<li>There&#39;s a <strong>Print</strong> button somewhere on this view.</li>
+</ul>
+<p>Click <strong>Print</strong>. A Windows print dialog should appear. You can <strong>cancel</strong> it — I just want to confirm the button works.</p>
+<p><strong>✅ Pass:</strong> All elements visible, label formatting correct, Print dialog opens.</p>
+<p><strong>❌ Report if:</strong> Label reads wrong (e.g., &quot;Request 9421&quot; without padding), anything renders empty, Print does nothing.</p>
+<hr>
+<h2>4. Edit the saved run (verify it updates, doesn&#39;t duplicate)</h2>
+<ol>
+<li>Click the <strong>Back</strong> button (toward step 4).</li>
+<li>A modal should appear: <strong>&quot;This run is saved. Going back to edit will modify the saved record. Continue?&quot;</strong> with two buttons — <strong>Keep viewing</strong> and <strong>Edit anyway</strong> (the &quot;Edit anyway&quot; button should look different/destructive, e.g., red or styled as a warning).</li>
+<li>Click <strong>Edit anyway</strong> → you should return to the Document &amp; Save form with everything you entered still there.</li>
+<li>Change Comments to: <code>edited after save</code></li>
+<li>Click <strong>Save</strong> again → back to step 5.</li>
+<li>Click <strong>Back</strong> → <strong>Edit anyway</strong> → back to step 4 form.</li>
+<li>In the <strong>Past Runs</strong> list (should be on this page somewhere, maybe collapsed — expand it), find Request 09421. There should be <strong>exactly ONE row</strong> for it, and the comment should read &quot;edited after save&quot; (not two rows).</li>
+</ol>
+<p><strong>✅ Pass:</strong> The row count stays at 1 and the comment is the new one.</p>
+<p><strong>❌ Report if:</strong> Two rows appear for Request 09421, or the comment is the old one.</p>
+<hr>
+<h2>5. Close and reopen (persistence check)</h2>
+<ol>
+<li>Close the app entirely (Alt+F4 or the X button).</li>
+<li>Wait a few seconds, then reopen from the desktop shortcut.</li>
+<li>Walk back to step 4 (Document &amp; Save).</li>
+<li>Expand the <strong>Past Runs</strong> list.</li>
+</ol>
+<p><strong>✅ Pass:</strong> Request 09421 is still there, with the &quot;edited after save&quot; comment.</p>
+<p><strong>❌ Report if:</strong> The run is gone, or the comment reverted.</p>
+<p>Now click <strong>Load</strong> on Request 09421.</p>
+<ul>
+<li>A dirty-state confirm modal may pop up (asking if you want to discard unsaved changes) — accept it.</li>
+<li>The wizard should populate back to step 4 with all the saved data, and the plate grid (if you peek at step 3) should match what you originally set up.</li>
+</ul>
+<p><strong>✅ Pass:</strong> All fields populate correctly, plate layout matches the original.</p>
+<p><strong>❌ Report if:</strong> Any fields are blank or wrong.</p>
+<hr>
+<h2>6. Operators management</h2>
+<ol>
+<li><p>From the top nav, click <strong>Manage</strong> (or similar — it&#39;s a mode toggle away from the calculator).</p>
+</li>
+<li><p>Find the <strong>Operators</strong> section.</p>
+</li>
+<li><p>Try these three things:</p>
+<ul>
+<li><strong>Add</strong>: create a new operator called <code>TestUser</code>.</li>
+<li><strong>Rename</strong>: pick any existing operator (not Joven — we used that already) and rename them to anything.</li>
+<li><strong>Hide/soft-delete</strong>: hide one operator. A confirm dialog should mention that existing runs referencing this operator will keep the name.</li>
+</ul>
+</li>
+<li><p>Go back to step 4 of the wizard (Document &amp; Save). The Operator dropdown should:</p>
+<ul>
+<li>Show <code>TestUser</code> as a new option</li>
+<li>Show the renamed operator with the new name</li>
+<li><strong>Not</strong> show the hidden operator in the active list</li>
+</ul>
+</li>
+<li><p>Close the app, reopen it, check the Operators section again.</p>
+</li>
+</ol>
+<p><strong>✅ Pass:</strong> All three changes persist after restart.</p>
+<p><strong>❌ Report if:</strong> Any change doesn&#39;t save, or the dropdown doesn&#39;t reflect the change.</p>
+<hr>
+<h2>7. Start New Run</h2>
+<ol>
+<li>Go to the Finalized Run View (step 5) for any saved run, OR walk through a new run to step 5.</li>
+<li>Click <strong>Start New Run</strong>.</li>
+<li>You should be bounced back to step 1 of the wizard with everything cleared out (no platform selected, no analytes, plate grid empty, etc.).</li>
+<li>However — the <strong>Operator dropdown</strong> and the <strong>Past Runs list</strong> should still be populated. Those are app-wide data and shouldn&#39;t reset.</li>
+</ol>
+<p><strong>✅ Pass:</strong> Wizard clears, but operators + past runs still there.</p>
+<p><strong>❌ Report if:</strong> Operators or past runs disappear.</p>
+<hr>
+<h2>How to report results</h2>
+<p>When you&#39;re done, send me back:</p>
+<ol>
+<li><strong>If everything passed:</strong> just reply with &quot;all 7 sections passed&quot; and I&#39;ll close it out.</li>
+<li><strong>If something failed:</strong> for each failed step, tell me:<ul>
+<li>Which section number (e.g., &quot;Section 4 step 3&quot;)</li>
+<li>What you saw (the actual behavior)</li>
+<li>What was expected (the ✅ criteria)</li>
+<li>Whether the app crashed or stayed open</li>
+<li>A screenshot of any error dialog or error text</li>
+</ul>
+</li>
+</ol>
+<p>Don&#39;t try to debug or work around issues — just capture what you see and send it back. I&#39;ll diagnose on my end.</p>
+<hr>
+<h2>Questions you might hit</h2>
+<p><strong>Q: The SmartScreen warning worries me — is this safe?</strong>
+Yes. It&#39;s because we haven&#39;t paid for a Windows code-signing certificate yet. The installer is built from the same code you&#39;d see if you cloned the repo. We&#39;ll sign it before public release.</p>
+<p><strong>Q: Where does the data go?</strong>
+The app creates a SQLite database in your Windows user folder (<code>%APPDATA%\immunoplex-assay-calculator\</code>). Everything you save — runs, operator edits — lives there.</p>
+<p><strong>Q: Can I delete the test run and operator I created afterward?</strong>
+Yes — use the Delete button in the Past Runs list for Request 09421, and toggle &quot;Show hidden&quot; in Operators to find <code>TestUser</code> and delete it. But honestly I&#39;d rather leave them in the DB so I can inspect on the next release if needed.</p>
+<p><strong>Q: Can I uninstall afterward?</strong>
+Yes, standard Windows &quot;Add or Remove Programs&quot;. The DB in <code>%APPDATA%</code> will stay behind; delete that folder manually if you want a truly clean removal.</p>
+<p>Thanks!</p>
+</body>
+</html>
