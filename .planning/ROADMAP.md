@@ -4,6 +4,8 @@
 
 This roadmap delivers a desktop application for lab operators to calculate reagent volumes and generate prep recipes for Luminex/Immunoplex assays. The journey progresses from foundation (data models, platform configuration) through the core calculation engine, to recipe generation with plate visualization, and finally run documentation with persistence. Each phase builds on the previous, following natural dependencies identified during research.
 
+v2.0 extends the platform with a vendor-native multi-tab xlsx panel importer, a new `master_panels` data model that anchors reagent volumes and vendor-specific terminology per (platform, species), and calculator wiring that reads reagent volumes from the master panel when available. v2.0 phases (5-9) continue numbering from v1.0 without reset.
+
 ## Phases
 
 **Phase Numbering:**
@@ -19,6 +21,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3.2: Panel Data Management** - INSERTED - Edit/delete analytes and panels in-app
 - [x] **Phase 3.3: Analyte Selection Redesign** - INSERTED - Visual grid layout with panel grouping, sidebar, transitions
 - [ ] **Phase 4: Run Documentation & Persistence** - Metadata capture, save/load run records
+- [ ] **Phase 5: Master-Panel Schema & Repository Foundation** - Drizzle schema delta, composite unique index, nullable FK adoption on analytes/panels, repository CRUD + upsert-by-(platform, species)
+- [ ] **Phase 6: XLSX Parser & Validator** - Pure main-process parse pipeline, case-insensitive platform/species resolution, strict-mode validator, per-tab/row/cell error reporting
+- [ ] **Phase 7: Master-Panel Importer, IPC & UI Integration** - Transactional importer, separate IPC channel, Manage-page .xlsx button, selectedMasterPanel in selectionStore
+- [ ] **Phase 8: Vendor Term & Calculator Reagent-Volume Wiring** - AnalyteGrid vendor-term header, calculator priority resolver with provenance display, historical-run preservation
+- [ ] **Phase 9: Windows UAT & v2.0 Release** - Build v0.7.0 .exe, 16-item smoke test against real vendor xlsx, record retest outcome, tag release
 
 ## Phase Details
 
@@ -194,10 +201,87 @@ Plans:
 
 **Source:** .planning/phases/04-run-documentation-persistence-deployment/04-SMOKE-TEST-RESULTS.md
 
+### Phase 5: Master-Panel Schema & Repository Foundation
+**Goal**: The database can persist one `master_panels` row per (platform, species) pair with a composite unique index, and analytes/premix-panels can be adopted into a master panel via nullable `master_panel_id` FKs without disturbing v1-imported rows.
+**Depends on**: Nothing (first v2.0 phase; treats v1.0 Phase 4.1 as stable baseline)
+**Requirements**: MPAN-01, MPAN-02
+**Success Criteria** (what must be TRUE):
+  1. Running migrations against a dev DB with existing v1 data creates the `master_panels` table, adds nullable `master_panel_id` columns on `panels` and `analytes`, and leaves every existing v1 row with `master_panel_id = NULL` and no data loss (Pitfalls 1, 12)
+  2. The generated Drizzle migration SQL contains a composite `UNIQUE INDEX` on `(platform_id, species_id)` — verified by grep, not assumed from schema code (Pitfall 14, drizzle-kit issue #3411)
+  3. Inserting two `master_panels` rows with the same (platform_id, species_id) fails at the DB layer with a constraint-violation error; inserting with mismatched case of platform/species name is accepted (IDs are normalized, names are not)
+  4. `PRAGMA foreign_keys = ON` is verified in `src/main/db/client.ts` for every opened connection; deleting a platform row referenced by a master panel fails with a foreign-key violation (Pitfall 13 — onDelete 'restrict' upward, 'set null' downward)
+  5. `masterPanelRepository.upsertByPlatformAndSpecies(...)` creates-or-updates in place and returns the row's `id`; `analyteRepository.upsertByNameInMaster(...)` adopts an existing v1 analyte (case-insensitive name match) by setting its `master_panel_id` WITHOUT creating a duplicate row (Pitfall 1 — critical adoption-upsert gate)
+**Plans**: TBD
+**UI hint**: no
+
+**Notes (open decisions to lock at /gsd-discuss-phase before planning):**
+- OD-1 replace-vs-coexist — suggested: coexist for v2.0, remove v1 CSV path in v2.1
+- OD-2 calculator strict-vs-graceful — suggested: graceful + provenance display, never silent
+- OD-3 vendor term placement — suggested: AnalyteGrid header + "No Premix" chip; skip wizard labels
+- OD-4 premix-drop semantics — suggested: orphan (matches spec §Idempotency)
+- OD-5 validation strictness — suggested: strict, file-level reject
+- OD-6 A5 schema version marker — suggested: defer to v2.1
+- OD-7 col C concentration = single_conc vs premix_conc — suggested: single_conc; premix_conc = 1.0 default
+- OD-8 re-import overwrite of operator-edited master-panel names — suggested: yes, re-upload is authoritative
+
+OD-1, OD-2, OD-3, OD-7 are release-gating for Phases 7 and 8 and must be locked before Phase 5 planning exits `/gsd-discuss-phase`. OD-4, OD-5, OD-6, OD-8 can ride the same session but are lower blast radius.
+
+### Phase 6: XLSX Parser & Validator
+**Goal**: A pure main-process function accepts a filesystem path to a vendor xlsx workbook and returns either a typed `ResolvedTab[]` ready for DB writes, or a structured list of per-tab/row/cell errors with enough context for an operator to locate every offender — with ZERO DB writes on the error path.
+**Depends on**: Phase 5 (soft — imports `MasterPanel` / `ResolvedTab` shared types for validator output; no runtime dependency on the schema)
+**Requirements**: PIMP-01, PIMP-02, PIMP-03, PIMP-04, PIMP-05, PIMP-06, PIMP-07, PIMP-10
+**Success Criteria** (what must be TRUE):
+  1. Parser reads a multi-tab `.xlsx`, extracts B1/B2/B3/B4 and optional A6 per tab, and returns the raw values without coercion or validation — fixture with a 2-tab file produces a `ParsedWorkbook` with 2 tab entries containing all 5 metadata fields (PIMP-01, PIMP-02, PIMP-10)
+  2. Parser applies blank-stop rules correctly: master list (cols A/B/C) stops at first blank row in col A; each premix column (E+) stops independently at first blank cell in that column; Row 6 premix discovery stops at first blank cell E→rightward — adversarial fixture with mid-list empty rows and staggered premix lengths produces the expected analyte and premix counts (PIMP-03, PIMP-04, Pitfall 8)
+  3. Validator resolves platform and species case-insensitively against the live DB; an unknown platform/species returns a tab-level error listing valid choices ("Platform 'milliplix' not found — valid: Milliplex, BioRad, ProCartaPlex") and a premix analyte name matching the master only via case-insensitive comparison (e.g. "il-6" vs "IL-6") succeeds (PIMP-05, Pitfall 9)
+  4. Validator collects ALL errors across ALL tabs before returning (strict file-level mode per OD-5); a file with an error in tab 3 still surfaces errors in tabs 1 and 2 — fixture with per-tab errors of every error class (missing B1, non-numeric B4, non-integer bead region, unknown platform, premix analyte not in master) produces a single `ValidationResult` listing every offender (PIMP-06, PIMP-07)
+  5. Error messages carry tab name + row number + column letter where applicable, matching spec §Error reporting format: `Tab "Cytokines Human" — Row 12 Col A: analyte "IL-99" not found in master` — verified against spec sample strings (PIMP-07)
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 7: Master-Panel Importer, IPC & UI Integration
+**Goal**: An operator on the Manage page can click "Import Master Panel (.xlsx)", pick a vendor workbook, and — on success — see a per-tab summary banner and a refreshed Panels list; re-importing the same file is a no-op-by-diff (upsert, no duplicate rows, no orphan creations). On validation failure, zero DB writes occur.
+**Depends on**: Phase 5 (hard — schema + repository), Phase 6 (hard — parser + validator output shape)
+**Requirements**: PIMP-08, PIMP-09, MPAN-03, MPAN-04, MPAN-05, MPAN-06
+**Success Criteria** (what must be TRUE):
+  1. Manage page's Panels section renders an "Import Master Panel (.xlsx)" button (sibling to the existing legacy CSV importer per OD-1 coexist decision); clicking it opens a file dialog filtered to `.xlsx` only; new IPC channel `IMPORT_MASTER_PANEL_FILE` is wired end-to-end from renderer → preload → main → handler → importer (PIMP-08)
+  2. On a successful 2-tab import, operator sees a per-tab summary banner in the format `"Imported 2 master panels: Milliplex Human Cytokines (30 analytes, 4 premixes); BioRad Mouse Chemokines (15 analytes, 2 premixes)"`, the Panels list re-fetches and shows the new premix rows, and `useSelectionStore.getState().selectedMasterPanel` reflects the imported master for the current (platform, species) after a selection pass (PIMP-09)
+  3. Re-importing the SAME vendor xlsx (identical content) produces zero duplicate analyte rows, zero duplicate premix rows, and one updated `master_panels` row; changing the B1 name in the xlsx and re-importing updates the master-panel name in place (no delete-then-insert); v1-imported analytes with matching case-insensitive names are adopted by setting their `master_panel_id` FK (MPAN-03, MPAN-04 — **Pitfall 1 critical adoption-upsert gate**)
+  4. Dropping a premix from the xlsx and re-importing leaves the dropped premix row in `panels` with `master_panel_id` still set (orphan, matches OD-4 spec default); the premix does NOT auto-delete and historical runs referencing it continue to load (MPAN-05)
+  5. A validation failure in ANY tab (e.g. unknown platform in tab 3 of 3) leaves the DB in its pre-import state — zero master panels created, zero analytes adopted, zero panel rows upserted; verified by comparing row counts before and after the failed attempt. All per-tab writes for the successful tabs happen inside a single `better-sqlite3` transaction per spec §Idempotency + Pitfall 27 (MPAN-06)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 8: Vendor Term & Calculator Reagent-Volume Wiring
+**Goal**: When a run is set up against a (platform, species) pair that has a master panel, the AnalyteGrid header displays the vendor-specific singles term ("Singleplex"/"Simplex") and the calculator resolves `reagent_volume_per_well` from the master panel — with an explicit provenance indicator visible to the operator so a fallback is NEVER silent. Historical runs continue to display their saved volume untouched.
+**Depends on**: Phase 7 (hard — `selectedMasterPanel` must exist in `selectionStore` before this phase can consume it)
+**Requirements**: VTRM-01, VTRM-02, CALV-01, CALV-02, CALV-03
+**Success Criteria** (what must be TRUE):
+  1. AnalyteGrid section header reads `vendor_singles_term` from the current (platform, species)'s master panel when present ("Singleplex" for Milliplex, "Simplex" for Thermo); falls back to "Analytes" when `selectedMasterPanel === null` OR `vendorSinglesTerm === null/''` — never renders "undefined" or empty string (VTRM-01, PIMP-10, Pitfall 18)
+  2. The "No Premix (Custom Assay)" chip on the analyte selection page renders "No Premix (Custom Singleplex)" when a vendor term is present and falls back to "No Premix (Custom Assay)" otherwise (VTRM-02, OD-3 placement confirmed AnalyteGrid + chip only, NOT wizard labels)
+  3. Calculator resolves `volume_per_well` in strict priority order — (1) master panel's `reagent_volume_per_well`, (2) `DEFAULT_VOLUME_PER_WELL = 25` — via a single resolver `getEffectiveVolumePerWell()` in `calculatorStore`; no direct reads of either source outside the resolver (Pitfall 16 — two-sources-of-truth drift; OD-2 graceful fallback, NOT strict) (CALV-01)
+  4. **Pitfall 4 critical provenance-display gate:** the calculator UI visibly shows which source supplied the volume — "From master panel: Cytokines Human (50 µL/well)" vs "Platform default (25 µL/well)" — on the calculation step wherever the final volume number is shown; an operator can never mistake a fallback for an intentional master-panel value (CALV-02)
+  5. A run saved before Phase 8 (with `runs.volume_per_well = 25` persisted) reloads showing 25 µL/well even if the master panel for its (platform, species) now says 50 — the stored column wins on read, the resolver only runs for NEW calculations; verified by a fixture run created against v0.6.x and reloaded after a master-panel upload that changes the resolved value (CALV-03, Pitfall 5, Pitfall 17)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 9: Windows UAT & v2.0 Release
+**Goal**: A Windows operator installs v0.7.0, imports a real Milliplex vendor `.xlsx`, runs the full end-to-end calculator flow against an imported master panel, confirms the vendor singles term renders and the calculator pulls volume from the master (not the platform default), and every item on the 16-item "Looks Done But Isn't" checklist passes — at which point v2.0 is tagged and released.
+**Depends on**: Phase 8 (hard — all v2.0 code changes must be merged before the build that goes to UAT)
+**Requirements**: none new — verification gate for the 21 v2.0 requirements already mapped to Phases 5-8
+**Success Criteria** (what must be TRUE):
+  1. `npm run build:win` produces x64 + arm64 installers tagged `immunoplex-assay-calculator-0.7.0-x64-setup.exe` (and arm64) using the existing electron-builder config with explicit `win.target.arch [x64, arm64]` — no regression against v0.6.0 packaging
+  2. Operator installs the .exe on the production Windows workstation, launches it, and the v0.6.0 → v0.7.0 schema migration (0004_*.sql) auto-applies successfully against the existing production DB without data loss; operator verifies pre-existing runs still load with correct values (CALV-03 historical preservation)
+  3. Operator clicks "Import Master Panel (.xlsx)" on the Manage page, selects a real Milliplex vendor workbook, and the per-tab summary banner renders with accurate counts; re-importing the same file produces zero duplicate rows (Pitfall 1 adoption gate verified in real data)
+  4. Operator navigates to the calculator, selects the imported master panel's (platform, species), and confirms: AnalyteGrid header shows the vendor term, the calculator displays the master panel's volume-per-well, provenance indicator reads "From master panel: <name>" (Pitfall 4 provenance gate)
+  5. All 16 items on the PITFALLS.md §Looks Done But Isn't checklist pass in order on the actual Windows .exe (parser coercion, premix case-insensitive match, duplicate-tab detection, adoption-upsert, transactional rollback, FK cascade, composite unique index, provenance UI, historical preservation, full-custom fallback, vendor-term null fallback, long-label layout, structured IPC error, fixture coverage, adversarial cases, v1-coexistence indicator); retest outcome is recorded to `.planning/phases/09-windows-uat-v2-release/09-UAT-RESULTS.md` with `## Overall: PASS`
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1
+Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -209,8 +293,13 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1
 | 3.3. Analyte Selection Redesign | 0/5 | Not started | - |
 | 4. Run Documentation, Persistence & Deployment | 5/5 | Code-complete; smoke test returned with blocking bugs | - |
 | 4.1. Smoke Test Fixes (INSERTED) | 4/5 (plan 05 partial: v0.6.0 installers built, Windows retest deferred to HUMAN-UAT-04.1-05-01) | Code-complete; awaiting Windows smoke retest | - |
+| 5. Master-Panel Schema & Repository Foundation | 0/TBD | Not started | - |
+| 6. XLSX Parser & Validator | 0/TBD | Not started | - |
+| 7. Master-Panel Importer, IPC & UI Integration | 0/TBD | Not started | - |
+| 8. Vendor Term & Calculator Reagent-Volume Wiring | 0/TBD | Not started | - |
+| 9. Windows UAT & v2.0 Release | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-04-23 (Phase 4.1 executed — Waves 1+2 complete, Wave 3 version bump + build done, Windows retest deferred)*
+*Last updated: 2026-04-23 — v2.0 roadmap added (5 phases: 5-9, 21 requirements mapped, Pitfall-1 adoption + Pitfall-4 provenance gates embedded)*
 *Plan template: see .planning/PLAN_TEMPLATE.md*

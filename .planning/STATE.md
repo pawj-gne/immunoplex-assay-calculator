@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: panel-xlsx-upload
 status: executing
-stopped_at: Phase 4.1 code-complete on dev/v1-01; v0.6.0 installers built; Windows smoke retest deferred to HUMAN-UAT-04.1-05-01
-last_updated: "2026-04-23T22:15:00.000Z"
-last_activity: 2026-04-23 -- Phase 04.1 Waves 1+2 executed; Plan 04.1-05 Task 1 (version bump + build:win) complete; Tasks 2+3 deferred
+stopped_at: v2.0 roadmap created (Phases 5-9); Phase 4.1 code-complete on dev/v1-01; v0.6.0 installers built; Windows smoke retest deferred to HUMAN-UAT-04.1-05-01
+last_updated: "2026-04-23T23:00:00.000Z"
+last_activity: 2026-04-23 -- v2.0 roadmap created (5 phases, 21 requirements mapped)
 progress:
-  total_phases: 8
+  total_phases: 13
   completed_phases: 6
   total_plans: 30
   completed_plans: 28
@@ -21,17 +21,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Accurate reagent calculations with clear prep recipes - operators must be able to trust the math and follow the instructions without second-guessing.
-**Current focus:** Milestone v2.0 — Panel XLSX Upload + Master-Panel Data Model (planning)
+**Current focus:** Milestone v2.0 — Panel XLSX Upload + Master-Panel Data Model (roadmap created; Phase 5 awaiting `/gsd-discuss-phase` to lock OD-1/2/3/7)
 
 ## Current Position
 
 Milestone: v2.0 (Panel XLSX Upload + Master-Panel Data Model)
-Phase: Not started (defining requirements)
+Phase: 5 (Master-Panel Schema & Repository Foundation) — not started
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-23 -- Milestone v2.0 started
+Status: Roadmap created; awaiting discuss-phase and plan-phase
+Last activity: 2026-04-23 -- v2.0 roadmap created (Phases 5-9)
 
-Progress: [██████████] v1.0 code-complete (pending HUMAN-UAT-04.1-05-01); v2.0 requirements definition in progress
+Progress: [██████████] v1.0 code-complete (pending HUMAN-UAT-04.1-05-01); v2.0 roadmap complete, ready for Phase 5 planning
 
 ## Performance Metrics
 
@@ -51,6 +51,12 @@ Progress: [██████████] v1.0 code-complete (pending HUMAN-UAT
 | 03.2-panel-data-management | 3/3 | Complete | v0.4.0 (2026-01-29) |
 | 03.3-analyte-selection-redesign | 6/6 | Complete (includes ad-hoc 03.3-06) | v0.5.0 (2026-02-04) |
 | 04-run-documentation-persistence-deployment | 5/5 | Code-complete (04-01 + 04-02 + 04-03 + 04-04 + 04-05); Windows smoke test pending HUMAN-UAT | - |
+| 04.1-smoke-test-fixes | 4/5 | Code-complete; awaiting Windows smoke retest (HUMAN-UAT-04.1-05-01) | - |
+| 05-master-panel-schema-repository | 0/TBD | Not started | - |
+| 06-xlsx-parser-validator | 0/TBD | Not started | - |
+| 07-master-panel-importer-ipc-ui | 0/TBD | Not started | - |
+| 08-vendor-term-calculator-wiring | 0/TBD | Not started | - |
+| 09-windows-uat-v2-release | 0/TBD | Not started | - |
 
 **Doc debt:** None — all SUMMARY files present. 03-03, 03.3-05, 03.3-06 were backfilled from git history on 2026-04-22; each carries a backfill banner noting that exact execution timing and live deviation notes are not available.
 | Phase 04-run-documentation-persistence-deployment P01 | 7m 17s | 5 tasks | 17 files |
@@ -64,6 +70,7 @@ Progress: [██████████] v1.0 code-complete (pending HUMAN-UAT
 ### Roadmap Evolution
 
 - Phase 4.1 inserted after Phase 4: Smoke test bug fixes (BUG-01/02/03 + UI-01) — URGENT, blocks v1.0 release. Source: 04-SMOKE-TEST-RESULTS.md (2026-04-23)
+- Phases 5-9 appended 2026-04-23: v2.0 milestone roadmap (5 phases, 21 requirements mapped). Derived from research SUMMARY.md §Roadmap Implications; critical gates embedded — Pitfall 1 adoption-upsert in Phase 7, Pitfall 4 provenance-display in Phase 8. Open decisions OD-1/2/3/7 gate Phase 5 planning; OD-4/5/6/8 ride the same discuss-phase session.
 
 ### Decisions
 
@@ -149,6 +156,7 @@ Recent decisions affecting current work:
 
 - HUMAN-UAT-04.1-05-01: Windows physical workstation smoke retest (14 steps + Phase 4.1 fix acceptance for BUG-01/02/03 + UI-01) — install dist/immunoplex-assay-calculator-0.6.0-x64-setup.exe (or arm64) on the Windows PC and follow `04.1-05-PLAN.md` Task 2 `<how-to-verify>`. This SUPERSEDES HUMAN-UAT-04-03-01 (the Phase 4.1 retest is the same 14-step smoke test + 4 fix acceptances, run on a bundle containing both the Phase 4 feature set and the Phase 4.1 fixes). Results recorded to `.planning/phases/04.1-smoke-test-fixes/04.1-SMOKE-TEST-RETEST.md` with `## Overall: PASS` or `## Overall: FAIL`. On PASS → resume Plan 04.1-05 Task 3; on FAIL → `/gsd-plan-phase 4.1 --gaps`.
 - Phase 4.1 verification: pending the smoke retest outcome above before phase 4.1 can be marked Complete and a v0.6.0 release tagged.
+- v2.0 Phase 5 kickoff: run `/gsd-discuss-phase 5` to lock OD-1 (replace-vs-coexist), OD-2 (calculator strict-vs-graceful), OD-3 (vendor term placement), OD-7 (col C → single_conc) as release-gating decisions; OD-4/5/6/8 can ride same session. Then `/gsd-plan-phase 5`.
 
 ### Blockers/Concerns
 
@@ -156,10 +164,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-22T22:30:00Z
-Stopped at: Completed 04-03 Windows installer plan (Tasks 1+2 implementation, Task 3 deferred to HUMAN-UAT-04-03-01)
-Resume file: None
-Resume intent: Phase 4 verification pass — verifier should surface HUMAN-UAT-04-03-01 (Windows physical workstation smoke test) as the gate before phase can be marked Complete and a v0.6.0 release tagged. All 5 Phase 4 plans are code-complete on dev/v1-01.
+Last session: 2026-04-23T23:00:00Z
+Stopped at: v2.0 roadmap created (Phases 5-9, 21 requirements mapped); Phase 4.1 code-complete awaiting Windows HUMAN-UAT-04.1-05-01
+Resume file: .planning/ROADMAP.md §Phase 5 Notes
+Resume intent: Either (a) close out v1.0 by completing HUMAN-UAT-04.1-05-01 on Windows and tagging v0.6.0, or (b) start v2.0 Phase 5 with `/gsd-discuss-phase 5` to lock open decisions before planning. Both can proceed in parallel since v2.0 Phase 5 does not depend on v1.0 UAT outcome (schema-only work).
 
 ## Releases
 
@@ -171,4 +179,4 @@ Resume intent: Phase 4 verification pass — verifier should surface HUMAN-UAT-0
 - **v0.4.2** (2026-01-29): Remove R&D Systems, correct platform names
 - **v0.5.0** (2026-02-04): Selection UX Redesign & Interactive Plate Grid (Phase 3.3)
 
-**Planned Phase:** 04.1 (smoke-test-fixes) — 5 plans — 2026-04-23T21:24:40.151Z
+**Planned Phase:** 05 (master-panel-schema-repository) — plans TBD — 2026-04-23T23:00:00Z (roadmap entry created)

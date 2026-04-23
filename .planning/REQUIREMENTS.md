@@ -149,12 +149,34 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DOCM-01 | Phase 4 (04-01 + 04-02 + 04-04 + 04-05) | Complete (packaged in 04-03; runtime confirmation pending HUMAN-UAT-04-03-01) |
 | PERS-01 | Phase 4 (04-01 + 04-02 + 04-03) | Complete (packaged; runtime confirmation pending HUMAN-UAT-04-03-01) |
 | PERS-02 | Phase 4 (04-01 + 04-02 + 04-04 + 04-03) | Complete (packaged; runtime confirmation pending HUMAN-UAT-04-03-01) |
+| PIMP-01 | Phase 6 | Pending |
+| PIMP-02 | Phase 6 | Pending |
+| PIMP-03 | Phase 6 | Pending |
+| PIMP-04 | Phase 6 | Pending |
+| PIMP-05 | Phase 6 | Pending |
+| PIMP-06 | Phase 6 | Pending |
+| PIMP-07 | Phase 6 | Pending |
+| PIMP-08 | Phase 7 | Pending |
+| PIMP-09 | Phase 7 | Pending |
+| PIMP-10 | Phase 6 | Pending |
+| MPAN-01 | Phase 5 | Pending |
+| MPAN-02 | Phase 5 | Pending |
+| MPAN-03 | Phase 7 | Pending |
+| MPAN-04 | Phase 7 | Pending |
+| MPAN-05 | Phase 7 | Pending |
+| MPAN-06 | Phase 7 | Pending |
+| CALV-01 | Phase 8 | Pending |
+| CALV-02 | Phase 8 | Pending |
+| CALV-03 | Phase 8 | Pending |
+| VTRM-01 | Phase 8 | Pending |
+| VTRM-02 | Phase 8 | Pending |
 
 **Coverage:**
-- v1 requirements: 15 total
-- Mapped to phases: 15
-- Unmapped: 0
+- v1 requirements: 15 total — 15 mapped
+- v2.0 requirements: 21 total (10 PIMP + 6 MPAN + 3 CALV + 2 VTRM) — 21 mapped to Phases 5-8; Phase 9 is verification gate (no new REQ-IDs)
+- Deferred (not mapped to any v2.0 phase): PIMP-11, PIMP-12, PIMP-13, PIMP-DEP-01
+- Unmapped v2.0 requirements: 0
 
 ---
 *Requirements defined: 2026-01-22*
-*Last updated: 2026-04-23 — v2.0 requirements added (10 PIMP + 6 MPAN + 3 CALV + 2 VTRM = 21 requirements); 4 deferred (PIMP-11/12/13, PIMP-DEP-01); 8 open decisions to lock during discuss-phase of v2.0 Phase 1*
+*Last updated: 2026-04-23 — v2.0 traceability added (21 requirements mapped to Phases 5-8; Phase 9 = Windows UAT gate)*
