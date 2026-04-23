@@ -173,10 +173,27 @@ Plans:
 - [x] 04-04-PLAN.md -- Finalized Run View wizard step 5: read-only PlateGrid + PrepSheet/ReagentChecklist/BeadRegionList reuse + Print + edit-warning modal + Start New Run (Wave 4)
 - [x] 04-05-PLAN.md -- Operators Manage page + operatorsStore + OperatorEditModal + app-init load (Wave 2)
 
+### Phase 04.1: Smoke Test Fixes (INSERTED)
+**Goal**: Fix blocking bugs surfaced by the Phase 4 Windows smoke test so v1.0 can ship
+**Depends on**: Phase 4
+**Requirements**: TBD (gap-closure on DOCM-01, PERS-01; regression fixes on Phase 3.3 plate layout)
+**Success Criteria** (what must be TRUE):
+  1. Duplicate pair orientation matches how a Hamilton robot pipettes (column-major), confirmed with domain expert (BUG-01)
+  2. Adding a second plate does not erase plate 1's layout (BUG-02 — data-loss regression)
+  3. Species appears in the summary/metadata header on the Document & Save and Finalized Run View steps (BUG-03)
+  4. Selecting a premix panel scopes the analyte picker to that panel's analytes only; Panels I and II are mutually exclusive (UI-01)
+  5. A fresh Windows .exe passes the original 14-step smoke test end-to-end
+**Plans**: TBD
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 04.1 to break down)
+
+**Source:** .planning/phases/04-run-documentation-persistence-deployment/04-SMOKE-TEST-RESULTS.md
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -186,9 +203,10 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4
 | 3.1. Panel Data Import | 2/2 | Complete | 2026-01-29 |
 | 3.2. Panel Data Management | 3/3 | Complete | 2026-01-29 |
 | 3.3. Analyte Selection Redesign | 0/5 | Not started | - |
-| 4. Run Documentation, Persistence & Deployment | 5/5 | Code-complete; Windows smoke test pending HUMAN-UAT-04-03-01 | - |
+| 4. Run Documentation, Persistence & Deployment | 5/5 | Code-complete; smoke test returned with blocking bugs | - |
+| 4.1. Smoke Test Fixes (INSERTED) | 0/? | Not planned | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-04-22 (Plan 04-03 closed out — Phase 4 code-complete; Windows smoke test pending HUMAN-UAT-04-03-01)*
+*Last updated: 2026-04-23 (Phase 4.1 inserted for smoke test bug fixes; blocks v1.0 release)*
 *Plan template: see .planning/PLAN_TEMPLATE.md*

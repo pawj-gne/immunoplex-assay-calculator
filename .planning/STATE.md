@@ -60,6 +60,10 @@ Progress: [█████████▌] 96%
 
 ## Accumulated Context
 
+### Roadmap Evolution
+
+- Phase 4.1 inserted after Phase 4: Smoke test bug fixes (BUG-01/02/03 + UI-01) — URGENT, blocks v1.0 release. Source: 04-SMOKE-TEST-RESULTS.md (2026-04-23)
+
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
