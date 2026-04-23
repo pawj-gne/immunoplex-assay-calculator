@@ -4,6 +4,7 @@ import { PlatformSelector } from './features/platform/components/PlatformSelecto
 import { SpeciesSelector } from './features/selection/components/SpeciesSelector'
 import { AnalyteSelectionPanel } from './features/selection/components/AnalyteSelectionPanel'
 import { CalculatorPanel } from './features/calculator/components/CalculatorPanel'
+import { DocumentAndSavePage } from './features/run'
 
 import { ImportButton } from './features/import/ImportButton'
 import { ManagePage } from './features/manage/ManagePage'
@@ -13,14 +14,19 @@ import { useOperatorsStore } from './stores/operatorsStore'
 
 type AppMode = 'calculator' | 'manage'
 
-const PAGE_LABELS = ['Platform & Species', 'Analytes', 'Calculations']
+// Wizard page labels. Plan 04-02 extends from 3 to 4 pages (adds 'Document &
+// Save' at index 3). Plan 04-04 will push this to 5 by appending the
+// Finalized Run View page at index 4. Step chrome and Next-button gating
+// use PAGE_LABELS.length so both plans compose cleanly.
+const PAGE_LABELS = ['Platform & Species', 'Analytes', 'Calculations', 'Document & Save']
 
 /**
  * Render the content for a given wizard page index.
  */
 function renderPage(
   pageIndex: number,
-  selectedPlatform: Platform | null
+  selectedPlatform: Platform | null,
+  onAfterSave: () => void
 ): JSX.Element {
   switch (pageIndex) {
     case 0:
@@ -46,6 +52,12 @@ function renderPage(
       return (
         <div className="bg-white rounded-lg border border-[var(--color-border)] p-6">
           <CalculatorPanel />
+        </div>
+      )
+    case 3:
+      return (
+        <div className="bg-white rounded-lg border border-[var(--color-border)] p-6">
+          <DocumentAndSavePage onAfterSave={onAfterSave} />
         </div>
       )
     default:
@@ -105,6 +117,11 @@ function App(): JSX.Element {
 
   const canGoNext = currentPage === 0 ? !!(selectedPlatform && selectedSpecies) : true
 
+  // D-08: DocumentAndSavePage calls this after a successful save so the
+  // wizard auto-navigates to step 5 (Finalized Run View). Plan 04-04 adds
+  // the step 5 render; this plan sends the operator there via setCurrentPage.
+  const handleAfterSave = (): void => setCurrentPage(4)
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -154,7 +171,7 @@ function App(): JSX.Element {
                 {isTransitioning && (
                   <div className={`absolute inset-0 ${getExitClass(direction)}`}>
                     <div className="space-y-6">
-                      {renderPage(displayPage, selectedPlatform)}
+                      {renderPage(displayPage, selectedPlatform, handleAfterSave)}
                     </div>
                   </div>
                 )}
@@ -164,7 +181,8 @@ function App(): JSX.Element {
                   <div className="space-y-6">
                     {renderPage(
                       isTransitioning ? currentPage : displayPage,
-                      selectedPlatform
+                      selectedPlatform,
+                      handleAfterSave
                     )}
                   </div>
                 </div>
@@ -184,11 +202,12 @@ function App(): JSX.Element {
                 </div>
 
                 <span className="text-sm text-[var(--color-muted)]">
-                  Step {currentPage + 1} of 3 &mdash; {PAGE_LABELS[currentPage]}
+                  Step {currentPage + 1} of {PAGE_LABELS.length} &mdash;{' '}
+                  {PAGE_LABELS[currentPage]}
                 </span>
 
                 <div>
-                  {currentPage < 2 && (
+                  {currentPage < PAGE_LABELS.length - 1 && (
                     <button
                       onClick={() => setCurrentPage((p) => p + 1)}
                       disabled={!canGoNext}

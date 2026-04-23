@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { RunRecord } from '../../../shared/types/run'
 import { usePlatformStore } from './platformStore'
 import { useSelectionStore } from './selectionStore'
-import { useCalculatorStore } from './calculatorStore'
+import { useCalculatorStore, registerRunStoreResetHook } from './calculatorStore'
 import { usePlateStore } from './plateStore'
 import { buildRunSnapshot, type MetadataFields } from '../features/run/hooks/useRunSnapshot'
 import { computeCleanSnapshot } from '../features/run/hooks/useDirtyTracking'
@@ -181,3 +181,13 @@ export const useRunStore = create<RunState>((set, get) => ({
     return computeCleanSnapshot(metadata) !== lastCleanSnapshot
   }
 }))
+
+// Wire runStore into the calculator Reset cascade without creating an
+// import cycle. calculatorStore.reset() calls the registered hook; we
+// register it here once at module load so the first time anything pulls
+// runStore into the graph (e.g., the first render of RunList), the hook
+// is primed. Safe even if Reset fires before the hook runs — calculator-
+// Store guards against null.
+registerRunStoreResetHook(() => {
+  useRunStore.getState().clearCurrentRun()
+})

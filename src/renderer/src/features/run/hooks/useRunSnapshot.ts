@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import type { RunCreate, SampleType } from '../../../../../shared/types/run'
 import { usePlatformStore } from '../../../stores/platformStore'
 import { useSelectionStore } from '../../../stores/selectionStore'
@@ -120,17 +121,23 @@ export function buildRunSnapshot(metadata: MetadataFields): RunCreate | { error:
  */
 export function useRunSnapshot(metadata: MetadataFields): SnapshotResult {
   // Selectors — subscribe to the state slices that gate canSave so React
-  // re-renders this hook's consumer on any relevant upstream change.
-  // Return values are intentionally unused below (just the subscription).
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  const _platformId = usePlatformStore((s) => s.selectedPlatformId)
-  const _speciesId = useSelectionStore((s) => s.selectedSpeciesId)
-  const _sampleCount = useCalculatorStore((s) => s.sampleCount)
-  const _validationError = useCalculatorStore((s) => s.validationError)
-  const _selectedCount = useSelectionStore((s) => s.getAllSelectedAnalytes().length)
-  /* eslint-enable @typescript-eslint/no-unused-vars */
+  // re-renders this hook's consumer on any relevant upstream change. The
+  // returned values feed into a useMemo dependency list so the snapshot
+  // re-builds exactly when any subscribed slice changes.
+  const platformId = usePlatformStore((s) => s.selectedPlatformId)
+  const speciesId = useSelectionStore((s) => s.selectedSpeciesId)
+  const sampleCount = useCalculatorStore((s) => s.sampleCount)
+  const validationError = useCalculatorStore((s) => s.validationError)
+  const selectedCount = useSelectionStore((s) => s.getAllSelectedAnalytes().length)
 
-  const result = buildRunSnapshot(metadata)
+  const result = useMemo(
+    () => buildRunSnapshot(metadata),
+    // metadata is captured inside buildRunSnapshot; these slice values are
+    // listed here to force re-evaluation when any upstream change occurs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [metadata, platformId, speciesId, sampleCount, validationError, selectedCount]
+  )
+
   const canSave = !('error' in result)
   const reason = canSave ? null : (result as { error: string }).error
   return {

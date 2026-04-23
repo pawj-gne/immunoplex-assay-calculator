@@ -17,6 +17,15 @@ import {
 import type { SingleAnalyte, CalculatorOutputs } from '../../../shared/types/calculator'
 import { usePlateStore } from './plateStore'
 
+// Late-bound hook so runStore can participate in the Reset cascade without
+// creating an import cycle (runStore -> useRunSnapshot -> calculatorStore).
+// runStore calls registerRunStoreResetHook(() => useRunStore.getState().clearCurrentRun())
+// exactly once on module load.
+let runStoreResetHook: (() => void) | null = null
+export function registerRunStoreResetHook(fn: () => void): void {
+  runStoreResetHook = fn
+}
+
 interface CalculatorState {
   // Inputs
   sampleCount: number
@@ -136,13 +145,11 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
     // across a reset, per Plan 04-02 §"On Reset ... dirty tracker is also
     // re-synced and currentRunId is cleared").
     //
-    // Dynamic import keeps runStore out of the calculatorStore module graph
-    // in production bundling and avoids a potential circular: runStore
-    // imports calculatorStore, and importing back at module load would
-    // create a cycle. window.* lookup uses the already-initialized module.
-    void import('./runStore').then(({ useRunStore }) => {
-      useRunStore.getState().clearCurrentRun()
-    })
+    // runStore wires itself into the calculator Reset cascade via
+    // registerRunStoreResetHook below — we delegate to the hook rather
+    // than importing runStore directly to break the import cycle
+    // (runStore -> useRunSnapshot -> calculatorStore -> runStore).
+    runStoreResetHook?.()
   },
 
   getOutputs: () => {
