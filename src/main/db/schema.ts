@@ -60,6 +60,70 @@ export const panelAnalytes = sqliteTable('panel_analytes', {
   createdAt: text('created_at').notNull()
 })
 
+// Phase 4: Operators (lab roster) — D-20
+export const operators = sqliteTable('operators', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  active: integer('active', { mode: 'boolean' }).notNull().default(true),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull()
+})
+
+// Phase 4: Runs — one record per lab request on one platform/species/panel
+export const runs = sqliteTable('runs', {
+  id: text('id').primaryKey(),
+  // Request identity
+  requestNumber: integer('request_number'), // nullable; must be non-null when requestOverrideAdHoc=false
+  requestOverrideAdHoc: integer('request_override_ad_hoc', { mode: 'boolean' })
+    .notNull()
+    .default(false),
+  // Who / when
+  userName: text('user_name').notNull(),
+  operatorId: text('operator_id')
+    .notNull()
+    .references(() => operators.id),
+  runDate: text('run_date').notNull(), // ISO date string e.g. "2026-04-22"
+  // Assay shape
+  sampleType: text('sample_type').notNull(), // enum: 'Supernatant'|'Lysate'|'Lavage'|'Plasma'|'Serum'
+  dilutionFactor: real('dilution_factor').notNull(),
+  sampleCount: integer('sample_count').notNull(),
+  replicateMode: text('replicate_mode').notNull(), // 'singles' | 'duplicates'
+  requestType: text('request_type').notNull(), // 'premix' | 'premix_singles' | 'custom' — immutable after create
+  platformId: text('platform_id')
+    .notNull()
+    .references(() => platforms.id), // immutable after create
+  speciesId: text('species_id')
+    .notNull()
+    .references(() => species.id), // immutable after create
+  panelId: text('panel_id').references(() => premixPanels.id), // nullable for custom
+  volumePerWell: real('volume_per_well').notNull(),
+  deadVolume: real('dead_volume').notNull(),
+  // Positions (D-16: integers with fixed ranges, NOT free text)
+  hamilton: integer('hamilton').notNull(), // 1-5
+  runPlatePosition: integer('run_plate_position').notNull(), // 1-4
+  standardPosition: integer('standard_position').notNull(), // 1-2
+  troughPosition: integer('trough_position').notNull(), // 1-2
+  // Free text + derived
+  comments: text('comments'), // nullable, unbounded length per D-Discretion
+  plex: integer('plex').notNull(), // auto-derived at save time = analyteIds.length
+  plateCount: integer('plate_count').notNull(), // auto-derived = plateStore.getPlateCount()
+  platesJson: text('plates_json').notNull(), // JSON.stringify(Record<plateNumber, string[]>); D-02/D-18 round-trip
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull()
+})
+
+// Phase 4: Single analytes selected for a given run (D-19)
+export const runSingleAnalytes = sqliteTable('run_single_analytes', {
+  id: text('id').primaryKey(),
+  runId: text('run_id')
+    .notNull()
+    .references(() => runs.id),
+  analyteId: text('analyte_id')
+    .notNull()
+    .references(() => analytes.id),
+  createdAt: text('created_at').notNull()
+})
+
 // Type inference helpers
 export type Platform = typeof platforms.$inferSelect
 export type NewPlatform = typeof platforms.$inferInsert
@@ -75,3 +139,12 @@ export type NewAnalyte = typeof analytes.$inferInsert
 
 export type PanelAnalyte = typeof panelAnalytes.$inferSelect
 export type NewPanelAnalyte = typeof panelAnalytes.$inferInsert
+
+export type Operator = typeof operators.$inferSelect
+export type OperatorInsert = typeof operators.$inferInsert
+
+export type Run = typeof runs.$inferSelect
+export type RunInsert = typeof runs.$inferInsert
+
+export type RunSingleAnalyte = typeof runSingleAnalytes.$inferSelect
+export type RunSingleAnalyteInsert = typeof runSingleAnalytes.$inferInsert
