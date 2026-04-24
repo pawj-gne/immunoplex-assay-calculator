@@ -742,22 +742,27 @@ git add src/main/db/schema.ts drizzle/migrations/0004_*.sql drizzle/migrations/m
 
 **Confirmation-needed-before-execution items:** A2 (sub_panel_conc default), A3 (premix_conc sentinel), A5 (Phase 5 tests yes/no).
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+*All three questions were locked by CONTEXT.md decisions D-20, D-22, and D-21 on 2026-04-23 during the post-research AskUserQuestion pass before planning.*
 
 1. **Does Phase 5 ship its own unit tests, or is testing deferred to Phase 7 where the importer's transactional flow makes repository tests more valuable?**
    - What we know: No test framework installed; CONTEXT.md §Claude's Discretion mentions "programmatic generation via better-sqlite3 in-memory DB — follows existing repo test conventions" but there ARE NO existing repo test conventions to follow.
    - What's unclear: Whether the planner should (a) install vitest + write repository tests for this phase (supports SC #3 + SC #5 automation), (b) defer to Phase 7, (c) write tests inline but without a framework (run via `tsx`-style ad-hoc scripts).
    - Recommendation: **Option (a)** — install vitest, write ~6 tests (one per success criterion + edge cases). Small incremental investment; enables Phase 7 to land faster because the data-access layer is already test-covered.
+   - **RESOLVED: D-20** — Phase 5 installs vitest as a devDependency and ships repository unit tests against an in-memory `better-sqlite3` DB covering SC #1, SC #3, SC #4, SC #5. Test fixture boilerplate becomes the canonical pattern for future phases.
 
 2. **`premix_conc` sentinel value on the `upsertByNameInMaster` INSERT path.**
    - What we know: Column is `REAL NOT NULL` (schema.ts:40). No v2 code path reads it. D-04 flags v2.1 removal.
    - What's unclear: 0 vs `input.concentration` vs schema-level `.default(0)`.
    - Recommendation: `input.concentration` (Option 2 from §Pattern 4 ⚠ note) — least-surprise for any DB reader.
+   - **RESOLVED: D-22** — On the INSERT (new-analyte) path, `upsertByNameInMaster` writes `input.concentration` to BOTH `single_conc` (new v2 field per D-04) AND `premix_conc` (legacy NOT NULL field). UPDATE paths never touch `premix_conc` (D-17).
 
 3. **`sub_panel_conc` default for pre-existing `premix_panels` rows.**
    - What we know: D-10 says `REAL NOT NULL`, 1 for regular premix, 20 for JAMMate. Existing `premix_panels` rows are all "regular" by definition.
    - What's unclear: Whether the column ships with `.default(1)` (treats legacy as regular premix, materializes 1.0 in all existing rows) or is added as NULL-able and backfilled separately.
    - Recommendation: `.default(1)` — matches D-10 semantics, avoids a separate backfill step, and is how drizzle-kit natively handles ADD COLUMN with NOT NULL.
+   - **RESOLVED: D-21** — `premix_panels.sub_panel_conc` ships as `REAL NOT NULL DEFAULT 1` at the Drizzle schema level. Legacy rows get `1` (regular premix) during `ALTER TABLE`. No separate backfill step.
 
 ## Environment Availability
 
