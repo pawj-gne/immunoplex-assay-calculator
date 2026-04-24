@@ -4,7 +4,7 @@
 
 This roadmap delivers a desktop application for lab operators to calculate reagent volumes and generate prep recipes for Luminex/Immunoplex assays. The journey progresses from foundation (data models, platform configuration) through the core calculation engine, to recipe generation with plate visualization, and finally run documentation with persistence. Each phase builds on the previous, following natural dependencies identified during research.
 
-v2.0 extends the platform with a vendor-native multi-tab xlsx panel importer, a new `master_panels` data model that anchors reagent volumes and vendor-specific terminology per (platform, species), and calculator wiring that reads reagent volumes from the master panel when available. v2.0 phases (5-9) continue numbering from v1.0 without reset.
+v2.0 extends the platform with a vendor-native multi-tab xlsx panel importer, a new `master_panels` data model that anchors reagent volumes and vendor-specific terminology per (platform, species), and calculator wiring that reads reagent volumes from the master panel when available. v2.0 phases (5-11) continue numbering from v1.0 without reset. Phases 6-7 (INSERTED 2026-04-24) add central-server networking and an immutable audit trail before the XLSX import work begins.
 
 ## Phases
 
@@ -22,10 +22,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3.3: Analyte Selection Redesign** - INSERTED - Visual grid layout with panel grouping, sidebar, transitions
 - [ ] **Phase 4: Run Documentation & Persistence** - Metadata capture, save/load run records
 - [x] **Phase 5: Master-Panel Schema & Repository Foundation** - Drizzle schema delta, composite unique index, nullable FK adoption on analytes/panels, repository CRUD + upsert-by-(platform, species)
-- [ ] **Phase 6: XLSX Parser & Validator** - Pure main-process parse pipeline, case-insensitive platform/species resolution, strict-mode validator, per-tab/row/cell error reporting
-- [ ] **Phase 7: Master-Panel Importer, IPC & UI Integration** - Transactional importer, separate IPC channel, Manage-page .xlsx button, selectedMasterPanel in selectionStore
-- [ ] **Phase 8: Vendor Term & Calculator Reagent-Volume Wiring** - AnalyteGrid vendor-term header, calculator priority resolver with provenance display, historical-run preservation
-- [ ] **Phase 9: Windows UAT & v2.0 Release** - Build v0.7.0 .exe, 16-item smoke test against real vendor xlsx, record retest outcome, tag release
+- [ ] **Phase 6: Network Layer & Central Server** - INSERTED - Lightweight Node/Express server on one lab PC, config-file discovery, HTTP client switch in IPC handlers, offline fallback with local SQLite + sync-back queue
+- [ ] **Phase 7: Audit Trail** - INSERTED - Append-only audit_log on central DB, full snapshot on every save, in-app log viewer, CSV export
+- [ ] **Phase 8: XLSX Parser & Validator** - Pure main-process parse pipeline, case-insensitive platform/species resolution, strict-mode validator, per-tab/row/cell error reporting
+- [ ] **Phase 9: Master-Panel Importer, IPC & UI Integration** - Transactional importer, separate IPC channel, Manage-page .xlsx button, selectedMasterPanel in selectionStore
+- [ ] **Phase 10: Vendor Term & Calculator Reagent-Volume Wiring** - AnalyteGrid vendor-term header, calculator priority resolver with provenance display, historical-run preservation
+- [ ] **Phase 11: Windows UAT & v2.0 Release** - Build v0.7.0 .exe, 16-item smoke test against real vendor xlsx, record retest outcome, tag release
 
 ## Phase Details
 
@@ -231,7 +233,32 @@ Plans:
 
 OD-1, OD-2, OD-3, OD-7 are release-gating for Phases 7 and 8 and must be locked before Phase 5 planning exits `/gsd-discuss-phase`. OD-4, OD-5, OD-6, OD-8 can ride the same session but are lower blast radius.
 
-### Phase 6: XLSX Parser & Validator
+### Phase 6: Network Layer & Central Server
+**Goal**: One designated lab PC runs a lightweight Node/Express HTTP server that owns the central SQLite database. The other two machines switch their IPC handlers to route all DB operations through HTTP to that server. A JSON config file on each machine declares `serverUrl` and `isServer`. When the server is unreachable, client machines fall back to a local SQLite and an `offline_queue` table; on reconnect the queue is automatically flushed to the server.
+**Depends on**: Phase 4 (hard — runs/operators DB layer is being centralized)
+**Requirements**: NET-01, NET-02, NET-03, NET-04, NET-05
+**Success Criteria** (what must be TRUE):
+  1. Server machine: `server.js` process binds on configured port, exposes REST endpoints for all DB operations (runs CRUD, operators CRUD); verified by running two machines against the same server and confirming both see identical Past Runs list
+  2. Config file at `%APPDATA%\immunoplex-assay-calculator\config.json` contains `serverUrl` and `isServer` fields; server machine's Electron app starts the HTTP server process on launch; client machines skip local DB init and use the HTTP client
+  3. When server is unreachable, client falls back to local SQLite; saves write to `offline_queue` table; a "Working offline" indicator appears in the UI; saves do not silently fail or throw unhandled errors
+  4. On reconnect, the offline queue is automatically flushed to the server in insertion order; each queued item is confirmed before removal; duplicate-detection prevents double-posting if the server already received the item
+  5. Server machine's own saves go directly to the central DB (no HTTP hop); the server machine can use the app normally regardless of whether other machines are connected
+**Plans**: TBD
+**UI hint**: yes (offline indicator)
+
+### Phase 7: Audit Trail
+**Goal**: Every time a run is saved — whether a new create or a re-save after editing — an immutable row is appended to `audit_log` on the central database capturing the full run state at that moment: all inputs, all calculated outputs, all metadata, timestamp, and which machine triggered the save. A viewer in Manage mode shows the full log in reverse-chronological order with CSV export.
+**Depends on**: Phase 6 (hard — audit log lives in the central DB; server layer must exist first)
+**Requirements**: AUDIT-01, AUDIT-02, AUDIT-03, AUDIT-04
+**Success Criteria** (what must be TRUE):
+  1. Every save event (create or update) appends a row to `audit_log` with: `event_type` ('create'|'update'), `run_id` FK, full JSON snapshot of run state (platform, species, analytes, sample count, replicate mode, all calculated volumes, plate layout, all metadata fields), `saved_at` ISO timestamp, `machine_id`
+  2. Audit log rows are never updated or deleted; the table has no UPDATE or DELETE IPC/HTTP handlers; verified by editing a run twice and confirming `audit_log` row count increases by 1 per save (not reset)
+  3. Manage mode shows an "Audit Log" section listing all entries in reverse-chronological order; each row shows request number, event type, timestamp, machine; clicking a row expands the full JSON snapshot in a readable format
+  4. CSV export button downloads all `audit_log` entries as a flat CSV; column headers match the table fields; file downloads to the user's Downloads folder without error
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 8: XLSX Parser & Validator
 **Goal**: A pure main-process function accepts a filesystem path to a vendor xlsx workbook and returns either a typed `ResolvedTab[]` ready for DB writes, or a structured list of per-tab/row/cell errors with enough context for an operator to locate every offender — with ZERO DB writes on the error path.
 **Depends on**: Phase 5 (soft — imports `MasterPanel` / `ResolvedTab` shared types for validator output; no runtime dependency on the schema)
 **Requirements**: PIMP-01, PIMP-02, PIMP-03, PIMP-04, PIMP-05, PIMP-06, PIMP-07, PIMP-10
@@ -244,9 +271,9 @@ OD-1, OD-2, OD-3, OD-7 are release-gating for Phases 7 and 8 and must be locked 
 **Plans**: TBD
 **UI hint**: no
 
-### Phase 7: Master-Panel Importer, IPC & UI Integration
+### Phase 9: Master-Panel Importer, IPC & UI Integration
 **Goal**: An operator on the Manage page can click "Import Master Panel (.xlsx)", pick a vendor workbook, and — on success — see a per-tab summary banner and a refreshed Panels list; re-importing the same file is a no-op-by-diff (upsert, no duplicate rows, no orphan creations). On validation failure, zero DB writes occur.
-**Depends on**: Phase 5 (hard — schema + repository), Phase 6 (hard — parser + validator output shape)
+**Depends on**: Phase 5 (hard — schema + repository), Phase 8 (hard — parser + validator output shape)
 **Requirements**: PIMP-08, PIMP-09, MPAN-03, MPAN-04, MPAN-05, MPAN-06
 **Success Criteria** (what must be TRUE):
   1. Manage page's Panels section renders an "Import Master Panel (.xlsx)" button (sibling to the existing legacy CSV importer per OD-1 coexist decision); clicking it opens a file dialog filtered to `.xlsx` only; new IPC channel `IMPORT_MASTER_PANEL_FILE` is wired end-to-end from renderer → preload → main → handler → importer (PIMP-08)
@@ -257,36 +284,36 @@ OD-1, OD-2, OD-3, OD-7 are release-gating for Phases 7 and 8 and must be locked 
 **Plans**: TBD
 **UI hint**: yes
 
-### Phase 8: Vendor Term & Calculator Reagent-Volume Wiring
+### Phase 10: Vendor Term & Calculator Reagent-Volume Wiring
 **Goal**: When a run is set up against a (platform, species) pair that has a master panel, the AnalyteGrid header displays the vendor-specific singles term ("Singleplex"/"Simplex") and the calculator resolves `reagent_volume_per_well` from the master panel — with an explicit provenance indicator visible to the operator so a fallback is NEVER silent. Historical runs continue to display their saved volume untouched.
-**Depends on**: Phase 7 (hard — `selectedMasterPanel` must exist in `selectionStore` before this phase can consume it)
+**Depends on**: Phase 9 (hard — `selectedMasterPanel` must exist in `selectionStore` before this phase can consume it)
 **Requirements**: VTRM-01, VTRM-02, CALV-01, CALV-02, CALV-03
 **Success Criteria** (what must be TRUE):
   1. AnalyteGrid section header reads `vendor_singles_term` from the current (platform, species)'s master panel when present ("Singleplex" for Milliplex, "Simplex" for Thermo); falls back to "Analytes" when `selectedMasterPanel === null` OR `vendorSinglesTerm === null/''` — never renders "undefined" or empty string (VTRM-01, PIMP-10, Pitfall 18)
   2. The "No Premix (Custom Assay)" chip on the analyte selection page renders "No Premix (Custom Singleplex)" when a vendor term is present and falls back to "No Premix (Custom Assay)" otherwise (VTRM-02, OD-3 placement confirmed AnalyteGrid + chip only, NOT wizard labels)
   3. Calculator resolves `volume_per_well` in strict priority order — (1) master panel's `reagent_volume_per_well`, (2) `DEFAULT_VOLUME_PER_WELL = 25` — via a single resolver `getEffectiveVolumePerWell()` in `calculatorStore`; no direct reads of either source outside the resolver (Pitfall 16 — two-sources-of-truth drift; OD-2 graceful fallback, NOT strict) (CALV-01)
   4. **Pitfall 4 critical provenance-display gate:** the calculator UI visibly shows which source supplied the volume — "From master panel: Cytokines Human (50 µL/well)" vs "Platform default (25 µL/well)" — on the calculation step wherever the final volume number is shown; an operator can never mistake a fallback for an intentional master-panel value (CALV-02)
-  5. A run saved before Phase 8 (with `runs.volume_per_well = 25` persisted) reloads showing 25 µL/well even if the master panel for its (platform, species) now says 50 — the stored column wins on read, the resolver only runs for NEW calculations; verified by a fixture run created against v0.6.x and reloaded after a master-panel upload that changes the resolved value (CALV-03, Pitfall 5, Pitfall 17)
+  5. A run saved before Phase 10 (with `runs.volume_per_well = 25` persisted) reloads showing 25 µL/well even if the master panel for its (platform, species) now says 50 — the stored column wins on read, the resolver only runs for NEW calculations; verified by a fixture run created against v0.6.x and reloaded after a master-panel upload that changes the resolved value (CALV-03, Pitfall 5, Pitfall 17)
 **Plans**: TBD
 **UI hint**: yes
 
-### Phase 9: Windows UAT & v2.0 Release
+### Phase 11: Windows UAT & v2.0 Release
 **Goal**: A Windows operator installs v0.7.0, imports a real Milliplex vendor `.xlsx`, runs the full end-to-end calculator flow against an imported master panel, confirms the vendor singles term renders and the calculator pulls volume from the master (not the platform default), and every item on the 16-item "Looks Done But Isn't" checklist passes — at which point v2.0 is tagged and released.
-**Depends on**: Phase 8 (hard — all v2.0 code changes must be merged before the build that goes to UAT)
-**Requirements**: none new — verification gate for the 21 v2.0 requirements already mapped to Phases 5-8
+**Depends on**: Phase 10 (hard — all v2.0 code changes must be merged before the build that goes to UAT)
+**Requirements**: none new — verification gate for the v2.0 requirements already mapped to Phases 5-10
 **Success Criteria** (what must be TRUE):
-  1. `npm run build:win` produces x64 + arm64 installers tagged `immunoplex-assay-calculator-0.7.0-x64-setup.exe` (and arm64) using the existing electron-builder config with explicit `win.target.arch [x64, arm64]` — no regression against v0.6.0 packaging
-  2. Operator installs the .exe on the production Windows workstation, launches it, and the v0.6.0 → v0.7.0 schema migration (0004_*.sql) auto-applies successfully against the existing production DB without data loss; operator verifies pre-existing runs still load with correct values (CALV-03 historical preservation)
+  1. `npm run build:win` produces x64 + arm64 installers tagged `immunoplex-assay-calculator-0.7.0-x64-setup.exe` (and arm64) using the existing electron-builder config with explicit `win.target.arch [x64, arm64]` — no regression against v0.6.1 packaging
+  2. Operator installs the .exe on the production Windows workstation, launches it, and the v0.6.1 → v0.7.0 schema migration auto-applies successfully against the existing production DB without data loss; operator verifies pre-existing runs still load with correct values (CALV-03 historical preservation)
   3. Operator clicks "Import Master Panel (.xlsx)" on the Manage page, selects a real Milliplex vendor workbook, and the per-tab summary banner renders with accurate counts; re-importing the same file produces zero duplicate rows (Pitfall 1 adoption gate verified in real data)
   4. Operator navigates to the calculator, selects the imported master panel's (platform, species), and confirms: AnalyteGrid header shows the vendor term, the calculator displays the master panel's volume-per-well, provenance indicator reads "From master panel: <name>" (Pitfall 4 provenance gate)
-  5. All 16 items on the PITFALLS.md §Looks Done But Isn't checklist pass in order on the actual Windows .exe (parser coercion, premix case-insensitive match, duplicate-tab detection, adoption-upsert, transactional rollback, FK cascade, composite unique index, provenance UI, historical preservation, full-custom fallback, vendor-term null fallback, long-label layout, structured IPC error, fixture coverage, adversarial cases, v1-coexistence indicator); retest outcome is recorded to `.planning/phases/09-windows-uat-v2-release/09-UAT-RESULTS.md` with `## Overall: PASS`
+  5. All 16 items on the PITFALLS.md §Looks Done But Isn't checklist pass in order on the actual Windows .exe; retest outcome is recorded to `.planning/phases/11-windows-uat-v2-release/11-UAT-RESULTS.md` with `## Overall: PASS`
 **Plans**: TBD
 **UI hint**: yes
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 9
+Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -297,14 +324,16 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 | 3.2. Panel Data Management | 3/3 | Complete | 2026-01-29 |
 | 3.3. Analyte Selection Redesign | 0/5 | Not started | - |
 | 4. Run Documentation, Persistence & Deployment | 5/5 | Code-complete; smoke test returned with blocking bugs | - |
-| 4.1. Smoke Test Fixes (INSERTED) | 4/5 (plan 05 partial: v0.6.0 installers built, Windows retest deferred to HUMAN-UAT-04.1-05-01) | Code-complete; awaiting Windows smoke retest | - |
+| 4.1. Smoke Test Fixes (INSERTED) | 4/5 (plan 05 partial: v0.6.1 installers built, Windows retest deferred to HUMAN-UAT-04.1-05-01) | Code-complete; awaiting Windows smoke retest | - |
 | 5. Master-Panel Schema & Repository Foundation | 3/3 | Complete | 2026-04-24 |
-| 6. XLSX Parser & Validator | 0/TBD | Not started | - |
-| 7. Master-Panel Importer, IPC & UI Integration | 0/TBD | Not started | - |
-| 8. Vendor Term & Calculator Reagent-Volume Wiring | 0/TBD | Not started | - |
-| 9. Windows UAT & v2.0 Release | 0/TBD | Not started | - |
+| 6. Network Layer & Central Server (INSERTED) | 0/TBD | Not started | - |
+| 7. Audit Trail (INSERTED) | 0/TBD | Not started | - |
+| 8. XLSX Parser & Validator | 0/TBD | Not started | - |
+| 9. Master-Panel Importer, IPC & UI Integration | 0/TBD | Not started | - |
+| 10. Vendor Term & Calculator Reagent-Volume Wiring | 0/TBD | Not started | - |
+| 11. Windows UAT & v2.0 Release | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-04-23 — v2.0 roadmap added (5 phases: 5-9, 21 requirements mapped, Pitfall-1 adoption + Pitfall-4 provenance gates embedded)*
+*Last updated: 2026-04-24 — Phases 6-7 inserted (Network Layer + Audit Trail); former Phases 6-9 renumbered to 8-11*
 *Plan template: see .planning/PLAN_TEMPLATE.md*
