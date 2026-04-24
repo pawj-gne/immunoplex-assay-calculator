@@ -74,6 +74,82 @@ export const analyteRepository = {
     return result ?? null
   },
 
+  /**
+   * Upsert an analyte by case-insensitive name within a (platform, species) scope,
+   * associating it with a master_panel. Pitfall-1 critical adoption gate (SC #5).
+   *
+   * - Miss                             => INSERT new row; action: 'created'
+   * - Match && master_panel_id IS NULL => UPDATE in place, set master_panel_id; action: 'adopted'
+   * - Match && master_panel_id set     => UPDATE in place, overwrite master_panel_id; action: 'updated'
+   *
+   * UPDATE path NEVER touches premix_conc or name casing (D-17).
+   * INSERT path mirrors input.concentration into BOTH single_conc (D-04) and
+   * premix_conc (D-22) — premix_conc is the legacy NOT NULL column kept for v2.1 cleanup.
+   *
+   * Does NOT open a transaction — Phase 7 importer owns transaction scope (D-18).
+   */
+  upsertByNameInMaster(input: {
+    name: string
+    platformId: string
+    speciesId: string
+    masterPanelId: string
+    beadRegion: number
+    concentration: number
+  }): { id: string; action: 'created' | 'adopted' | 'updated' } {
+    const db = getDatabase()
+    const now = new Date().toISOString()
+
+    // VERBATIM reuse of findByNamePlatformSpecies lookup — case-insensitive
+    const existing = db
+      .select()
+      .from(analytes)
+      .where(
+        and(
+          sql`lower(${analytes.name}) = lower(${input.name})`,
+          eq(analytes.platformId, input.platformId),
+          eq(analytes.speciesId, input.speciesId)
+        )
+      )
+      .get()
+
+    if (existing) {
+      // Pitfall-1 gate: null master_panel_id => 'adopted'; non-null => 'updated'
+      const action: 'adopted' | 'updated' =
+        existing.masterPanelId === null ? 'adopted' : 'updated'
+
+      db.update(analytes)
+        .set({
+          beadRegion: input.beadRegion,
+          singleConc: input.concentration,
+          masterPanelId: input.masterPanelId,
+          updatedAt: now
+          // NOTE: premix_conc is NEVER touched on UPDATE (D-17, D-22).
+          // NOTE: name is NOT touched — existing row's casing wins (idempotent re-import).
+        })
+        .where(eq(analytes.id, existing.id))
+        .run()
+      return { id: existing.id, action }
+    }
+
+    // INSERT path — mirror input.concentration into both columns (D-22)
+    const id = crypto.randomUUID()
+    db.insert(analytes)
+      .values({
+        id,
+        name: input.name,
+        beadRegion: input.beadRegion,
+        premixConc: input.concentration,   // D-22: legacy column gets the same value on INSERT only
+        singleConc: input.concentration,
+        platformId: input.platformId,
+        speciesId: input.speciesId,
+        masterPanelId: input.masterPanelId,
+        createdAt: now,
+        updatedAt: now
+      })
+      .run()
+    return { id, action: 'created' }
+  },
+
   createMany(data: AnalyteCreate[]): Analyte[] {
     const created: Analyte[] = []
     for (const item of data) {

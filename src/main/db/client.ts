@@ -46,3 +46,22 @@ export function closeDatabase(): void {
     db = null
   }
 }
+
+/**
+ * TEST-ONLY helper. Overrides the module-level `db` with a caller-supplied
+ * instance (typically from `createTestDb()` in __tests__/testDb.ts). Enables
+ * repository tests to target an in-memory DB without refactoring every
+ * repository to accept an injected `db` argument.
+ *
+ * Do NOT call this from production code. Production uses initializeDatabase(dbPath).
+ */
+export function setDatabaseForTests(testDb: ReturnType<typeof drizzle<typeof schema>>): void {
+  db = testDb
+}
+
+/**
+ * TEST-ONLY helper. Resets the module-level `db` to null.
+ */
+export function resetDatabaseForTests(): void {
+  db = null
+}
