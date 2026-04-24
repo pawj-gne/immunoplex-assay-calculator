@@ -1,6 +1,11 @@
+import type { BrowserWindow } from 'electron'
 import type { RunRecord, RunCreate, RunUpdate } from '../../shared/types/run'
 import type { Operator, OperatorCreate, OperatorUpdate } from '../../shared/types/operator'
 import { localTransport } from './localTransport'
+import {
+  httpTransport as _httpTransport,
+  startReconnectPoller as _startReconnectPoller
+} from './httpTransport'
 
 // Phase 6 — Transport interfaces. Implemented by:
 //   - localTransport (server/local-only mode — direct repository calls)
@@ -33,31 +38,14 @@ let activeOperatorTransport: OperatorTransport = localTransport.operator
  *   'local' = server machine or local-only mode (direct repository calls)
  *   'http'  = client machine (HTTP calls with offline fallback)
  *
- * httpTransport is loaded lazily because Plan 06-03 creates that module.
- * Until 06-03 lands, calling initTransport('http') logs a warning and
- * falls back to local — keeps the build green and the app functional in
- * a degraded local-only mode rather than crashing.
+ * Plan 06-01 used a lazy require here because httpTransport.ts didn't exist yet.
+ * Plan 06-03 created httpTransport.ts so this is now a regular top-level import.
  */
 export function initTransport(mode: 'local' | 'http', serverUrl?: string): void {
   if (mode === 'http' && serverUrl) {
-    try {
-      // Lazy require avoids module-load failure when httpTransport.ts doesn't exist yet.
-      const httpTransportModule = require('./httpTransport') as {
-        httpTransport: {
-          init: (url: string) => void
-          run: RunTransport
-          operator: OperatorTransport
-        }
-      }
-      httpTransportModule.httpTransport.init(serverUrl)
-      activeRunTransport = httpTransportModule.httpTransport.run
-      activeOperatorTransport = httpTransportModule.httpTransport.operator
-    } catch (err) {
-      console.warn(
-        '[transport] httpTransport not available yet (Plan 06-03 not landed); falling back to local:',
-        err
-      )
-    }
+    _httpTransport.init(serverUrl)
+    activeRunTransport = _httpTransport.run
+    activeOperatorTransport = _httpTransport.operator
   }
   // 'local' (default) leaves module vars as localTransport
 }
@@ -70,10 +58,10 @@ export function getOperatorTransport(): OperatorTransport {
 }
 
 /**
- * Plan 06-03 will replace this stub with a real reconnect poller (setInterval +
- * fetch /api/health, push connection:status IPC events, trigger flush). Stubbed
- * here so index.ts can import it now and the build stays green.
+ * Phase 6 Plan 03: real reconnect poller implementation lives in
+ * httpTransport.ts. This forwarder keeps index.ts's import surface stable
+ * (single `from './transport'` line for both initTransport + startReconnectPoller).
  */
-export function startReconnectPoller(_mainWindow: unknown): void {
-  // Stub — Plan 06-03 implementation
+export function startReconnectPoller(mainWindow: BrowserWindow): void {
+  _startReconnectPoller(mainWindow)
 }
