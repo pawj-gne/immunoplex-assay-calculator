@@ -243,7 +243,14 @@ OD-1, OD-2, OD-3, OD-7 are release-gating for Phases 7 and 8 and must be locked 
   3. When server is unreachable, client falls back to local SQLite; saves write to `offline_queue` table; a "Working offline" indicator appears in the UI; saves do not silently fail or throw unhandled errors
   4. On reconnect, the offline queue is automatically flushed to the server in insertion order; each queued item is confirmed before removal; duplicate-detection prevents double-posting if the server already received the item
   5. Server machine's own saves go directly to the central DB (no HTTP hop); the server machine can use the app normally regardless of whether other machines are connected
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Foundation: deps install, schema delta (offline_queue + runs.machineName/isOfflineSave), migration 0005, appConfig, clientLocal, transport interface + localTransport, startup branch in index.ts, Wave 0 test scaffolds
+- [ ] 06-02-PLAN.md — Express HTTP server: all runs + operators CRUD REST routes, Zod validation, idempotency on POST /api/runs, 0.0.0.0 binding, integration tests
+- [ ] 06-03-PLAN.md — HTTP transport + offline queue: offlineQueueRepository, httpTransport (fetch + fallback + poller + flush + isFlushing mutex), IPC handler rewire to transport interface
+- [ ] 06-04-PLAN.md — Renderer: networkStore, OfflineBanner (D-04), RunList Source column (D-02), preload bridge connection.onStatusChange, App.tsx wiring
+- [ ] 06-05-PLAN.md — Windows build v0.7.0 + HUMAN-UAT: multi-machine verification of all NET-* requirements
 **UI hint**: yes (offline indicator)
 
 ### Phase 7: Audit Trail
