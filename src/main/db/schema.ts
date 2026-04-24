@@ -1,4 +1,4 @@
-import { sqliteTable, text, real, integer } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, real, integer, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 export const platforms = sqliteTable('platforms', {
   id: text('id').primaryKey(),
@@ -19,6 +19,37 @@ export const species = sqliteTable('species', {
   updatedAt: text('updated_at').notNull()
 })
 
+// Phase 5 (v2.0 D-09): Master panel — anchors reagent volumes and vendor singles term
+// per (platform, species) pair. Composite UNIQUE on (platform_id, species_id).
+export const masterPanels = sqliteTable(
+  'master_panels',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    platformId: text('platform_id')
+      .notNull()
+      .references(() => platforms.id, { onDelete: 'restrict' }),
+    speciesId: text('species_id')
+      .notNull()
+      .references(() => species.id, { onDelete: 'restrict' }),
+    beadsVolumePerWell: real('beads_volume_per_well').notNull(),
+    abVolumePerWell: real('ab_volume_per_well').notNull(),
+    sapeVolumePerWell: real('sape_volume_per_well').notNull(),
+    vendorSinglesTerm: text('vendor_singles_term'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull()
+  },
+  (t) => ({
+    platformSpeciesUniq: uniqueIndex('master_panels_platform_species_uniq').on(
+      t.platformId,
+      t.speciesId
+    )
+  })
+)
+
+// NOTE: `premixPanels` is the v1 premix-table — NOT the master panel.
+// v2.0 introduces `masterPanels` (above) as the (platform, species) anchor; `premixPanels.masterPanelId`
+// is a nullable FK back up. Do NOT rename `premix_panels` → `panels` (PITFALLS §Pitfall 15).
 export const premixPanels = sqliteTable('premix_panels', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
@@ -29,6 +60,10 @@ export const premixPanels = sqliteTable('premix_panels', {
   speciesId: text('species_id')
     .notNull()
     .references(() => species.id),
+  masterPanelId: text('master_panel_id').references(() => masterPanels.id, {
+    onDelete: 'set null'
+  }),
+  subPanelConc: real('sub_panel_conc').notNull().default(1),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull()
 })
@@ -45,6 +80,9 @@ export const analytes = sqliteTable('analytes', {
   speciesId: text('species_id')
     .notNull()
     .references(() => species.id),
+  masterPanelId: text('master_panel_id').references(() => masterPanels.id, {
+    onDelete: 'set null'
+  }),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull()
 })
@@ -133,6 +171,9 @@ export type NewSpecies = typeof species.$inferInsert
 
 export type PremixPanel = typeof premixPanels.$inferSelect
 export type NewPremixPanel = typeof premixPanels.$inferInsert
+
+export type MasterPanel = typeof masterPanels.$inferSelect
+export type NewMasterPanel = typeof masterPanels.$inferInsert
 
 export type Analyte = typeof analytes.$inferSelect
 export type NewAnalyte = typeof analytes.$inferInsert

@@ -49,6 +49,7 @@ export const analyteRepository = {
       singleConc: data.singleConc,
       platformId: data.platformId,
       speciesId: data.speciesId,
+      masterPanelId: data.masterPanelId ?? null,
       createdAt: now,
       updatedAt: now
     }
