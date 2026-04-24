@@ -42,7 +42,10 @@ export const IPC_CHANNELS = {
   OPERATOR_GET_ALL: 'operator:get-all',
   OPERATOR_CREATE: 'operator:create',
   OPERATOR_UPDATE: 'operator:update',
-  OPERATOR_DELETE: 'operator:delete'
+  OPERATOR_DELETE: 'operator:delete',
+
+  // Network / connection status (Phase 6)
+  CONNECTION_STATUS: 'connection:status'
 } as const
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS]
