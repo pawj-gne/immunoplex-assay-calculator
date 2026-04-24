@@ -215,7 +215,7 @@ Plans:
 **UI hint**: no
 
 Plans:
-- [ ] 05-01-PLAN.md — Drizzle schema delta: masterPanels table + composite UNIQUE INDEX + nullable master_panel_id FK on premix_panels/analytes + sub_panel_conc REAL NOT NULL DEFAULT 1; drizzle-kit generate 0004 migration with grep-verified composite unique; shared-types masterPanel.ts + panel.ts/analyte.ts extensions
+- [x] 05-01-PLAN.md — Drizzle schema delta: masterPanels table + composite UNIQUE INDEX + nullable master_panel_id FK on premix_panels/analytes + sub_panel_conc REAL NOT NULL DEFAULT 1; drizzle-kit generate 0004 migration with grep-verified composite unique; shared-types masterPanel.ts + panel.ts/analyte.ts extensions
 - [ ] 05-02-PLAN.md — PRAGMA foreign_keys = ON in client.ts (D-12); install vitest devDep + vitest.config.ts + shared in-memory testDb fixture; SC #1 migration-no-data-loss test + SC #4 PRAGMA/FK-enforcement tests
 - [ ] 05-03-PLAN.md — masterPanelRepository.upsertByPlatformAndSpecies + analyteRepository.upsertByNameInMaster (Pitfall-1 adoption gate); setDatabaseForTests helper; SC #3 composite-unique + SC #5 adoption-upsert tests
 
