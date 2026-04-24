@@ -49,14 +49,28 @@ export function createExpressApp(): express.Express {
 
   app.post('/api/runs', (req, res) => {
     try {
+      // Idempotency pre-check (D-08 / NET-04): if the client supplied an `id` in the body
+      // (offline queue flush sends client-generated UUIDs as the run id), look it up first
+      // and return 200 with the existing row so the client can safely dequeue it.
+      // The current runRepository.create() always generates its own UUID, so the UNIQUE
+      // constraint failure path below cannot fire on `runs.id` alone — the pre-check is
+      // what actually delivers idempotency for the queue flush.
+      const bodyId = (req.body as RunCreate & { id?: unknown }).id
+      if (typeof bodyId === 'string' && bodyId.length > 0) {
+        const existing = runRepository.getById(bodyId)
+        if (existing) {
+          res.status(200).json(existing)
+          return
+        }
+      }
       const parsed = runCreateSchema.parse(req.body)
       const run = runRepository.create(parsed)
       res.status(201).json(run)
     } catch (e: unknown) {
       const msg = String(e)
       if (msg.includes('UNIQUE constraint failed: runs.id')) {
-        // Idempotency: offline queue flush re-sent a run already confirmed (D-08 / NET-04).
-        // Return 200 with the existing row so the client can safely dequeue it.
+        // Defense-in-depth: if a future repo change accepts client ids and a UNIQUE collision
+        // slips past the pre-check, still return 200 with the existing row.
         const existing = runRepository.getById(
           (req.body as RunCreate & { id?: string }).id ?? ''
         )
