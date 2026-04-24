@@ -33,6 +33,9 @@ export interface RunRecord {
   singleAnalyteIds: string[] // from runSingleAnalytes join
   createdAt: string
   updatedAt: string
+  // Phase 6: provenance — set by transport layer at save time, NOT in RunCreate/RunUpdate
+  machineName: string | null // os.hostname() at save time; null for pre-Phase-6 rows
+  isOfflineSave: boolean // true if saved while server was unreachable
 }
 
 // Create input — matches runCreateSchema

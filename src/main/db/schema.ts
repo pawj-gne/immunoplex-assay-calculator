@@ -147,7 +147,10 @@ export const runs = sqliteTable('runs', {
   plateCount: integer('plate_count').notNull(), // auto-derived = plateStore.getPlateCount()
   platesJson: text('plates_json').notNull(), // JSON.stringify(Record<plateNumber, string[]>); D-02/D-18 round-trip
   createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull()
+  updatedAt: text('updated_at').notNull(),
+  // Phase 6: machine provenance for D-02 conflict display
+  machineName: text('machine_name'), // os.hostname() at save time; null for pre-Phase-6 rows
+  isOfflineSave: integer('is_offline_save', { mode: 'boolean' }).notNull().default(false)
 })
 
 // Phase 4: Single analytes selected for a given run (D-19)
@@ -160,6 +163,15 @@ export const runSingleAnalytes = sqliteTable('run_single_analytes', {
     .notNull()
     .references(() => analytes.id),
   createdAt: text('created_at').notNull()
+})
+
+// Phase 6: offline queue for client-mode saves when server is unreachable (D-07)
+export const offlineQueue = sqliteTable('offline_queue', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  runId: text('run_id').notNull(), // client-generated UUID; idempotency key on flush
+  operation: text('operation').notNull(), // 'create' | 'update' | 'delete'
+  payload: text('payload').notNull(), // JSON.stringify of RunCreate | { id, ...RunUpdate } | { id }
+  queuedAt: text('queued_at').notNull()
 })
 
 // Type inference helpers
@@ -189,3 +201,6 @@ export type RunInsert = typeof runs.$inferInsert
 
 export type RunSingleAnalyte = typeof runSingleAnalytes.$inferSelect
 export type RunSingleAnalyteInsert = typeof runSingleAnalytes.$inferInsert
+
+export type OfflineQueueItem = typeof offlineQueue.$inferSelect
+export type OfflineQueueInsert = typeof offlineQueue.$inferInsert
