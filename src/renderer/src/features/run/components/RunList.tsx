@@ -28,6 +28,18 @@ function displayRequestNumber(run: RunRecord): string {
   return `Request ${String(run.requestNumber).padStart(5, '0')}`
 }
 
+/**
+ * Phase 6 D-02: extract the run's machine name and offline-save flag for the
+ * Source column. Pre-Phase-6 rows have machineName === null and render an
+ * empty cell (no placeholder per UI-SPEC §Copywriting). Online saves render
+ * just the machine name; offline saves render machine name + " — offline save"
+ * with text-yellow-700 on the suffix to match the OfflineBanner palette.
+ */
+function displayRunSource(run: RunRecord): { machineName: string; isOffline: boolean } {
+  if (!run.machineName) return { machineName: '', isOffline: false }
+  return { machineName: run.machineName, isOffline: run.isOfflineSave }
+}
+
 export function RunList({ currentMetadata }: RunListProps): JSX.Element {
   const runs = useRunStore((s) => s.runs)
   const isLoading = useRunStore((s) => s.isLoading)
@@ -101,7 +113,7 @@ export function RunList({ currentMetadata }: RunListProps): JSX.Element {
           key={run.id}
           className="flex items-center justify-between gap-3 px-3 py-2 border border-[var(--color-border)] rounded-md bg-white"
         >
-          <div className="grid grid-cols-7 gap-3 flex-1 text-xs">
+          <div className="grid grid-cols-8 gap-3 flex-1 text-xs">
             <div>
               <div className="text-[var(--color-muted)]">Request #</div>
               <div className="text-[var(--color-foreground)] font-medium">
@@ -133,6 +145,26 @@ export function RunList({ currentMetadata }: RunListProps): JSX.Element {
             <div>
               <div className="text-[var(--color-muted)]">Species</div>
               <div className="text-[var(--color-foreground)]">{speciesName(run.speciesId)}</div>
+            </div>
+            {/* Phase 6 D-02: Source column. Empty for pre-Phase-6 rows (machineName === null);
+                shows os.hostname() for online saves; appends " — offline save" in
+                text-yellow-700 (UI-SPEC §Color, matches OfflineBanner palette) for offline saves. */}
+            <div>
+              <div className="text-[var(--color-muted)]">Source</div>
+              <div className="text-[var(--color-foreground)]">
+                {(() => {
+                  const src = displayRunSource(run)
+                  if (!src.machineName) return null
+                  return (
+                    <>
+                      {src.machineName}
+                      {src.isOffline && (
+                        <span className="text-yellow-700"> — offline save</span>
+                      )}
+                    </>
+                  )
+                })()}
+              </div>
             </div>
           </div>
           <div className="flex gap-2">

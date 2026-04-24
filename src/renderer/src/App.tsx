@@ -12,6 +12,8 @@ import { usePlatforms } from './features/platform/hooks/usePlatforms'
 import { useSpecies } from './features/selection/hooks/useSpecies'
 import { useOperatorsStore } from './stores/operatorsStore'
 import { useRunStore } from './stores/runStore'
+import { useNetworkStore } from './stores/networkStore'
+import { OfflineBanner } from './features/network/OfflineBanner'
 
 type AppMode = 'calculator' | 'manage'
 
@@ -112,6 +114,17 @@ function App(): JSX.Element {
     void useOperatorsStore.getState().loadOperators({ includeInactive: true })
   }, [])
 
+  // Phase 6: subscribe to connection status push from the reconnect poller
+  // (src/main/transport/httpTransport.ts, Plan 06-03). Server machines and
+  // local-only machines never receive a 'connection:status' event — the
+  // optimistic default (online: true) keeps the OfflineBanner hidden in
+  // those modes. Only client machines flip the flag.
+  useEffect(() => {
+    window.electronAPI.connection.onStatusChange((online: boolean) => {
+      useNetworkStore.getState().setOnline(online)
+    })
+  }, [])
+
   // Transition state
   const [displayPage, setDisplayPage] = useState(currentPage)
   const [isTransitioning, setIsTransitioning] = useState(false)
@@ -187,6 +200,12 @@ function App(): JSX.Element {
         </div>
         <ImportButton />
       </header>
+
+      {/* Phase 6 D-04: persistent offline indicator. Sits between the
+          header and main so it spans the full viewport width — outside the
+          max-w-4xl wizard container — per UI-SPEC §Placement. Renders
+          nothing when online (the common case). */}
+      <OfflineBanner />
 
       {/* Main content area */}
       <main className="flex-1 p-6">
