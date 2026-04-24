@@ -211,8 +211,13 @@ Plans:
   3. Inserting two `master_panels` rows with the same (platform_id, species_id) fails at the DB layer with a constraint-violation error; inserting with mismatched case of platform/species name is accepted (IDs are normalized, names are not)
   4. `PRAGMA foreign_keys = ON` is verified in `src/main/db/client.ts` for every opened connection; deleting a platform row referenced by a master panel fails with a foreign-key violation (Pitfall 13 — onDelete 'restrict' upward, 'set null' downward)
   5. `masterPanelRepository.upsertByPlatformAndSpecies(...)` creates-or-updates in place and returns the row's `id`; `analyteRepository.upsertByNameInMaster(...)` adopts an existing v1 analyte (case-insensitive name match) by setting its `master_panel_id` WITHOUT creating a duplicate row (Pitfall 1 — critical adoption-upsert gate)
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: no
+
+Plans:
+- [ ] 05-01-PLAN.md — Drizzle schema delta: masterPanels table + composite UNIQUE INDEX + nullable master_panel_id FK on premix_panels/analytes + sub_panel_conc REAL NOT NULL DEFAULT 1; drizzle-kit generate 0004 migration with grep-verified composite unique; shared-types masterPanel.ts + panel.ts/analyte.ts extensions
+- [ ] 05-02-PLAN.md — PRAGMA foreign_keys = ON in client.ts (D-12); install vitest devDep + vitest.config.ts + shared in-memory testDb fixture; SC #1 migration-no-data-loss test + SC #4 PRAGMA/FK-enforcement tests
+- [ ] 05-03-PLAN.md — masterPanelRepository.upsertByPlatformAndSpecies + analyteRepository.upsertByNameInMaster (Pitfall-1 adoption gate); setDatabaseForTests helper; SC #3 composite-unique + SC #5 adoption-upsert tests
 
 **Notes (open decisions to lock at /gsd-discuss-phase before planning):**
 - OD-1 replace-vs-coexist — suggested: coexist for v2.0, remove v1 CSV path in v2.1
