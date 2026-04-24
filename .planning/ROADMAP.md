@@ -344,3 +344,17 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 *Roadmap created: 2026-01-22*
 *Last updated: 2026-04-24 — Phases 6-7 inserted (Network Layer + Audit Trail); former Phases 6-9 renumbered to 8-11*
 *Plan template: see .planning/PLAN_TEMPLATE.md*
+
+## Backlog
+
+### Phase 999.1: In-App Auto-Update (BACKLOG)
+
+**Goal:** Use Electron's built-in autoUpdater (via electron-updater from electron-builder) to detect and silently apply new releases without requiring the user to manually download and run the installer. Eliminates the current manual upgrade path that requires cleaning up old installs on domain-joined PCs.
+
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd-review-backlog when ready)
+
+**Notes:** Needs a proper update feed — GitHub Releases works as a generic provider (already configured as placeholder in electron-builder.yml). Low priority but important for lab usability as version count grows.
