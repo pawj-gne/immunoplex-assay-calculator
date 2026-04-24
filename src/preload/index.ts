@@ -58,5 +58,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
     update: (id: string, data: unknown) =>
       ipcRenderer.invoke(IPC_CHANNELS.OPERATOR_UPDATE, id, data),
     delete: (id: string) => ipcRenderer.invoke(IPC_CHANNELS.OPERATOR_DELETE, id)
+  },
+  // Phase 6: connection status push channel. The reconnect poller in
+  // src/main/transport/httpTransport.ts (Plan 06-03) calls
+  // mainWindow.webContents.send(CONNECTION_STATUS, { online }); the
+  // renderer subscribes via this onStatusChange listener (NOT invoke —
+  // this is a push channel, not request-response).
+  connection: {
+    onStatusChange: (cb: (online: boolean) => void) =>
+      ipcRenderer.on(IPC_CHANNELS.CONNECTION_STATUS, (_event, { online }) =>
+        cb(online as boolean)
+      )
   }
 })

@@ -52,6 +52,11 @@ export interface ElectronAPI {
     update: (id: string, data: OperatorUpdate) => Promise<Operator | null>
     delete: (id: string) => Promise<Operator | null>
   }
+  // Phase 6: connection status push channel — see src/preload/index.ts
+  // and src/main/transport/httpTransport.ts (Plan 06-03).
+  connection: {
+    onStatusChange: (cb: (online: boolean) => void) => void
+  }
 }
 
 declare global {
