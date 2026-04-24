@@ -4,6 +4,7 @@
 // If network becomes shared, add X-Api-Key header in v2.
 import express from 'express'
 import cors from 'cors'
+import { ZodError } from 'zod'
 import { runRepository } from '../db/repositories/run'
 import { operatorRepository } from '../db/repositories/operator'
 import { runCreateSchema, runUpdateSchema } from '../../shared/validation/run'
@@ -67,6 +68,10 @@ export function createExpressApp(): express.Express {
       const run = runRepository.create(parsed)
       res.status(201).json(run)
     } catch (e: unknown) {
+      if (e instanceof ZodError) {
+        res.status(400).json({ error: 'ZodError', issues: e.issues })
+        return
+      }
       const msg = String(e)
       if (msg.includes('UNIQUE constraint failed: runs.id')) {
         // Defense-in-depth: if a future repo change accepts client ids and a UNIQUE collision
@@ -75,8 +80,6 @@ export function createExpressApp(): express.Express {
           (req.body as RunCreate & { id?: string }).id ?? ''
         )
         res.status(200).json(existing)
-      } else if (msg.includes('ZodError')) {
-        res.status(400).json({ error: msg })
       } else {
         res.status(500).json({ error: msg })
       }
@@ -93,12 +96,11 @@ export function createExpressApp(): express.Express {
       }
       res.json(run)
     } catch (e: unknown) {
-      const msg = String(e)
-      if (msg.includes('ZodError')) {
-        res.status(400).json({ error: msg })
-      } else {
-        res.status(500).json({ error: msg })
+      if (e instanceof ZodError) {
+        res.status(400).json({ error: 'ZodError', issues: e.issues })
+        return
       }
+      res.status(500).json({ error: String(e) })
     }
   })
 
@@ -129,12 +131,11 @@ export function createExpressApp(): express.Express {
       const operator = operatorRepository.create(parsed)
       res.status(201).json(operator)
     } catch (e: unknown) {
-      const msg = String(e)
-      if (msg.includes('ZodError')) {
-        res.status(400).json({ error: msg })
-      } else {
-        res.status(500).json({ error: msg })
+      if (e instanceof ZodError) {
+        res.status(400).json({ error: 'ZodError', issues: e.issues })
+        return
       }
+      res.status(500).json({ error: String(e) })
     }
   })
 
@@ -148,12 +149,11 @@ export function createExpressApp(): express.Express {
       }
       res.json(operator)
     } catch (e: unknown) {
-      const msg = String(e)
-      if (msg.includes('ZodError')) {
-        res.status(400).json({ error: msg })
-      } else {
-        res.status(500).json({ error: msg })
+      if (e instanceof ZodError) {
+        res.status(400).json({ error: 'ZodError', issues: e.issues })
+        return
       }
+      res.status(500).json({ error: String(e) })
     }
   })
 

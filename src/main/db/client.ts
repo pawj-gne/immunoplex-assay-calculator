@@ -60,8 +60,21 @@ export function setDatabaseForTests(testDb: ReturnType<typeof drizzle<typeof sch
 }
 
 /**
- * TEST-ONLY helper. Resets the module-level `db` to null.
+ * TEST-ONLY helper. Overrides the module-level raw better-sqlite3 `sqlite` handle.
+ * Repositories that wrap multi-statement work in `getSqlite().transaction(...)` (e.g.
+ * runRepository.create / update / delete) need this in addition to setDatabaseForTests.
+ * Plan 06-02 expressServer integration tests are the first consumer.
+ *
+ * Do NOT call this from production code.
+ */
+export function setSqliteForTests(testSqlite: Database.Database): void {
+  sqlite = testSqlite
+}
+
+/**
+ * TEST-ONLY helper. Resets the module-level `db` and `sqlite` to null.
  */
 export function resetDatabaseForTests(): void {
   db = null
+  sqlite = null
 }
