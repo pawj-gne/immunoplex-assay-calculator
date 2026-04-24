@@ -73,14 +73,16 @@ Exceptions:
 
 Pre-populated from codebase scan. Existing components use text-xs (12px), text-sm (14px), text-xl (20px), text-lg (18px).
 
+Two weights only: 400 (normal) for body and label roles; 600 (semibold) for heading and display roles.
+
 | Role | Size | Weight | Line Height | Source |
 |------|------|--------|-------------|--------|
 | Body | 14px (text-sm) | 400 (normal) | 1.5 | RunList row cells, ManagePage labels |
-| Label | 12px (text-xs) | 500 (medium) | 1.4 | RunList column header labels (`text-[var(--color-muted)]`), button text |
+| Label | 12px (text-xs) | 400 (normal) | 1.4 | RunList column header labels (`text-[var(--color-muted)]`), button text |
 | Heading | 18px (text-lg) | 600 (semibold) | 1.2 | ConfirmModal title (`text-lg font-semibold`) |
 | Display | 20px (text-xl) | 600 (semibold) | 1.2 | App header h1 (`text-xl font-semibold`) |
 
-**Offline banner typography:** 14px (text-sm), weight 500 (font-medium), color `#92400e` (yellow-800 equivalent). Pre-populated from RESEARCH.md OfflineBanner example.
+**Offline banner typography:** 14px (text-sm), weight 400 (font-normal), color `#92400e` (yellow-800 equivalent). Visual distinction from body text is provided by the yellow background context, not by weight — no third weight is needed.
 
 ---
 
@@ -137,7 +139,7 @@ No new destructive actions are introduced in Phase 6. The offline queue flush is
 **Anatomy:**
 ```
 [full-width div — bg-yellow-50 border-b border-yellow-200 px-6 py-2]
-  [text — text-sm font-medium text-yellow-800]
+  [text — text-sm font-normal text-yellow-800]
     "Working offline — saves stored locally"
 ```
 
@@ -174,7 +176,7 @@ Specific markup for offline save cell:
 ```tsx
 <div>
   <div className="text-[var(--color-muted)]">Source</div>
-  <div className="text-[var(--color-foreground)] font-medium">
+  <div className="text-[var(--color-foreground)]">
     {run.machineName ?? ''}
     {run.isOfflineSave && (
       <span className="text-yellow-700"> — offline save</span>
