@@ -21,7 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3.2: Panel Data Management** - INSERTED - Edit/delete analytes and panels in-app
 - [x] **Phase 3.3: Analyte Selection Redesign** - INSERTED - Visual grid layout with panel grouping, sidebar, transitions
 - [ ] **Phase 4: Run Documentation & Persistence** - Metadata capture, save/load run records
-- [ ] **Phase 5: Master-Panel Schema & Repository Foundation** - Drizzle schema delta, composite unique index, nullable FK adoption on analytes/panels, repository CRUD + upsert-by-(platform, species)
+- [x] **Phase 5: Master-Panel Schema & Repository Foundation** - Drizzle schema delta, composite unique index, nullable FK adoption on analytes/panels, repository CRUD + upsert-by-(platform, species)
 - [ ] **Phase 6: XLSX Parser & Validator** - Pure main-process parse pipeline, case-insensitive platform/species resolution, strict-mode validator, per-tab/row/cell error reporting
 - [ ] **Phase 7: Master-Panel Importer, IPC & UI Integration** - Transactional importer, separate IPC channel, Manage-page .xlsx button, selectedMasterPanel in selectionStore
 - [ ] **Phase 8: Vendor Term & Calculator Reagent-Volume Wiring** - AnalyteGrid vendor-term header, calculator priority resolver with provenance display, historical-run preservation
@@ -298,7 +298,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 | 3.3. Analyte Selection Redesign | 0/5 | Not started | - |
 | 4. Run Documentation, Persistence & Deployment | 5/5 | Code-complete; smoke test returned with blocking bugs | - |
 | 4.1. Smoke Test Fixes (INSERTED) | 4/5 (plan 05 partial: v0.6.0 installers built, Windows retest deferred to HUMAN-UAT-04.1-05-01) | Code-complete; awaiting Windows smoke retest | - |
-| 5. Master-Panel Schema & Repository Foundation | 0/TBD | Not started | - |
+| 5. Master-Panel Schema & Repository Foundation | 3/3 | Complete | 2026-04-24 |
 | 6. XLSX Parser & Validator | 0/TBD | Not started | - |
 | 7. Master-Panel Importer, IPC & UI Integration | 0/TBD | Not started | - |
 | 8. Vendor Term & Calculator Reagent-Volume Wiring | 0/TBD | Not started | - |
