@@ -18,6 +18,10 @@ export function initializeDatabase(): void {
   // Enable WAL mode for concurrent read/write performance
   sqlite.pragma('journal_mode = WAL')
 
+  // Enable FK constraint enforcement per-connection (D-12, PITFALLS §Pitfall 13).
+  // SQLite default is OFF; must be called on every open Database instance.
+  sqlite.pragma('foreign_keys = ON')
+
   db = drizzle(sqlite, { schema })
 }
 

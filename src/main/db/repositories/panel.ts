@@ -76,6 +76,8 @@ export const panelRepository = {
       description: data.description ?? null,
       platformId: data.platformId,
       speciesId: data.speciesId,
+      masterPanelId: null,
+      subPanelConc: 1,
       createdAt: now,
       updatedAt: now
     }

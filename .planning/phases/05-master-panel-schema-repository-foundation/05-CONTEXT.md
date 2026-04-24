@@ -67,6 +67,13 @@ No UI, no IPC handler, no xlsx parser, no calculator wiring. Phases 6-9 consume 
 - **D-18:** Neither upsert method opens its own transaction. The Phase 7 importer wraps all per-tab writes in one `better-sqlite3` transaction (Pitfall 27).
 - **D-19:** Premix-panel upsert method (`upsertByMasterAndName` or similar, writing `master_panel_id` + `sub_panel_conc`) is NOT in Phase 5 scope — belongs to Phase 7 importer. Phase 5 only ships the two methods listed above.
 
+### Post-Research Locks (2026-04-23)
+
+- **D-20 (Testing framework):** Phase 5 installs **vitest** as a devDependency and ships repository unit tests against an in-memory `better-sqlite3` DB. Research confirmed no test framework currently exists in the repo (no vitest/jest/mocha, no `*.test.ts`). Tests cover: SC #3 (composite UNIQUE violation), SC #4 (FK `restrict` upward / `set null` downward under `PRAGMA foreign_keys = ON`), SC #5 (adoption-upsert — case-insensitive name match on a v1 row with `master_panel_id IS NULL` promotes in place without creating a duplicate). Test fixture boilerplate becomes the canonical pattern for future phases. Adds `npm test` script wired to vitest.
+- **D-21 (sub_panel_conc default):** `premix_panels.sub_panel_conc` is declared `REAL NOT NULL DEFAULT 1` at the Drizzle schema level (`sql\`DEFAULT 1\`` or `.default(1)`). Drizzle-kit emits `ALTER TABLE ... ADD COLUMN ... NOT NULL DEFAULT 1`, so pre-existing v1 premix rows get `1` (regular premix) without a separate backfill step. Avoids Pitfall 12 sequencing concern because the default is universal and correct for every legacy row.
+- **D-22 (premix_conc on INSERT):** `analyteRepository.upsertByNameInMaster` on the INSERT (new-analyte) path writes `input.concentration` to **both** `single_conc` (the new v2 field per D-04) and `premix_conc` (the legacy NOT NULL field). Zero behavior change for any code path that still reads `premix_conc`. The method signature does NOT expose `premix_conc` separately — it's an implementation detail of the INSERT path. On the UPDATE paths (adopted / updated), `premix_conc` is never touched per D-17.
+- **D-23 (Repository test scope):** Phase 5 tests cover the two shipped repository methods and schema invariants only. No end-to-end importer tests (Phase 7 scope). No calculator-resolver tests (Phase 8 scope). Test file locations follow Vitest default: colocated `*.test.ts` beside the source (e.g. `src/main/db/repositories/masterPanel.test.ts`).
+
 ### Claude's Discretion
 
 - Drizzle `relations()` declarations for the new table and FKs.
