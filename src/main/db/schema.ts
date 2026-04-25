@@ -47,9 +47,10 @@ export const masterPanels = sqliteTable(
   })
 )
 
-// NOTE: `premixPanels` is the v1 premix-table — NOT the master panel.
-// v2.0 introduces `masterPanels` (above) as the (platform, species) anchor; `premixPanels.masterPanelId`
-// is a nullable FK back up. Do NOT rename `premix_panels` → `panels` (PITFALLS §Pitfall 15).
+// `premixPanels` holds both master panels (parentPanelId = null) and their
+// child sub-panels (parentPanelId set). Sub-panels carry the concentration
+// applied to all their analytes via `subPanelConc`; master panels keep the
+// default `subPanelConc = 1` and act as containers.
 export const premixPanels = sqliteTable('premix_panels', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
@@ -63,6 +64,7 @@ export const premixPanels = sqliteTable('premix_panels', {
   masterPanelId: text('master_panel_id').references(() => masterPanels.id, {
     onDelete: 'set null'
   }),
+  parentPanelId: text('parent_panel_id'),
   subPanelConc: real('sub_panel_conc').notNull().default(1),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull()

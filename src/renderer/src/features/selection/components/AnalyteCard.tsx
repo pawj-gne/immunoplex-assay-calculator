@@ -43,7 +43,7 @@ export function AnalyteCard({
           {analyte.beadRegion}
         </span>
         <span className="text-xs text-[var(--color-muted)]">
-          {analyte.premixConc}x
+          {analyte.singleConc}x
         </span>
       </div>
     </button>

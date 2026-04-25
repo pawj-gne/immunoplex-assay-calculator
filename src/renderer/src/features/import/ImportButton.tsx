@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 interface ImportResult {
   success: boolean
   canceled?: boolean
-  created: { analytes: number; panels: number; links: number }
+  created: { analytes: number; panels: number; subPanels: number; links: number }
   skipped: { analytes: number }
   errors: { row: number; issues: string[] }[]
 }
@@ -40,7 +40,8 @@ export function ImportButton(): JSX.Element {
         const { created, skipped } = result
         const parts: string[] = []
         if (created.analytes > 0) parts.push(`${created.analytes} analyte${created.analytes !== 1 ? 's' : ''}`)
-        if (created.panels > 0) parts.push(`${created.panels} panel${created.panels !== 1 ? 's' : ''}`)
+        if (created.panels > 0) parts.push(`${created.panels} master panel${created.panels !== 1 ? 's' : ''}`)
+        if (created.subPanels > 0) parts.push(`${created.subPanels} sub-panel${created.subPanels !== 1 ? 's' : ''}`)
         if (created.links > 0) parts.push(`${created.links} link${created.links !== 1 ? 's' : ''}`)
 
         let msg = `Imported ${parts.join(', ')}.`

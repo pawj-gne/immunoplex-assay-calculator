@@ -43,6 +43,13 @@
       "when": 1777067475545,
       "tag": "0005_worried_mordo",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1777079030488,
+      "tag": "0006_outstanding_miss_america",
+      "breakpoints": true
     }
   ]
 }

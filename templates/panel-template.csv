@@ -1,0 +1,18 @@
+Panel Name,Example Master Panel
+Platform,Millipore
+Species,Mouse
+,
+Reagent Volume,
+Beads,25
+Ab,25
+SAPE,25
+,
+Mapmates,,,,,Premix Example 5-plex,JAMMate A,JAMMate B
+,,,sub-panel conc,,1,20,20
+,
+Target,Bead Region,Single Concentration,,,Target,Target,Target
+Analyte 1,12,20,,,Analyte 1,Analyte 1,
+Analyte 2,21,20,,,Analyte 2,Analyte 2,
+Analyte 3,33,20,,,Analyte 3,,Analyte 3
+Analyte 4,45,20,,,Analyte 4,,Analyte 4
+Analyte 5,56,20,,,Analyte 5,,

@@ -18,7 +18,7 @@ export function registerImportHandlers(): void {
       return {
         success: false,
         canceled: true,
-        created: { analytes: 0, panels: 0, links: 0 },
+        created: { analytes: 0, panels: 0, subPanels: 0, links: 0 },
         skipped: { analytes: 0 },
         errors: []
       }
@@ -29,7 +29,7 @@ export function registerImportHandlers(): void {
     } catch (err) {
       return {
         success: false,
-        created: { analytes: 0, panels: 0, links: 0 },
+        created: { analytes: 0, panels: 0, subPanels: 0, links: 0 },
         skipped: { analytes: 0 },
         errors: [{ row: 0, issues: [err instanceof Error ? err.message : 'Unknown error'] }]
       }

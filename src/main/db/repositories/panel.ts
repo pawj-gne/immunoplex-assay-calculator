@@ -65,7 +65,14 @@ export const panelRepository = {
     return result ?? null
   },
 
-  create(data: { name: string; description?: string | null; platformId: string; speciesId: string }): PremixPanel {
+  create(data: {
+    name: string
+    description?: string | null
+    platformId: string
+    speciesId: string
+    parentPanelId?: string | null
+    subPanelConc?: number
+  }): PremixPanel {
     const db = getDatabase()
     const now = new Date().toISOString()
     const id = crypto.randomUUID()
@@ -77,13 +84,23 @@ export const panelRepository = {
       platformId: data.platformId,
       speciesId: data.speciesId,
       masterPanelId: null,
-      subPanelConc: 1,
+      parentPanelId: data.parentPanelId ?? null,
+      subPanelConc: data.subPanelConc ?? 1,
       createdAt: now,
       updatedAt: now
     }
 
     db.insert(premixPanels).values(panel).run()
     return panel
+  },
+
+  findChildrenOf(parentPanelId: string): PremixPanel[] {
+    const db = getDatabase()
+    return db
+      .select()
+      .from(premixPanels)
+      .where(eq(premixPanels.parentPanelId, parentPanelId))
+      .all()
   },
 
   update(id: string, data: Partial<Pick<PremixPanel, 'name' | 'description'>>): PremixPanel {

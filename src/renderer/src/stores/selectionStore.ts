@@ -122,10 +122,22 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
     set({ panelLoading: true, analytesLoading: true, panelError: null, analytesError: null })
 
     try {
-      const [panels, analytes] = await Promise.all([
+      const [allPanels, analytes] = await Promise.all([
         window.electronAPI.panel.getByPlatformAndSpecies(platformId, speciesId),
         window.electronAPI.analyte.getByPlatformAndSpecies(platformId, speciesId)
       ])
+
+      // Show only selectable panels: sub-panels (have a parent) OR standalone
+      // panels with no children. Master panels that own sub-panels are hidden
+      // from the calculator selection UI — users pick sub-panels instead.
+      const masterIdsWithChildren = new Set(
+        allPanels
+          .filter((p) => p.parentPanelId !== null)
+          .map((p) => p.parentPanelId as string)
+      )
+      const panels = allPanels.filter(
+        (p) => p.parentPanelId !== null || !masterIdsWithChildren.has(p.id)
+      )
 
       // Build panel-analyte mapping by fetching each panel's analytes
       const panelDetails = await Promise.all(

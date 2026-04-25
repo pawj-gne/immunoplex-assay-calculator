@@ -1,0 +1,1 @@
+ALTER TABLE `premix_panels` ADD `parent_panel_id` text;

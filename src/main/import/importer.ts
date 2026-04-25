@@ -1,6 +1,5 @@
-import { parseImportFile } from './parser'
-import { validateImportRows, validatePlatformsAndSpecies } from './validator'
-import type { ResolvedRow } from './validator'
+import { parseImportFile, ParseError } from './parser'
+import { validateAndResolve } from './validator'
 import { getDatabase, getSqlite } from '../db/client'
 import { platforms, species } from '../db/schema'
 import { analyteRepository } from '../db/repositories/analyte'
@@ -9,118 +8,135 @@ import { panelRepository } from '../db/repositories/panel'
 export interface ImportResult {
   success: boolean
   canceled?: boolean
-  created: { analytes: number; panels: number; links: number }
+  created: { analytes: number; panels: number; subPanels: number; links: number }
   skipped: { analytes: number }
   errors: { row: number; issues: string[] }[]
 }
 
 export function importPanelData(filePath: string): ImportResult {
-  // Step 1: Parse the file
-  const rawRows = parseImportFile(filePath)
-
-  // Step 2: Validate row shapes
-  const { valid, errors: validationErrors } = validateImportRows(rawRows)
-  if (validationErrors.length > 0) {
-    return {
-      success: false,
-      created: { analytes: 0, panels: 0, links: 0 },
-      skipped: { analytes: 0 },
-      errors: validationErrors
-    }
+  // Step 1: Parse
+  let parsed
+  try {
+    parsed = parseImportFile(filePath)
+  } catch (err) {
+    const message = err instanceof ParseError ? err.message : err instanceof Error ? err.message : 'Failed to parse file'
+    return failure(message)
   }
 
-  // Step 3: Load platforms and species from DB
+  // Step 2: Resolve platform/species + validate sub-panel memberships
   const db = getDatabase()
-  const allPlatforms = db.select().from(platforms).all()
-  const allSpecies = db.select().from(species).all()
+  const allPlatforms = db.select().from(platforms).all().map((p) => ({ id: p.id, name: p.name }))
+  const allSpecies = db.select().from(species).all().map((s) => ({ id: s.id, name: s.name, platformId: s.platformId }))
 
-  // Step 4: Resolve platform/species names to IDs
-  const { resolved, errors: resolutionErrors } = validatePlatformsAndSpecies(
-    valid,
-    allPlatforms.map((p) => ({ id: p.id, name: p.name })),
-    allSpecies.map((s) => ({ id: s.id, name: s.name, platformId: s.platformId }))
-  )
-
-  if (resolutionErrors.length > 0) {
+  const { resolved, errors: resolutionErrors } = validateAndResolve(parsed, allPlatforms, allSpecies)
+  if (!resolved) {
     return {
       success: false,
-      created: { analytes: 0, panels: 0, links: 0 },
+      created: { analytes: 0, panels: 0, subPanels: 0, links: 0 },
       skipped: { analytes: 0 },
-      errors: resolutionErrors
+      errors: resolutionErrors.map((msg) => ({ row: 0, issues: [msg] }))
     }
   }
 
-  // Step 5: Group rows by unique panel (name + platformId + speciesId)
-  const panelGroups = new Map<string, ResolvedRow[]>()
-  for (const row of resolved) {
-    const key = `${row.panel_name.toLowerCase()}|${row.platformId}|${row.speciesId}`
-    if (!panelGroups.has(key)) {
-      panelGroups.set(key, [])
-    }
-    panelGroups.get(key)!.push(row)
-  }
-
-  // Step 6: Transactional insert
+  // Step 3: Transactional insert
   let createdAnalytes = 0
   let createdPanels = 0
+  let createdSubPanels = 0
   let createdLinks = 0
   let skippedAnalytes = 0
 
   const sqlite = getSqlite()
-  const transaction = sqlite.transaction(() => {
-    for (const [, rows] of panelGroups) {
-      const firstRow = rows[0]
+  sqlite.transaction(() => {
+    // 3a. Create or find the master panel
+    let masterPanel = panelRepository.findByNamePlatformSpecies(
+      resolved.panel_name,
+      resolved.platformId,
+      resolved.speciesId
+    )
+    if (!masterPanel) {
+      masterPanel = panelRepository.create({
+        name: resolved.panel_name,
+        description: null,
+        platformId: resolved.platformId,
+        speciesId: resolved.speciesId,
+        parentPanelId: null,
+        subPanelConc: 1
+      })
+      createdPanels++
+    }
 
-      // Find or create panel
-      let panel = panelRepository.findByNamePlatformSpecies(
-        firstRow.panel_name,
-        firstRow.platformId,
-        firstRow.speciesId
+    // 3b. Create or find each master analyte; link to master panel
+    const analyteIdByName = new Map<string, string>()
+    for (const a of resolved.analytes) {
+      let analyte = analyteRepository.findByNamePlatformSpecies(
+        a.name,
+        resolved.platformId,
+        resolved.speciesId
       )
-      if (!panel) {
-        panel = panelRepository.create({
-          name: firstRow.panel_name,
-          description: null,
-          platformId: firstRow.platformId,
-          speciesId: firstRow.speciesId
+      if (!analyte) {
+        analyte = analyteRepository.create({
+          name: a.name,
+          beadRegion: a.bead_region,
+          premixConc: a.single_conc, // legacy column mirrors single_conc (will be dropped post-cleanup)
+          singleConc: a.single_conc,
+          platformId: resolved.platformId,
+          speciesId: resolved.speciesId
         })
-        createdPanels++
+        createdAnalytes++
+      } else {
+        skippedAnalytes++
+      }
+      analyteIdByName.set(a.name.toLowerCase(), analyte.id)
+      panelRepository.addAnalyteToPanel(masterPanel.id, analyte.id)
+      createdLinks++
+    }
+
+    // 3c. Create sub-panels and link their analytes
+    for (const sp of resolved.sub_panels) {
+      let subPanel = panelRepository.findByNamePlatformSpecies(
+        sp.name,
+        resolved.platformId,
+        resolved.speciesId
+      )
+      if (!subPanel) {
+        subPanel = panelRepository.create({
+          name: sp.name,
+          description: null,
+          platformId: resolved.platformId,
+          speciesId: resolved.speciesId,
+          parentPanelId: masterPanel.id,
+          subPanelConc: sp.sub_panel_conc
+        })
+        createdSubPanels++
       }
 
-      for (const row of rows) {
-        // Find or create analyte
-        let analyte = analyteRepository.findByNamePlatformSpecies(
-          row.analyte_name,
-          row.platformId,
-          row.speciesId
-        )
-        if (!analyte) {
-          analyte = analyteRepository.create({
-            name: row.analyte_name,
-            beadRegion: row.bead_region,
-            premixConc: row.premix_conc,
-            singleConc: row.single_conc,
-            platformId: row.platformId,
-            speciesId: row.speciesId
-          })
-          createdAnalytes++
-        } else {
-          skippedAnalytes++
-        }
-
-        // Link analyte to panel (skips if already linked)
-        panelRepository.addAnalyteToPanel(panel.id, analyte.id)
+      for (const memberName of sp.analyte_names) {
+        const analyteId = analyteIdByName.get(memberName.toLowerCase())
+        if (!analyteId) continue // already validated; defensive
+        panelRepository.addAnalyteToPanel(subPanel.id, analyteId)
         createdLinks++
       }
     }
-  })
-
-  transaction()
+  })()
 
   return {
     success: true,
-    created: { analytes: createdAnalytes, panels: createdPanels, links: createdLinks },
+    created: {
+      analytes: createdAnalytes,
+      panels: createdPanels,
+      subPanels: createdSubPanels,
+      links: createdLinks
+    },
     skipped: { analytes: skippedAnalytes },
     errors: []
+  }
+}
+
+function failure(message: string): ImportResult {
+  return {
+    success: false,
+    created: { analytes: 0, panels: 0, subPanels: 0, links: 0 },
+    skipped: { analytes: 0 },
+    errors: [{ row: 0, issues: [message] }]
   }
 }

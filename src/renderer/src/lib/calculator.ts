@@ -234,20 +234,22 @@ export function calculateItemizedVolumes(
   const captureBeads: ReagentLine[] = []
   const detectionAntibodies: ReagentLine[] = []
 
-  // Add panel premix if selected
+  // Add panel premix if selected — sub-panel's subPanelConc applies to all
+  // analytes in the sub-panel.
   if (panel) {
-    // For premix, the stock concentration is 1x (ready to use)
+    const stockConc = panel.subPanelConc > 0 ? panel.subPanelConc : 1
+    const premixVolumeUL = finalVolumeUL.dividedBy(stockConc)
     captureBeads.push({
       name: panel.name,
-      stockConc: 1,
-      volumeUL: finalVolumeUL,
+      stockConc,
+      volumeUL: premixVolumeUL,
       isPremix: true
     })
 
     detectionAntibodies.push({
       name: panel.name,
-      stockConc: 1,
-      volumeUL: finalVolumeUL,
+      stockConc,
+      volumeUL: premixVolumeUL,
       isPremix: true
     })
   } else if (singleAnalytes.length === 0) {

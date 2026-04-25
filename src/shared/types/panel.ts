@@ -7,6 +7,7 @@ export interface PremixPanel {
   platformId: string
   speciesId: string
   masterPanelId: string | null
+  parentPanelId: string | null
   subPanelConc: number
   createdAt: string
   updatedAt: string
@@ -18,6 +19,7 @@ export interface PremixPanelCreate {
   platformId: string
   speciesId: string
   masterPanelId?: string | null
+  parentPanelId?: string | null
   subPanelConc?: number
 }
 
