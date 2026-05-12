@@ -22,6 +22,16 @@ export interface RunRecord {
   panelId: string | null
   volumePerWell: number
   deadVolume: number
+  /**
+   * Smoke 3 SMK3-05 input: number of plate setups that drove the computed
+   * deadVolume above. Optional — pre-Smoke-3 saved runs lack this field
+   * and round-trip with `?? 1` defaulting (equivalent to v1.0 behavior).
+   * Loading a Smoke 3 run with `numberOfSetups = 3` reapplies the setups
+   * count to the calculatorStore so getOutputs() recomputes the same
+   * 6000 µL dead volume the run was saved with (SMK3-16 enabler;
+   * advisory marker UI is Phase 15).
+   */
+  numberOfSetups?: number
   hamilton: number // 1-5
   runPlatePosition: number // 1-4
   standardPosition: number // 1-2
@@ -55,6 +65,12 @@ export interface RunCreate {
   panelId: string | null
   volumePerWell: number
   deadVolume: number
+  /**
+   * Smoke 3 SMK3-05 input: number of plate setups that drove the computed
+   * deadVolume above. Optional — pre-Smoke-3 callers can omit it and the
+   * Zod schema defaults to 1 (backwards-compatible with v1.0 saves).
+   */
+  numberOfSetups?: number
   hamilton: number
   runPlatePosition: number
   standardPosition: number

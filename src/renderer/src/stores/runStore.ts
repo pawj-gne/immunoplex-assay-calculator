@@ -127,6 +127,10 @@ export const useRunStore = create<RunState>((set, get) => ({
       //    layout; that default gets overwritten in step 7.
       calculator.setReplicateMode(run.replicateMode)
       calculator.setSampleCount(run.sampleCount)
+      // SMK3-05/16: reapply numberOfSetups so getOutputs() recomputes the
+      // same dead volume the run was saved with. Pre-Smoke-3 runs lack
+      // this field; default to 1 (equivalent to v1.0 single-setup behavior).
+      calculator.setNumberOfSetups(run.numberOfSetups ?? 1)
 
       // 7. Plate layout — AFTER setSampleCount so the auto-fill cascade
       //    does not clobber the restored per-plate layout (D-24). This

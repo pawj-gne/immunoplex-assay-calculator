@@ -15,7 +15,9 @@ export function useCalculator() {
     sampleCount,
     replicateMode,
     volumePerWell,
-    deadVolume,
+    // SMK3-05: store's deadVolume field replaced by numberOfSetups (Phase 12-03);
+    // the live deadVolume is derived inside createCalculatorInputs/getOutputs.
+    numberOfSetups,
     validationError,
     setSampleCount,
     setReplicateMode,
@@ -66,7 +68,7 @@ export function useCalculator() {
     replicateMode,
     plateCount,
     volumePerWell,
-    deadVolume,
+    numberOfSetups,
 
     // Platform
     selectedPlatform,

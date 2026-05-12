@@ -10,13 +10,6 @@ import {
 } from '../lib/calculator'
 import {
   DEFAULT_VOLUME_PER_WELL,
-  // Plan 12-01 renamed the legacy dead-volume constant to DEAD_VOLUME_PER_SETUP_UL (Smoke 3 SMK3-05).
-  // This store still uses it as a raw default for the legacy `deadVolume` runtime field;
-  // Plan 12-03 will replace this entirely with a `numberOfSetups` field. Until then, this
-  // store's `getOutputs()` will throw at runtime because it passes deadVolume=2000 as the
-  // 5th `numberOfSetups` arg, which exceeds the sanity cap. That is the intended forcing
-  // function — see Plan 12-01 SUMMARY for rationale.
-  DEAD_VOLUME_PER_SETUP_UL,
   type ReplicateMode,
   type RequestType
 } from '../../../shared/constants/calculator'
@@ -38,7 +31,13 @@ interface CalculatorState {
   replicateMode: ReplicateMode
   requestType: RequestType
   volumePerWell: number
-  deadVolume: number
+  /**
+   * Number of plate setups; drives dead volume in the calculator (Smoke 3
+   * SMK3-05: deadVolume = numberOfSetups × 2 mL). Integer ≥ 1, default 1.
+   * No upper bound enforced at the store; calculator pure-math layer caps
+   * at 1000 as a sanity check.
+   */
+  numberOfSetups: number
 
   // Singles
   singles: SingleAnalyte[]
@@ -50,6 +49,7 @@ interface CalculatorState {
   setSampleCount: (count: number) => void
   setReplicateMode: (mode: ReplicateMode) => void
   setRequestType: (type: RequestType) => void
+  setNumberOfSetups: (n: number) => void
   addSingle: (analyte: Omit<SingleAnalyte, 'id'>) => void
   removeSingle: (id: string) => void
   clearSingles: () => void
@@ -67,7 +67,7 @@ const initialState = {
   replicateMode: 'singles' as ReplicateMode,
   requestType: 'premix' as RequestType,
   volumePerWell: DEFAULT_VOLUME_PER_WELL,
-  deadVolume: DEAD_VOLUME_PER_SETUP_UL,
+  numberOfSetups: 1,
   singles: [] as SingleAnalyte[],
   validationError: null as string | null
 }
@@ -119,6 +119,19 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
     set({ requestType: type })
   },
 
+  setNumberOfSetups: (n: number) => {
+    // SMK3-05: setups must be an integer ≥ 1 (no upper bound at the store;
+    // calculator pure-math layer caps > 1000 as a defensive sanity check).
+    // Invalid input is rejected — state stays unchanged, validationError set.
+    if (!Number.isInteger(n) || n < 1) {
+      set({
+        validationError: `Number of setups must be an integer >= 1 (got ${n})`
+      })
+      return
+    }
+    set({ numberOfSetups: n, validationError: null })
+  },
+
   addSingle: (analyte) => {
     const { requestType, singles } = get()
 
@@ -159,19 +172,21 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
   },
 
   getOutputs: () => {
-    const { sampleCount, replicateMode, volumePerWell, deadVolume, validationError } = get()
+    const { sampleCount, replicateMode, volumePerWell, numberOfSetups, validationError } = get()
     const plateCount = usePlateStore.getState().getPlateCount()
 
     if (validationError || sampleCount <= 0) {
       return null
     }
 
+    // SMK3-05: pass numberOfSetups as the 5th arg; createCalculatorInputs
+    // derives deadVolume = numberOfSetups × DEAD_VOLUME_PER_SETUP_UL internally.
     const inputs = createCalculatorInputs(
       sampleCount,
       replicateMode,
       plateCount,
       volumePerWell,
-      deadVolume
+      numberOfSetups
     )
 
     return calculateVolumes(inputs)

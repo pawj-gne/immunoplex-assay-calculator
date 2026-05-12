@@ -98,7 +98,12 @@ export function buildRunSnapshot(metadata: MetadataFields): RunCreate | { error:
     speciesId: selection.selectedSpeciesId,
     panelId: selection.selectedPanelId,
     volumePerWell: calculator.volumePerWell,
-    deadVolume: calculator.deadVolume,
+    // SMK3-05: deadVolume is derived from numberOfSetups (computed at snapshot
+    // time so the persisted µL value matches what the calculator produced).
+    // numberOfSetups itself is also persisted for snapshot fidelity (SMK3-16
+    // enabler — allows a Smoke 3 run to round-trip its dead volume on reload).
+    deadVolume: calculator.numberOfSetups * 2000,
+    numberOfSetups: calculator.numberOfSetups,
     hamilton: metadata.hamilton,
     runPlatePosition: metadata.runPlatePosition,
     standardPosition: metadata.standardPosition,

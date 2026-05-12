@@ -22,6 +22,10 @@ export const runCreateSchema = z
     panelId: z.string().min(1).nullable(),
     volumePerWell: z.number().positive(),
     deadVolume: z.number().nonnegative(),
+    // Smoke 3 SMK3-05: optional with default 1 — pre-Smoke-3 saved runs lack
+    // this field; the schema fills it in so the renderer round-trips legacy
+    // runs with the v1.0 single-setup default.
+    numberOfSetups: z.number().int().min(1).default(1),
     hamilton: z.number().int().min(1).max(5),
     runPlatePosition: z.number().int().min(1).max(4),
     standardPosition: z.number().int().min(1).max(2),
