@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import type { RunCreate, SampleType } from '../../../../../shared/types/run'
+import { DEAD_VOLUME_PER_SETUP_UL } from '../../../../../shared/constants/calculator'
 import { usePlatformStore } from '../../../stores/platformStore'
 import { useSelectionStore } from '../../../stores/selectionStore'
 import { useCalculatorStore } from '../../../stores/calculatorStore'
@@ -102,7 +103,10 @@ export function buildRunSnapshot(metadata: MetadataFields): RunCreate | { error:
     // time so the persisted µL value matches what the calculator produced).
     // numberOfSetups itself is also persisted for snapshot fidelity (SMK3-16
     // enabler — allows a Smoke 3 run to round-trip its dead volume on reload).
-    deadVolume: calculator.numberOfSetups * 2000,
+    // Use the shared constant so a future tuning of dead-volume-per-setup
+    // propagates to the snapshot in lock-step with the rest of the codebase
+    // (WR-03 — eliminates duplicated `2000` magic number).
+    deadVolume: calculator.numberOfSetups * DEAD_VOLUME_PER_SETUP_UL,
     numberOfSetups: calculator.numberOfSetups,
     // Smoke 3 SMK3-02/03 + SMK3-16: persist raw typed values per D-08 (the
     // operator's author intent is preserved). Floor-rounding (to 0.1 mL)
