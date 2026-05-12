@@ -48,6 +48,31 @@ export function ceilToTenthML(volumeUL: Decimal): Decimal {
 }
 
 /**
+ * Round volume DOWN to nearest 0.1 mL (floor at 0.1 mL precision).
+ *
+ * Asymmetric counterpart to ceilToTenthML — used for Old Beads / Old
+ * Antibodies operator inputs per Smoke 3 D-07: typed value is
+ * floor-rounded so the operator never claims more on-hand reagent than
+ * they actually have. Calculator outputs continue to ceiling-round
+ * (SMK3-06 / ceilToTenthML) so prep volume is sufficient.
+ *
+ * Unit contract: input and output BOTH in mL (NOT µL). This is intentionally
+ * asymmetric with ceilToTenthML (µL → µL) to match the Old Beads / Old
+ * Antibodies UI input domain (operator types mL values directly).
+ *
+ * Examples (mL → mL):
+ *   1.51 → 1.5
+ *   1.59 → 1.5
+ *   1.50 → 1.5
+ *   0.04 → 0.0
+ *   0.00 → 0.0
+ */
+export function floorToTenthML(volumeML: Decimal | number): Decimal {
+  const mL = volumeML instanceof Decimal ? volumeML : new Decimal(volumeML)
+  return mL.toDecimalPlaces(1, Decimal.ROUND_FLOOR)
+}
+
+/**
  * Concentration operations
  */
 export function createConcentration(value: number | string): Decimal {
