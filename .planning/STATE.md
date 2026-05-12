@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.0
-milestone_name: Release (Smoke 3 PRD adoption in flight)
+milestone_name: Release
 status: planning
-stopped_at: Smoke 3 PRD ingested; Phases 12-16 inserted, awaiting plan
-last_updated: "2026-05-11T15:00:00.000Z"
+stopped_at: Phase 6 context gathered
+last_updated: "2026-05-12T03:15:12.171Z"
 last_activity: 2026-05-11
 progress:
-  total_phases: 19
+  total_phases: 21
   completed_phases: 8
-  total_plans: 33
-  completed_plans: 33
-  percent: 100
+  total_plans: 41
+  completed_plans: 37
+  percent: 90
 ---
 
 # Project State
@@ -208,4 +208,4 @@ Resume intent: Either (a) close out v1.0 by completing HUMAN-UAT-04.1-05-01 on W
 - **v0.4.2** (2026-01-29): Remove R&D Systems, correct platform names
 - **v0.5.0** (2026-02-04): Selection UX Redesign & Interactive Plate Grid (Phase 3.3)
 
-**Planned Phase:** 05 (Master-Panel Schema & Repository Foundation) — 3 plans — 2026-04-24T03:57:25.962Z
+**Planned Phase:** 12 (Smoke 3 — Calculator Rules Migration) — 3 plans — 2026-05-12T03:15:12.161Z
