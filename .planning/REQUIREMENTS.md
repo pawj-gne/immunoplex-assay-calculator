@@ -14,7 +14,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **CALC-03**: App includes dead volume in all volume calculations *(EXTENDED 2026-05-11 by SMK3-05
 : dead volume = `number_of_setups × 2 mL`)*
 - [ ] **CALC-04**: App displays calculations in real-time as operator enters inputs
-- [ ] **CALC-05**: App enforces max 5 singles rule when premix is selected *(RETAINED 2026-05-11 per R-05 — PRD silence ≠ removal)*
+- [x] **CALC-05**: App enforces max 5 singles rule when premix is selected *(RETAINED 2026-05-11 per R-05 — PRD silence ≠ removal; explicit regression test landed 2026-05-12 in Phase 12-03 at src/renderer/src/lib/__tests__/calculator.integration.test.ts Groups D + E — lib-level canAddSingle + store-level addSingle action both block the 6th single under premix_singles)*
 - [x] **CALC-06**: ~~App rounds final volumes up to nearest mL~~ *(SUPERSEDED 2026-05-11 by SMK3-06
 : round UP to nearest 0.1 mL)*
 - [ ] **CALC-07**: App supports platform-specific stock concentrations (Milliplex, BioRad, ProCartaPlex, R&D)

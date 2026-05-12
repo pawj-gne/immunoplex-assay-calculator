@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Release
 status: executing
-stopped_at: Completed 12-02-PLAN.md
-last_updated: "2026-05-12T03:43:00.000Z"
+stopped_at: Completed 12-03-PLAN.md (Phase 12 complete)
+last_updated: "2026-05-12T03:48:00.000Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 21
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 41
-  completed_plans: 39
-  percent: 95
+  completed_plans: 40
+  percent: 97
 ---
 
 # Project State
@@ -26,12 +26,12 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Milestone: v2.0 (Panel XLSX Upload + Master-Panel Data Model) — **scope shifted 2026-05-11 by Smoke 3 PRD adoption**
-Phase: 12 (smoke-3-calculator-rules) — EXECUTING
-Plan: 3 of 3
-Status: Ready to execute
+Phase: 12 (smoke-3-calculator-rules) — COMPLETE (3/3 plans shipped; Phase 13 next, gated on `/gsd-discuss-phase 13`)
+Plan: 3 of 3 (12-03 complete)
+Status: Phase 12 functionally complete; ready to start Phase 13 (Panel XLSX Parser v3)
 Last activity: 2026-05-12
 
-Progress: [█████████░] 95%
+Progress: [█████████▓] 97%
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Progress: [█████████░] 95%
 | Phase 04-run-documentation-persistence-deployment P03 | ~25m | 2 of 3 tasks (Task 3 deferred to HUMAN-UAT) | 1 file |
 | Phase 12-smoke-3-calculator-rules P01 | 4m 17s | 2 tasks | 7 files |
 | Phase 12-smoke-3-calculator-rules P02 | ~6m | 2 tasks | 3 files |
+| Phase 12-smoke-3-calculator-rules P03 | ~5m 24s | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -163,6 +164,11 @@ Recent decisions affecting current work:
 - 12-02: Resolver accepts structural SelectedPremixForDiluent (just `name` + `concentration`) — zero imports from PremixPanel / Analyte / calculator.ts; Phase 13's master_panels schema growth (R-02) won't break this contract
 - 12-02: SMK3-DIL-01 verbatim string contract locked by T-B3 — Values-table strings returned with whitespace AND case preserved (no trim, no case fold, no enum check); Phase 15 display layer owns sanitization if/when added
 - 12-02: Strict equality `concentration === 1` (NOT `<= 1`) locked by T-D2 (concentration 0 → values_table) + T-D3 (0.5 → legacy when no valuesTable)
+- 12-03: calculatorStore now exposes `numberOfSetups: number` (default 1) with validating `setNumberOfSetups` action; the broken transitional state from 12-01 (getOutputs() passing deadVolume=2000 as 5th arg → sanity-cap throw) is repaired. Sanity cap from 12-01 never triggers at runtime
+- 12-03: Run-snapshot JSON gains a `numberOfSetups` field (optional, schema default 1) so Smoke 3 runs round-trip their dead volume on reload — SMK3-16 enabler. DB schema untouched; Phase 13 owns the runs-table column delta. Pre-Smoke-3 saved runs surface `undefined` which the loader defaults to 1 (equivalent to v1.0)
+- 12-03: useCalculator.ts hook destructured the renamed `deadVolume` store field; Rule-3 deviation swapped destructure + return shape to `numberOfSetups`. No external consumer of useCalculator() reads .deadVolume — safe rename, dead-surface preservation. Phase 14 may rework input surface when Plate page exposes the field
+- 12-03: Diluent resolver from Plan 12-02 NOT yet wired into calculatorStore — deferred to Phase 13/14/15 once per-reagent panel data (SMK3-08) and selectionStore's premix-concentration surface land. Resolver is consumable as-is via `import { resolveDiluent } from '../lib/diluentResolver'`
+- 12-03: Integration test file `src/renderer/src/lib/__tests__/calculator.integration.test.ts` locks in PRD worked example end-to-end through the Zustand store (9.4 mL setups=1; 13.4 mL setups=3) + boundary rounding + CALC-05 cap regression at both lib AND store layers (canAddSingle + addSingle action) — canonical reference for any future calculator refactor
 
 #### 2026-05-11 — Smoke 3 PRD Ingest (orchestrator rule: PRD wins every blocker)
 
@@ -205,10 +211,10 @@ Full audit trail in [.planning/INGEST-RESOLUTIONS.md](./INGEST-RESOLUTIONS.md). 
 
 ## Session Continuity
 
-Last session: 2026-05-12T03:43:00.000Z
-Stopped at: Completed 12-02-PLAN.md
+Last session: 2026-05-12T03:48:00.000Z
+Stopped at: Completed 12-03-PLAN.md — Phase 12 (Smoke 3 Calculator Rules) functionally complete
 Resume file: None
-Resume intent: Execute Plan 12-03 (calculatorStore wiring — consumes resolveDiluent + DiluentResult; also unblocks the runtime sanity-cap throw introduced by 12-01). Plan 12-03 PLAN already exists at `.planning/phases/12-smoke-3-calculator-rules/12-03-PLAN.md`. After 12-03 completes Phase 12 → either (a) close out v1.0 by completing HUMAN-UAT-04.1-05-01 on Windows and tagging v0.6.0, or (b) start v2.0 Phase 5 with `/gsd-discuss-phase 5`.
+Resume intent: Phase 12 is complete (3/3 plans). Next options: (a) **Phase 13 — Panel XLSX Parser v3** (the longest single phase remaining; rewrites parser.ts for the sectioned Criteria/Values/Category format and grows master_panels per-reagent rows — start via `/gsd-discuss-phase 13`), or (b) close out v1.0 by completing HUMAN-UAT-04.1-05-01 on Windows and tagging v0.6.0 before Smoke 3 work continues. The diluent resolver from Plan 12-02 is consumable as `import { resolveDiluent } from 'src/renderer/src/lib/diluentResolver'` but is NOT yet wired into any store — Phase 13/14/15 picks that up.
 
 ## Releases
 

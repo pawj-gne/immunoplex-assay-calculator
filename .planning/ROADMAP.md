@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] ~~**Phase 9: Master-Panel Importer, IPC & UI Integration**~~ - **SUPERSEDED 2026-05-11 by Phase 13** (importer flow folded into the parser v3 rewrite; wholesale-replace re-upload semantics per SMK3-11)
 - [ ] ~~**Phase 10: Vendor Term & Calculator Reagent-Volume Wiring**~~ - **SUPERSEDED 2026-05-11 by Phases 12 + 14** (calculator wiring + UI work absorbed into Smoke 3 calculator-rule migration and plate-page UI expansion; vendor singles term no longer applies — Smoke 3 PRD does not use it)
 - [ ] ~~**Phase 11: Windows UAT & v2.0 Release**~~ - **SUPERSEDED 2026-05-11 by Phase 16** (v2.0 scope shifted to Smoke 3 PRD; UAT gate moved to the end of the new phases)
-- [ ] **Phase 12: Smoke 3 — Calculator Rules Migration** - INSERTED 2026-05-11 - Rounding (0.1 mL ceiling), diluent rule (concentration-keyed), dead volume (× setups), CALC-05 retention confirmation (SMK3-05, SMK3-06, SMK3-07)
+- [x] **Phase 12: Smoke 3 — Calculator Rules Migration** - INSERTED 2026-05-11 - Rounding (0.1 mL ceiling), diluent rule (concentration-keyed), dead volume (× setups), CALC-05 retention confirmation (SMK3-05, SMK3-06, SMK3-07) — **Complete 2026-05-12** (3 plans shipped; integration tests lock in PRD worked example end-to-end)
 - [ ] **Phase 13: Smoke 3 — Panel XLSX Parser v3** - INSERTED 2026-05-11 - Rewrite parser.ts for Criteria/Values/Category sectioned format, per-reagent schema growth, Roman→Arabic panel normalization, wholesale-replace re-upload, delete legacy CSVs (SMK3-08, SMK3-09, SMK3-10, SMK3-11)
 - [ ] **Phase 14: Smoke 3 — Plate Page Input Expansion + UI Cleanup** - INSERTED 2026-05-11 - Old Beads / Old Antibodies / Number of Setups inputs, premix deselection UX, bead region flat-list, stock-concentration label removal (SMK3-01, SMK3-02, SMK3-03, SMK3-04, SMK3-13, SMK3-14)
 - [ ] **Phase 15: Smoke 3 — Run Document Audit Trail** - INSERTED 2026-05-11 - Full inputs+intermediates+outputs+diluent-decision breakdown, SAPE Name display, snapshot-frozen historical runs (SMK3-12, SMK3-15, SMK3-16, SMK3-17)
@@ -339,7 +339,7 @@ Plans:
 Plans:
 - [x] 12-01-PLAN.md — Rounding + dead-volume migration in lib/calculator.ts + lib/decimal.ts + shared types (Wave 1) ✅ 2026-05-12
 - [x] 12-02-PLAN.md — Diluent resolver (new lib/diluentResolver.ts module, 14 vitest cases, decoupled from panel/analyte types) (Wave 1, parallel with 12-01) ✅ 2026-05-12
-- [ ] 12-03-PLAN.md — calculatorStore numberOfSetups plumbing + PRD-worked-example integration test + CALC-05 regression + STATE.md decision-supersession (Wave 2)
+- [x] 12-03-PLAN.md — calculatorStore numberOfSetups plumbing + PRD-worked-example integration test + CALC-05 regression + STATE.md decision-supersession (Wave 2) ✅ 2026-05-12
 
 ### Phase 13: Smoke 3 — Panel XLSX Parser v3 (INSERTED 2026-05-11)
 **Goal**: A new parser accepts the lab's actual xlsx format (sectioned `Criteria` / `Values` / `Category` per sheet with per-reagent rows and a Premix matrix) and writes per-reagent rows into a revised master_panels schema. Re-upload of a (Platform, Species, Panel) wholesale-replaces. Roman panel numerals normalize to Arabic at parse time. Master `Table` tab is ignored. Legacy CSV templates deleted.
@@ -412,7 +412,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 | 9. Master-Panel Importer, IPC & UI Integration | — | **SUPERSEDED by Phase 13 (2026-05-11)** | - |
 | 10. Vendor Term & Calculator Reagent-Volume Wiring | — | **SUPERSEDED by Phases 12+14 (2026-05-11)** | - |
 | 11. Windows UAT & v2.0 Release | — | **SUPERSEDED by Phase 16 (2026-05-11)** | - |
-| 12. Smoke 3 — Calculator Rules Migration | 0/TBD | Not started | - |
+| 12. Smoke 3 — Calculator Rules Migration | 3/3 | Complete | 2026-05-12 |
 | 13. Smoke 3 — Panel XLSX Parser v3 | 0/TBD | Not started | - |
 | 14. Smoke 3 — Plate Page Inputs + UI Cleanup | 0/TBD | Not started | - |
 | 15. Smoke 3 — Run Document Audit Trail | 0/TBD | Not started | - |
