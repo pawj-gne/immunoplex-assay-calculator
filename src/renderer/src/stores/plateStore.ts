@@ -33,6 +33,7 @@ interface PlateState {
   setWellRange: (plateNumber: number, wellIds: Set<string>, filled: boolean) => void
   addPlate: () => void
   removePlate: (plateNumber: number) => void
+  setPlateCount: (n: number) => void
   clearPlate: (plateNumber: number) => void
   setActivePlate: (plateNumber: number) => void
   reset: () => void
@@ -279,6 +280,44 @@ export const usePlateStore = create<PlateState>((set, get) => ({
       activePlate === plateNumber
         ? Math.min(...Object.keys(newPlates).map(Number))
         : activePlate
+
+    set({ plates: newPlates, activePlate: validActive })
+  },
+
+  /**
+   * Smoke 3 D-03: bidirectional plate-count action driven by the Plate
+   * page's `Number of Plates` numeric input (Plan 14-06). Mirrors the
+   * effect of addPlate/removePlate but in one shot:
+   *   - n > currentMax: grow — append empty plate slots up to n.
+   *     Existing plate wells are preserved.
+   *   - n < currentMax: shrink — drop plate keys > n. Wells in plates
+   *     1..n are preserved (matches removePlate's deletion semantics).
+   *   - n === currentMax: no-op.
+   *   - n < 1 or non-integer: silent reject (no state mutation, no
+   *     validationError — UI prevents these values).
+   */
+  setPlateCount: (n: number) => {
+    if (!Number.isInteger(n) || n < 1) return // silent reject
+    const { plates, activePlate } = get()
+    const plateNumbers = Object.keys(plates).map(Number)
+    const currentMax = plateNumbers.length > 0 ? Math.max(...plateNumbers) : 0
+    if (n === currentMax) return // no-op
+
+    const newPlates: Record<number, Set<string>> = {}
+    // Preserve existing assignments for plates 1..min(currentMax, n)
+    for (let p = 1; p <= Math.min(currentMax, n); p++) {
+      newPlates[p] = plates[p] ?? new Set<string>()
+    }
+    // Add empty slots for growth past currentMax
+    for (let p = currentMax + 1; p <= n; p++) {
+      newPlates[p] = new Set<string>()
+    }
+    // Shrink: anything > n is dropped by virtue of not being copied above.
+
+    // activePlate adjustment — if the current active is beyond the new
+    // count, point it at the smallest remaining plate (1, since we copy
+    // plates 1..n above).
+    const validActive = activePlate > n ? 1 : activePlate
 
     set({ plates: newPlates, activePlate: validActive })
   },
