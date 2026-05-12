@@ -1,4 +1,5 @@
-import { sqliteTable, text, real, integer, uniqueIndex } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, real, integer, uniqueIndex, check } from 'drizzle-orm/sqlite-core'
+import { sql } from 'drizzle-orm'
 
 export const platforms = sqliteTable('platforms', {
   id: text('id').primaryKey(),
@@ -19,8 +20,9 @@ export const species = sqliteTable('species', {
   updatedAt: text('updated_at').notNull()
 })
 
-// Phase 5 (v2.0 D-09): Master panel — anchors reagent volumes and vendor singles term
-// per (platform, species) pair. Composite UNIQUE on (platform_id, species_id).
+// Phase 13 (D-10, D-11, D-14): Master panel — anchor for reagent metadata
+// (per-reagent rows live in master_panel_reagents, see below). Composite UNIQUE
+// includes name because Smoke 3 has N panels per (platform, species).
 export const masterPanels = sqliteTable(
   'master_panels',
   {
@@ -32,17 +34,55 @@ export const masterPanels = sqliteTable(
     speciesId: text('species_id')
       .notNull()
       .references(() => species.id, { onDelete: 'restrict' }),
-    beadsVolumePerWell: real('beads_volume_per_well').notNull(),
-    abVolumePerWell: real('ab_volume_per_well').notNull(),
-    sapeVolumePerWell: real('sape_volume_per_well').notNull(),
-    vendorSinglesTerm: text('vendor_singles_term'),
+    // Phase 13 D-10: the three per-reagent volume columns were dropped and
+    //   replaced by master_panel_reagents rows (see table declaration below).
+    sapeName: text('sape_name'), // D-10: nullable; surfaces from Values block "SAPE Name" row
+    description: text('description'), // RESEARCH Recommendation 5: nullable; from Criteria block "Panel Description"
+    vendorSinglesTerm: text('vendor_singles_term'), // D-11: SURVIVES Phase 13; new imports write NULL
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull()
   },
   (t) => ({
-    platformSpeciesUniq: uniqueIndex('master_panels_platform_species_uniq').on(
+    // D-14: swap UNIQUE — old was on (platformId, speciesId); new includes name
+    // (Smoke 3 has N panels per platform/species, e.g. Millipore Human Panels 1..7).
+    platformSpeciesNameUniq: uniqueIndex('master_panels_platform_species_name_uniq').on(
       t.platformId,
-      t.speciesId
+      t.speciesId,
+      t.name
+    )
+  })
+)
+
+// Phase 13 D-06 (SMK3-08 + SMK3-DIL-01): per-reagent rows that replace the
+// dropped 3 volume columns on master_panels. Each master panel has up to 3
+// rows (beads, antibodies, sape). SAPE row's concentration is NOT NULL via CHECK.
+export const masterPanelReagents = sqliteTable(
+  'master_panel_reagents',
+  {
+    id: text('id').primaryKey(),
+    masterPanelId: text('master_panel_id')
+      .notNull()
+      .references(() => masterPanels.id, { onDelete: 'cascade' }),
+    reagentKind: text('reagent_kind').notNull(), // 'beads' | 'antibodies' | 'sape' — enforced via CHECK below
+    concentration: real('concentration'), // D-07: NULL = 'variable' sentinel for beads/antibodies
+    diluent: text('diluent'), // SMK3-DIL-01: open text, verbatim from xlsx
+    volumePerWell: real('volume_per_well').notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull()
+  },
+  (t) => ({
+    masterKindUniq: uniqueIndex('master_panel_reagents_master_kind_uniq').on(
+      t.masterPanelId,
+      t.reagentKind
+    ),
+    // D-06 CHECK constraints — drizzle-orm 0.45.1 `check()` helper
+    reagentKindEnum: check(
+      'reagent_kind_enum',
+      sql`${t.reagentKind} IN ('beads', 'antibodies', 'sape')`
+    ),
+    sapeConcNotNull: check(
+      'sape_conc_not_null',
+      sql`${t.reagentKind} <> 'sape' OR ${t.concentration} IS NOT NULL`
     )
   })
 )
@@ -135,7 +175,9 @@ export const runs = sqliteTable('runs', {
   speciesId: text('species_id')
     .notNull()
     .references(() => species.id), // immutable after create
-  panelId: text('panel_id').references(() => premixPanels.id), // nullable for custom
+  // Phase 13 D-15 + Pitfall E: explicit onDelete:'set null' so wholesale-replace of
+  // premix_panels does not throw FK violation; historical runs survive with NULL panel_id.
+  panelId: text('panel_id').references(() => premixPanels.id, { onDelete: 'set null' }),
   volumePerWell: real('volume_per_well').notNull(),
   deadVolume: real('dead_volume').notNull(),
   // Positions (D-16: integers with fixed ranges, NOT free text)
@@ -156,14 +198,15 @@ export const runs = sqliteTable('runs', {
 })
 
 // Phase 4: Single analytes selected for a given run (D-19)
+// Phase 13 D-17 + Pitfall E: analyte_id is now nullable with onDelete:'set null'
+// so wholesale-replace of analytes does not throw; historical run rows survive
+// with NULL analyte_id and surface "(analyte data archived)" at display time.
 export const runSingleAnalytes = sqliteTable('run_single_analytes', {
   id: text('id').primaryKey(),
   runId: text('run_id')
     .notNull()
     .references(() => runs.id),
-  analyteId: text('analyte_id')
-    .notNull()
-    .references(() => analytes.id),
+  analyteId: text('analyte_id').references(() => analytes.id, { onDelete: 'set null' }),
   createdAt: text('created_at').notNull()
 })
 
@@ -188,6 +231,9 @@ export type NewPremixPanel = typeof premixPanels.$inferInsert
 
 export type MasterPanel = typeof masterPanels.$inferSelect
 export type NewMasterPanel = typeof masterPanels.$inferInsert
+
+export type MasterPanelReagent = typeof masterPanelReagents.$inferSelect
+export type NewMasterPanelReagent = typeof masterPanelReagents.$inferInsert
 
 export type Analyte = typeof analytes.$inferSelect
 export type NewAnalyte = typeof analytes.$inferInsert
