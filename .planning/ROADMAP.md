@@ -353,14 +353,15 @@ Plans:
   4. Re-upload of an existing (Platform, Species, Panel) wipes the existing panel's analytes + premixes + per-reagent rows + metadata and writes the new data in a single transaction; orphan preservation is REMOVED (supersedes MPAN-05)
   5. Legacy `templates/panel-template.csv` and `sample-panel-import.csv` are deleted; v0.7.0 `src/main/import/parser.ts` is replaced; old IPC channel + UI button names may change but the import surface remains accessible from the Manage page
   6. The 17 CSVs at `templates/panels/` (extracted from `Immuno Table for Calculator.xlsx` during the 2026-05-11 ingest) all parse successfully under the new parser — re-run the dry-run that produced 0/17 against the v0.7.0 parser and confirm 17/17 pass
-**Plans**: 5 plans
+**Plans**: 6 plans
 
 Plans:
 - [ ] 13-01-PLAN.md — Schema delta + repository layer: schema.ts extensions (masterPanelReagents table + master_panels delta + FK SET NULL on runs.panelId + run_single_analytes.analyteId), masterPanelReagent repo + types, extended Phase 5 repos, repository-layer unit tests (Wave 1)
 - [ ] 13-02-PLAN.md — Fixture build pipeline: scripts/build-panels-fixture.ts + tsx devDep + npm run fixtures:panels + generated templates/panels/all-panels.xlsx (17 panels + Table sheet) (Wave 1, parallel with 13-01)
-- [ ] 13-03-PLAN.md — Drizzle migration 0007: db:generate + migration test (schema artifacts + Pitfall F row-count preservation) + un-skip Plan 01 tests + [BLOCKING] db:push checkpoint (Wave 2)
+- [ ] 13-03-PLAN.md — Drizzle migration 0007: db:generate + migration test (schema artifacts + post-migration FK SET NULL constraint behavior) + un-skip Plan 01 tests + [BLOCKING] db:push checkpoint (Wave 2)
 - [ ] 13-04-PLAN.md — Parser/validator/normalize rewrite: normalize.ts (Roman→Arabic + canonReagentKind), parser.ts (multi-sheet block parser; Pattern A + Pattern B), validator.ts (multi-sheet aggregation + D-21 collision); 71+ unit tests (Wave 2, parallel with 13-03)
-- [ ] 13-05-PLAN.md — Importer rewrite + integration: wholesale-replace transaction over master_panel_reagents, FK SET NULL verification, SC #6 17/17 fixture gate via all-panels.xlsx, legacy CSV deletion, ImportButton banner update, IPC/preload type update, full-suite green (Wave 3)
+- [ ] 13-05-PLAN.md — Importer rewrite + integration tests (wholesale-replace transaction over master_panel_reagents, FK SET NULL verification, MANDATORY rollback test, MANDATORY Phase 12 SMK3-16 cross-phase regression) + SC #6 17/17 fixture gate via all-panels.xlsx (Wave 3)
+- [ ] 13-06-PLAN.md — UI surface + cleanup + phase audit: IPC + preload + ImportButton banner update for new ImportResult shape, legacy CSV deletion (SC #5), full test suite green + Phase 12 runStore regression check, phase ready for /gsd-verify-work (Wave 4)
 
 ### Phase 14: Smoke 3 — Plate Page Input Expansion + UI Cleanup (INSERTED 2026-05-11)
 **Goal**: The Plate page exposes `Old Beads` / `Old Antibodies` / `Number of Setups` inputs feeding the new calculator rules. Premix deselection re-enables members as singles without auto-adding. Bead region display becomes a flat list. Stock-concentration labels on platform-selection screens are removed.
@@ -421,14 +422,14 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 | 10. Vendor Term & Calculator Reagent-Volume Wiring | — | **SUPERSEDED by Phases 12+14 (2026-05-11)** | - |
 | 11. Windows UAT & v2.0 Release | — | **SUPERSEDED by Phase 16 (2026-05-11)** | - |
 | 12. Smoke 3 — Calculator Rules Migration | 4/4 | Complete    | 2026-05-12 |
-| 13. Smoke 3 — Panel XLSX Parser v3 | 0/5 | Not started | - |
+| 13. Smoke 3 — Panel XLSX Parser v3 | 0/6 | Not started | - |
 | 14. Smoke 3 — Plate Page Inputs + UI Cleanup | 0/TBD | Not started | - |
 | 15. Smoke 3 — Run Document Audit Trail | 0/TBD | Not started | - |
 | 16. Windows UAT & Release (Smoke 3) | 0/TBD | Not started (placeholder; version TBD) | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-05-11 — Smoke 3 PRD adopted; Phases 8-11 superseded; Phases 12-16 inserted for Smoke 3 calculator/parser/UI/run-doc work + UAT placeholder*
+*Last updated: 2026-05-12 — Phase 13 plan list expanded from 5 to 6 plans (13-05 split per checker BLOCKER-1; no scope reduction)*
 *Plan template: see .planning/PLAN_TEMPLATE.md*
 
 ## Backlog
