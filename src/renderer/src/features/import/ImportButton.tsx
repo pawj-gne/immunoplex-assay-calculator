@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 
-interface ImportResult {
-  success: boolean
-  canceled?: boolean
-  created: { analytes: number; panels: number; subPanels: number; links: number }
-  skipped: { analytes: number }
-  errors: { row: number; issues: string[] }[]
-}
+// Phase 13: importer.ts shape changed (v0.7.0 created/skipped → Smoke 3
+// summaries/ImportSheetError). UI surface adoption is deferred to Plan 13-06
+// (the next wave). This file's banner-rendering keeps working against the
+// preload-exposed ImportResult type without throwing in renderer; the full
+// summary-rendering work lands in 13-06.
+import type { ImportResult } from '../../../../main/import/importer'
 
 interface BannerState {
   type: 'success' | 'error'
@@ -37,22 +36,14 @@ export function ImportButton(): JSX.Element {
       }
 
       if (result.success) {
-        const { created, skipped } = result
-        const parts: string[] = []
-        if (created.analytes > 0) parts.push(`${created.analytes} analyte${created.analytes !== 1 ? 's' : ''}`)
-        if (created.panels > 0) parts.push(`${created.panels} master panel${created.panels !== 1 ? 's' : ''}`)
-        if (created.subPanels > 0) parts.push(`${created.subPanels} sub-panel${created.subPanels !== 1 ? 's' : ''}`)
-        if (created.links > 0) parts.push(`${created.links} link${created.links !== 1 ? 's' : ''}`)
-
-        let msg = `Imported ${parts.join(', ')}.`
-        if (skipped.analytes > 0) {
-          msg += ` Skipped ${skipped.analytes} existing analyte${skipped.analytes !== 1 ? 's' : ''}.`
-        }
-
+        const summaries = result.summaries
+        const totalAnalytes = summaries.reduce((acc, s) => acc + s.analyteCount, 0)
+        const totalPremixes = summaries.reduce((acc, s) => acc + s.premixCount, 0)
+        const msg = `Imported ${summaries.length} panel${summaries.length !== 1 ? 's' : ''}: ${totalAnalytes} analyte${totalAnalytes !== 1 ? 's' : ''}, ${totalPremixes} premix${totalPremixes !== 1 ? 'es' : ''}. (Plan 13-06 will surface per-panel details.)`
         setBanner({ type: 'success', message: msg })
       } else {
         const details = result.errors.flatMap((e) =>
-          e.issues.map((issue) => (e.row > 0 ? `Row ${e.row}: ${issue}` : issue))
+          e.issues.map((issue) => (e.sheetName ? `[${e.sheetName}] ${issue}` : issue))
         )
         setBanner({
           type: 'error',

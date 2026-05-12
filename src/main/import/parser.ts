@@ -408,7 +408,15 @@ function parseCategory(sheetName: string, rows: unknown[][], startRow: number): 
 
     for (const p of premixColumns) {
       const memberName = cell(rows, r, p.col)
-      if (memberName) membersByCol.get(p.col)!.push(memberName)
+      // Pitfall (real Pattern B fixture): the row immediately after the
+      // analyte-header/premix-conc combo line in the real all-panels.xlsx
+      // Millipore fixtures carries a literal "Analyte" placeholder header in
+      // each premix-member column (e.g. row 17 of Millipore Human Panel 1).
+      // That row still has a real analyte in cols A-C, so we keep it in the
+      // analytes list but skip the "Analyte" placeholder in member capture.
+      if (!memberName) continue
+      if (memberName.toLowerCase() === 'analyte') continue
+      membersByCol.get(p.col)!.push(memberName)
     }
   }
 
