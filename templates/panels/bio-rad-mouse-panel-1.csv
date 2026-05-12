@@ -1,0 +1,41 @@
+Criteria,,,,,,
+Platform,Bio-Rad,,,,,
+Species,Mouse,,,,,
+Panel,Panel I,,,,,
+Panel Description,Cytokine/Chemokine,,,,,
+,,,,,,
+Values,,,,,,
+Reagent Description,Concentration,Diluent,Volume/well (ml),,,
+Beads,variable,Assay Buffer,0.05,,,
+Ab ,variable,Mouse Diluent,0.025,,,
+SAPE,100,n/a,0.05,,,
+SAPE Name,Streptavidin-PE,,,,,
+,,,,,,
+Category,,,,,,
+,,,,Premix,,
+,,,,Premix Name,Premix Panel I 27-plex,Premix  Panel I 8-plex
+Single Analytes,,,,Premix Concentration,10,10
+Analyte,Bead Region,Concentration,,Count,Analyte,Analyte
+Eotaxin  (CCL11),74,20,,1,Eotaxin  (CCL11),GM-CSF
+G-CSF,54,20,,2,G-CSF,IFN gamma
+GM-CSF,73,20,,3,GM-CSF,IL-10
+IFN gamma,34,20,,4,IFN gamma,IL-12 (p70)
+IL-1 alpha,53,20,,5,IL-1 alpha,IL-2
+IL-1 beta,19,20,,6,IL-1 beta,IL-4
+IL-10,56,20,,7,IL-10,IL-5
+IL-12 (p40),76,20,,8,IL-12 (p40),TNF alpha
+IL-12 (p70),78,20,,9,IL-12 (p70),
+IL-13,37,20,,10,IL-13,
+IL-17A,72,20,,11,IL-17A,
+IL-2,36,20,,12,IL-2,
+IL-3,18,20,,13,IL-3,
+IL-4,39,20,,14,IL-4,
+IL-5,52,20,,15,IL-5,
+IL-6,38,20,,16,IL-6,
+IL-9,33,20,,17,IL-9,
+KC (CXCL1),57,20,,18,KC (CXCL1),
+MCP-1 (CCL2),51,20,,19,MCP-1 (CCL2),
+MIP-1 alpha (CCL3),77,20,,20,MIP-1 alpha (CCL3),
+MIP-1 beta  (CCL4),75,20,,21,MIP-1 beta  (CCL4),
+RANTES (CCL5),55,20,,22,RANTES (CCL5),
+TNF alpha,21,20,,23,TNF alpha,

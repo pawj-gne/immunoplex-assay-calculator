@@ -1,0 +1,30 @@
+Criteria,,,,,
+Platform,Millipore ,,,,
+Species,Mouse,,,,
+Panel,Panel II,,,,
+Panel Description,Myokine,,,,
+,,,,,
+Values,,,,,
+Reagent Description,Concentration,Diluent,Volume/well (ml),,
+Beads,variable,L-MAB,0.025,,
+Antibodies ,variable,L-MAB,0.025,,
+SAPE,1,n/a,0.025,,
+SAPE Name,SAPE-3,,,,
+,,,,,
+Category,,,,,
+,,,,Premix,
+,,,,Premix Name,Premix Panel II 15-plex
+Single Analytes,,,,Premix Concentration,1
+Analyte,Bead Region,Concentration,,Count,Analyte
+BDNF,15,20,,1,BDNF
+Erthropoientin (EPO),18,20,,2,Erthropoientin (EPO)
+FGF-21,30,20,,3,FGF-21
+FSTL1,39,20,,4,FSTL1
+IL-6,34,20,,5,Il-6
+IL-15,54,20,,6,IL-15
+Irisin,46,20,,7,Irisin
+LIF,51,20,,8,LIF
+Myostatin,44,20,,9,Myostatin
+Oncostatin-M,53,20,,10,Oncostatin-M
+Osteocrin,65,20,,11,Osteocrin
+Osteonectin,67,20,,12,Osteonectin

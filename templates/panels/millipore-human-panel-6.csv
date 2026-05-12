@@ -1,0 +1,24 @@
+Criteria,,,,,
+Platform,Millipore ,,,,
+Species,Human,,,,
+Panel,Panel VI,,,,
+Panel Description,Isotyping,,,,
+,,,,,
+Values,,,,,
+Reagent Description,Concentration,Diluent,Volume/well (ml),,
+Beads,variable,L-AB,0.025,,
+Antibodies ,variable,L-AB,0.025,,
+SAPE,n/a,n/a,0.025,,
+SAPE Name,n/a,,,,
+,,,,,
+Category,,,,,
+,,,,Premix,
+,,,,Premix Name,Premix Panel VI 6-plex
+Single Analytes,,,,Premix Concentration,1
+Analyte,Bead Region,Concentration,,Count,Analyte
+IgM,18,20,,1,IgM
+IgG1,22,20,,2,IgG1
+IgG2,37,20,,3,IgG2
+IgG3,43,20,,4,IgG3
+IgG4,46,20,,5,IgG4
+IgA,55,20,,6,IgA

@@ -1,0 +1,45 @@
+Criteria,,,,,,,
+Platform,Bio-Rad ,,,,,,
+Species,Human,,,,,,
+Panel,Panel I,,,,,,
+Panel Description,Cytokine/Chemokine,,,,,,
+,,,,,,,
+Values,,,,,,,
+Reagent Description,Concentration,Diluent,Volume/well (ml),,,,
+Beads,variable,Assay Buffer,0.05,,,,
+Antibodies ,variable,Human Diluent,0.025,,,,
+SAPE,1,n/a,0.05,,,,
+SAPE Name,Streptavidin-PE,,,,,,
+,,,,,,,
+Category,,,,,,,
+,,,,Premix,,,
+,,,,Premix Name,Premix Panel I 27-plex,Premix Panel I 17-plex,Premix  Panel I 8-plex
+Single Analytes,,,,Premix Concentration,10,10,10
+Analyte,Bead Region,Concentration,,Count,Analyte,Analyte,Analyte
+Basic FGF,44,10,,1,Basic FGF,G-CSF,GM-CSF
+Eotaxin  (CCL11),43,10,,2,Eotaxin  (CCL11),GM-CSF,IFN gamma
+G-CSF,57,10,,3,G-CSF,IFN gamma,IL-10
+GM-CSF,34,10,,4,GM-CSF,IL-1 beta,IL-2
+IFN gamma,21,10,,5,IFN gamma,IL-10,IL-4
+IL-1 beta,39,10,,6,IL-1 beta,IL-12 (p70),IL-6
+IL-10,56,10,,7,IL-10,IL-13,IL-8
+IL-12 (p70),75,10,,8,IL-12 (p70),IL-17A,TNF alpha
+IL-13,51,10,,9,IL-13,IL-2,
+IL-15,73,10,,10,IL-15,IL-4,
+IL-17A,76,10,,11,IL-17A,IL-5,
+IL-1Ra,25,10,,12,IL-1Ra,IL-6,
+IL-2,38,10,,13,IL-2,IL-7,
+IL-4,52,10,,14,IL-4,IL-8,
+IL-5,33,10,,15,IL-5,MCP-1 (CCL2),
+IL-6,19,10,,16,IL-6,MIP-1 beta  (CCL4),
+IL-7,74,10,,17,IL-7,TNF alpha,
+IL-8,54,10,,18,IL-8,,
+IL-9,77,10,,19,IL-9,,
+IP-10 (CXCL10),48,10,,20,IP-10 (CXCL10),,
+MCP-1 (CCL2),53,10,,21,MCP-1 (CCL2),,
+MIP-1 alpha (CCL3),55,10,,22,MIP-1 alpha (CCL3),,
+MIP-1 beta  (CCL4),18,10,,23,MIP-1 beta  (CCL4),,
+PDGF-BB,47,10,,24,PDGF-BB,,
+RANTES (CCL5),37,10,,25,RANTES (CCL5),,
+TNF alpha,36,10,,26,TNF alpha,,
+VEGF,45,10,,27,VEGF,,

@@ -1,0 +1,41 @@
+Criteria,,,,,
+Platform,Millipore ,,,,
+Species,Human,,,,
+Panel,Panel II,,,,
+Panel Description,Myokine,,,,
+,,,,,
+Values,,,,,
+Reagent Description,Concentration,Diluent,Volume/well (ml),,
+Beads,variable,L-AB,0.025,,
+Antibodies ,variable,L-AB,0.025,,
+SAPE,1,n/a,0.025,,
+SAPE Name,SAPE-4,,,,
+,,,,,
+Category,,,,,
+,,,,Premix,
+,,,,Premix Name,Premix Panel II 23-plex
+Single Analytes,,,,Premix Concentration,1
+Analyte,Bead Region,Concentration,,Count,Analyte
+6Ckine (CCL21),28,20,,1,6Ckine (CCL21)
+BCA-1 (CXCL13),15,20,,2,BCA-1 (CXCL13)
+CTACK (CCL27),62,20,,3,CTACK (CCL27)
+ENA-78 (CXCL5),66,20,,4,ENA-78 (CXCL5)
+Eotaxin-2 (CCL24),12,20,,5,Eotaxin-2 (CCL24)
+Eotaxin-3 (CCL26),30,20,,6,Eotaxin-3 (CCL26)
+I-309 (CCL-1),19,20,,7,I-309 (CCL-1)
+IL-16,21,20,,8,IL-16
+IL-20,51,20,,9,IL-20
+IL-21,52,20,,10,IL-21
+IL-23,54,20,,11,IL-23
+IL-28A/IFN lambda 2,77,20,,12,IL-28A/IFN lambda 2
+IL-33 (NF-HEV mature),45,20,,13,IL-33 (NF-HEV mature)
+LIF,34,20,,14,LIF
+MCP-2 (CCL8),13,20,,15,MCP-2 (CCL8)
+MCP-4 (CCL13),18,20,,16,MCP-4 (CCL13)
+MIP-1 delta (CCL15),76,20,,17,MIP-1 delta (CCL15)
+SCF,38,20,,18,SCF
+SDF-1 a/b (CXCL12),64,20,,19,SDF-1 a/b (CXCL12)
+TARC (CCL17),26,20,,20,TARC (CCL17)
+TPO,36,20,,21,TPO
+TRAIL (TNSF10),56,20,,22,TRAIL (TNSF10)
+TSLP,43,20,,23,TSLP

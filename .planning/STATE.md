@@ -1,13 +1,13 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.0
-milestone_name: Release
+milestone_name: Release (Smoke 3 PRD adoption in flight)
 status: planning
-stopped_at: Phase 6 context gathered
-last_updated: "2026-04-24T20:42:44.236Z"
-last_activity: 2026-04-24
+stopped_at: Smoke 3 PRD ingested; Phases 12-16 inserted, awaiting plan
+last_updated: "2026-05-11T15:00:00.000Z"
+last_activity: 2026-05-11
 progress:
-  total_phases: 15
+  total_phases: 19
   completed_phases: 8
   total_plans: 33
   completed_plans: 33
@@ -21,17 +21,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Accurate reagent calculations with clear prep recipes - operators must be able to trust the math and follow the instructions without second-guessing.
-**Current focus:** Phase 05 — master-panel-schema-repository-foundation
+**Current focus:** Phase 12 — Smoke 3 Calculator Rules Migration (post-PRD ingest)
 
 ## Current Position
 
-Milestone: v2.0 (Panel XLSX Upload + Master-Panel Data Model)
-Phase: 6
+Milestone: v2.0 (Panel XLSX Upload + Master-Panel Data Model) — **scope shifted 2026-05-11 by Smoke 3 PRD adoption**
+Phase: 12 (Smoke 3 — Calculator Rules Migration) is next in queue; Phases 8-11 superseded
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-04-24
+Last activity: 2026-05-11
 
-Progress: [██████████] v1.0 code-complete (pending HUMAN-UAT-04.1-05-01); v2.0 roadmap complete, ready for Phase 5 planning
+Progress: [██████████] v1.0 code-complete (pending HUMAN-UAT-04.1-05-01); v0.7.0 shipped (master-panel schema + lab CSV importer); Smoke 3 PRD ingested 2026-05-11; Phases 12-16 inserted, ready for Phase 12 discuss/plan
 
 ## Performance Metrics
 
@@ -151,6 +151,35 @@ Recent decisions affecting current work:
 - 04-03: D-26 deferrals (custom appId, icon, code signing, auto-updater URL) untouched as designed; Windows SmartScreen click-through accepted for v1 internal deployment.
 - 04-03: Windows physical workstation smoke test (14 steps from Plan 04-03 Task 3) deferred to HUMAN-UAT — macOS dev host cannot exercise a Windows .exe per CLAUDE.md §Testing Windows-only. Not a methodology failure; it is the documented project test cycle.
 - 04-03: Plan text labels build "v0.6.0 (Phase 4 bundle)" but package.json is still 0.5.0 — version bump and tag handled separately by .claude/release.md when ready to cut the actual v0.6.0 release.
+
+#### 2026-05-11 — Smoke 3 PRD Ingest (orchestrator rule: PRD wins every blocker)
+
+Full audit trail in [.planning/INGEST-RESOLUTIONS.md](./INGEST-RESOLUTIONS.md). Decision IDs reference that document.
+
+- **2026-05-11 META:** Lab-owner-authored [SMOKE-3-PRD.md](./SMOKE-3-PRD.md) is the canonical product spec. When PRD requirements conflict with previously locked v1/v2 decisions, **PRD wins.** [PANEL-UPLOAD-V2-SPEC.md](./PANEL-UPLOAD-V2-SPEC.md) is preserved but marked SUPERSEDED.
+- **R-01:** Panel-data file shape = sectioned `Criteria` / `Values` / `Category` xlsx (Smoke 3 lab format). Supersedes PANEL-UPLOAD-V2-SPEC.md + scheduled rewrite of v0.7.0 parser.ts (Phase 13).
+- **R-02:** `master_panels` grows per-reagent rows (Beads / Antibodies / SAPE each with Concentration + Diluent + Volume/well; SAPE has SAPE Name field). Supersedes MPAN-01 single-`reagent_volume_per_well` model.
+- **R-03:** Rounding precision = round UP to nearest 0.1 mL (ceiling at 0.1 mL). **Supersedes decision 02-01** ("Final volume always rounds UP to nearest mL"). Calculator core change scoped for Phase 12.
+- **R-04:** Diluent rule = concentration-keyed: if ANY selected premix is 1×, that premix is the diluent for Beads + Antibodies; else fall back to per-reagent Values-table diluent (PRD-silent gap explicitly filled by operator). Supersedes PROJECT.md §Domain Rules request-type-keyed rule + Assay Buffer fallback.
+- **R-05:** CALC-05 max-5-singles cap retained. PRD silence ≠ removal — operator confirmed cap stays. Annotated in REQUIREMENTS.md.
+- **R-06:** Three-format codebase split resolved via R-01. v0.7.0 parser + panel-template.csv + sample-panel-import.csv scheduled for retirement in Phase 13.
+- **R-07:** "Number of setups" accepted as a new user input on the Plate page. Default 1, min 1, no max. Dead volume = `setups × 2 mL` (extends shipped 02-03 constant).
+- **R-08:** Old Reagent input = two separate fields (Old Beads + Old Antibodies). Each ≥ 0. Subtracted from respective new-reagent calc.
+- **R-09:** Replicate Mode set = `Single` + `Duplicate` only (as shipped). No triplicate or custom counts.
+- **R-10:** Duplicate plate layout = adjacent rows in the same column. Samples 1–4 in col 4 as `(A4,B4)(C4,D4)(E4,F4)(G4,H4)`, then col 5, …, col 12 (9 cols × 4 samples = 36 = CALC-01 cap). **Supersedes the prior horizontal-pair + col-12-vertical layout** from decision 03.3-01.
+- **R-11:** Panel name normalization: Roman → Arabic on import (`Panel I` → `Panel 1`). Store + display Arabic; lab can author either form.
+- **R-12:** Premix deselection re-enables members as singles selectable but does NOT auto-add. Honors CALC-05 cap.
+- **R-13:** `variable` cell in Bead/Antibody Concentration of Values block is author shorthand. Importer reads concentration from per-analyte rows in the Category block, ignores the `variable` label.
+- **R-14:** Master `Table` tab in the xlsx is decorative. Importer enumerates panels by scanning sheet names. Range strings like "1 through 7" are irrelevant.
+- **R-15:** Diluent column values are open-ended free text. Whatever the lab writes (`L-AB`, `n/a`, etc.) is stored verbatim. No enum, no normalization.
+- **R-RE-UPLOAD:** Re-upload of a (Platform, Species, Panel) triple wholesale-replaces the existing panel. **Supersedes MPAN-05** (upsert-with-orphans).
+- **R-PE:** PE volume = `Total Volume of the Assay ÷ SAPE concentration` (read from SAPE row in panel's Values block; typically 1×).
+- **R-SAPE-NAME:** SAPE Name displayed in run document for traceability. No calculation impact.
+- **R-BEAD-LIST:** Bead region display = flat list of all analytes (TA), sorted by bead region. Premix members + standalone singles in one combined list.
+- **R-AUDIT:** Run document calculation breakdown = full audit trail (inputs + intermediates + outputs + diluent decision).
+- **R-HIST:** Historical run records snapshot-frozen. Reopening shows persisted values. No retroactive recompute when Smoke 3 rules ship.
+- **R-LEGACY:** Legacy CSV templates (`templates/panel-template.csv` + `sample-panel-import.csv`) deleted in Phase 13.
+- **R-UAT:** v2.0 release versioning deferred to Phase 16 (v0.8.0 vs v2.0.0 decided at UAT gate).
 
 ### Pending Todos
 

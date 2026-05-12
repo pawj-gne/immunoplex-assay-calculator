@@ -1,5 +1,13 @@
 # Panel Upload v2 — Draft Spec
 
+> ⚠️ **STATUS: SUPERSEDED 2026-05-11**
+> Replaced by [`SMOKE-3-PRD.md`](./SMOKE-3-PRD.md) as the canonical panel-xlsx contract.
+> The lab's actual xlsx format (sectioned `Criteria` / `Values` / `Category` blocks with per-reagent fields and a Premix matrix) does not match the per-tab layout this spec anticipated.
+> Resolution trail: [`INGEST-RESOLUTIONS.md`](./INGEST-RESOLUTIONS.md) R-01.
+> **Do not implement against this spec.** Preserved for historical reference and to document why the v0.7.0 parser was retired.
+
+---
+
 **Status:** draft (pre-phase, awaits promotion into v2.x milestone)
 **Last updated:** 2026-04-23
 **Supersedes:** The long-format CSV parser shipped in Phase 3.1 (panel-data-import)

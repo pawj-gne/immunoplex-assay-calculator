@@ -1,0 +1,31 @@
+Criteria,,,,,
+Platform,Millipore ,,,,
+Species,Mouse,,,,
+Panel,Panel IV,,,,
+Panel Description,SCR,,,,
+,,,,,
+Values,,,,,
+Reagent Description,Concentration,Diluent,Volume/well (ml),,
+Beads,variable,L-AB,0.025,,
+Antibodies ,variable,L-AB,0.025,,
+SAPE,1,n/a,0.025,,
+SAPE Name,SAPE-3,,,,
+,,,,,
+Category,,,,,
+,,,,Premix,
+,,,,Premix Name,Premix Panel IV 14-plex
+Single Analytes,,,,Premix Concentration,1
+Analyte,Bead Region,Concentration,,Count,Analyte
+sCD30,13,20,,1,sCD30
+sGP130,15,20,,2,sGP130
+sIL-1RI,25,20,,3,sIL-1RI
+sIL-1RII,28,20,,4,sIL-1RII
+sIL-2R alpha,39,20,,5,sIL-2R alpha
+sIL-4R,43,20,,6,sIL-4R
+sIL-6R,45,20,,7,sIL-6R
+sRAGE,47,20,,8,sRAGE
+sTNF RI ,62,20,,9,sTNF RI 
+sTNF RII,66,20,,10,sTNF RII
+sVEGF R1,72,20,,11,sVEGF R1
+sVEGF R2,75,20,,12,sVEGF R2
+sVEGF R3,77,20,,13,sVEGF R3

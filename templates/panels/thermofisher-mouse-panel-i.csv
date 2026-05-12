@@ -1,0 +1,48 @@
+Criteria,,,,,
+Platform,Thermofisher,,,,
+Species,Mouse,,,,
+Panel,Panel I,,,,
+Panel Description,Cytokine/Chemokine,,,,
+,,,,,
+Values,,,,,
+Reagent Description,Concentration,Diluent,Volume/well (ml),,
+Beads,variable,Universal Buffer,0.05,,
+Antibodies ,variable,Mouse Diluent,0.025,,
+SAPE,1,n/a,0.05,,
+SAPE Name,SA-PE,,,,
+,,,,,
+Category,,,,,
+,,,,Premix,
+,,,,Premix Name,Premix Panel I 30-plex
+Single Analytes,,,,Premix Concentration,1
+Analyte,Bead Region,Concentration,,Count,Analyte
+Eotaxin (CCL11),62,50,,1,Eotaxin (CCL11)
+G-CSF,12,50,,2,G-CSF
+GM-CSF,42,50,,3,GM-CSF
+GRO-alpha,43,50,,4,GRO-alpha
+IFN-alpha,30,50,,5,IFN-alpha
+IFN-beta,77,50,,6,IFN-beta
+IFN-gamma,38,50,,7,IFN-gamma
+IL-1 beta,19,50,,8,IL-1 beta
+IL-2,20,50,,9,IL-2
+IL-4,26,50,,10,IL-4
+IL-5,27,50,,11,IL-5
+IL-6,28,50,,12,IL-6
+IL-9,34,50,,13,IL-9
+IL-10,13,50,,14,IL-10
+IL-12(p70),39,50,,15,IL-12(p70)
+IL-13,35,50,,16,IL-13
+IL-17A,52,50,,17,IL-17A
+IL-18,66,50,,18,IL-18
+IL-22,33,50,,19,IL-22
+IL-23,37,50,,20,IL-23
+IL-27,36,50,,21,IL-27
+IP-10,22,50,,22,IP-10
+MCP-1,51,50,,23,MCP-1
+MCP-3,48,50,,24,MCP-3
+MIG,15,50,,25,MIG
+MIP-1 alpha,47,50,,26,MIP-1 alpha
+MIP-1 beta,72,50,,27,MIP-1 beta
+MIP-2 alpha,55,50,,28,MIP-2 alpha
+RANTES,44,50,,29,RANTES
+TNF alpha,45,50,,30,TNF alpha

@@ -1,0 +1,43 @@
+Criteria,,,,,
+Platform,Millipore ,,,,
+Species,Mouse,,,,
+Panel,Panel III,,,,
+Panel Description,Th-17,,,,
+,,,,,
+Values,,,,,
+Reagent Description,Concentration,Diluent,Volume/well (ml),,
+Beads,variable,L-MAB,0.025,,
+Antibodies ,variable,L-MAB,0.025,,
+SAPE,1,n/a,0.025,,
+SAPE Name,SAPE-10,,,,
+,,,,,
+Category,,,,,
+,,,,Premix,
+,,,,Premix Name,Premix Panel V 25-plex
+Single Analytes,,,,Premix Concentration,1
+Analyte,Bead Region,Concentration,,Count,Analyte
+GM-CSF,15,20,,1,GM-CSF
+IFN gamma,19,20,,2,IFN gamma
+IL-1 beta,25,20,,3,IL-1 beta
+IL-10,43,20,,4,IL-10
+IL-12(p70),47,20,,5,IL-12(p70)
+IL-13,52,20,,6,IL-13
+IL-15,54,20,,7,IL-15
+IL-17A,56,20,,8,IL-17A
+IL-17F,61,20,,9,IL-17F
+IL-2,26,20,,10,IL-2
+IL-21,35,20,,11,IL-21
+IL-22,37,20,,12,IL-22
+IL-23,46,20,,13,IL-23
+IL-25,75,20,,14,IL-25
+IL-27,48,20,,15,IL-27
+IL-28B,42,20,,16,IL-28B
+IL-31,73,20,,17,IL-31
+IL-33,67,20,,18,IL-33
+IL-4,28,20,,19,IL-4
+IL-5,30,20,,20,IL-5
+IL-6,34,20,,21,IL-6
+MIP-3 alpha,20,20,,22,MIP-3 alpha
+sCD40L,78,20,,23,sCD40L
+TNF alpha,77,20,,24,TNF alpha
+TNF beta,73,20,,25,TNF beta

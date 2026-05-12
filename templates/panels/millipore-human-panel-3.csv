@@ -1,0 +1,29 @@
+Criteria,,,,,
+Platform,Millipore ,,,,
+Species,Human,,,,
+Panel,Panel III,,,,
+Panel Description,Cytokine/ Chemokine,,,,
+,,,,,
+Values,,,,,
+Reagent Description,Concentration,Diluent,Volume/well (ml),,
+Beads,variable,L-AB,0.025,,
+Antibodies ,variable,L-AB,0.025,,
+SAPE,1,n/a,0.025,,
+SAPE Name,SAPE-6,,,,
+,,,,,
+Category,,,,,
+,,,,Premix,
+,,,,Premix Name,Premix Panel III 11-plex
+Single Analytes,,,,Premix Concentration,1
+Analyte,Bead Region,Concentration,,Count,Analyte
+GCP-2 (CXCL6),15,20,,1,GCP-2 (CXCL6)
+HCC-1 (CCL14),21,20,,2,HCC-1 (CCL14)
+I-TAC (CXCL11),19,20,,3,I-TAC (CXCL11)
+IL-11,34,20,,4,IL-11
+IL-29,36,20,,5,IL-29
+Lymphotactin,30,20,,6,Lymphotactin
+M-CSF,51,20,,7,M-CSF
+MIG (CXCL9),47,20,,8,MIG (CXCL9)
+MIP-3 alpha (CCL20),28,20,,9,MIP-3 alpha (CCL20)
+MIP-3 beta (CCL19),26,20,,10,MIP-3 beta (CCL19)
+NAP-2 (CXCL7),13,20,,11,NAP-2 (CXCL7)

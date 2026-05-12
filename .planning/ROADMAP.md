@@ -6,6 +6,8 @@ This roadmap delivers a desktop application for lab operators to calculate reage
 
 v2.0 extends the platform with a vendor-native multi-tab xlsx panel importer, a new `master_panels` data model that anchors reagent volumes and vendor-specific terminology per (platform, species), and calculator wiring that reads reagent volumes from the master panel when available. v2.0 phases (5-11) continue numbering from v1.0 without reset. Phases 6-7 (INSERTED 2026-04-24) add central-server networking and an immutable audit trail before the XLSX import work begins.
 
+**2026-05-11 Smoke 3 PRD adoption:** Phases 8-11 are SUPERSEDED — the lab-owner-authored [SMOKE-3-PRD.md](./SMOKE-3-PRD.md) replaces [PANEL-UPLOAD-V2-SPEC.md](./PANEL-UPLOAD-V2-SPEC.md) as the canonical panel-xlsx contract. New Phases 12-16 cover Smoke 3 adoption: calculator rule migration, panel parser v3 rewrite, plate-page UI expansion, run-doc audit trail, Windows UAT + release. See [INGEST-RESOLUTIONS.md](./INGEST-RESOLUTIONS.md) for the full decision trail.
+
 ## Phases
 
 **Phase Numbering:**
@@ -24,10 +26,15 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Master-Panel Schema & Repository Foundation** - Drizzle schema delta, composite unique index, nullable FK adoption on analytes/panels, repository CRUD + upsert-by-(platform, species)
 - [ ] **Phase 6: Network Layer & Central Server** - INSERTED - Lightweight Node/Express server on one lab PC, config-file discovery, HTTP client switch in IPC handlers, offline fallback with local SQLite + sync-back queue
 - [ ] **Phase 7: Audit Trail** - INSERTED - Append-only audit_log on central DB, full snapshot on every save, in-app log viewer, CSV export
-- [ ] **Phase 8: XLSX Parser & Validator** - Pure main-process parse pipeline, case-insensitive platform/species resolution, strict-mode validator, per-tab/row/cell error reporting
-- [ ] **Phase 9: Master-Panel Importer, IPC & UI Integration** - Transactional importer, separate IPC channel, Manage-page .xlsx button, selectedMasterPanel in selectionStore
-- [ ] **Phase 10: Vendor Term & Calculator Reagent-Volume Wiring** - AnalyteGrid vendor-term header, calculator priority resolver with provenance display, historical-run preservation
-- [ ] **Phase 11: Windows UAT & v2.0 Release** - Build v0.7.0 .exe, 16-item smoke test against real vendor xlsx, record retest outcome, tag release
+- [ ] ~~**Phase 8: XLSX Parser & Validator**~~ - **SUPERSEDED 2026-05-11 by Phase 13** (Smoke 3 PRD replaced the v2 SPEC; parser shape is now Criteria/Values/Category-sectioned, not B1-B4 + col-E premixes)
+- [ ] ~~**Phase 9: Master-Panel Importer, IPC & UI Integration**~~ - **SUPERSEDED 2026-05-11 by Phase 13** (importer flow folded into the parser v3 rewrite; wholesale-replace re-upload semantics per SMK3-11)
+- [ ] ~~**Phase 10: Vendor Term & Calculator Reagent-Volume Wiring**~~ - **SUPERSEDED 2026-05-11 by Phases 12 + 14** (calculator wiring + UI work absorbed into Smoke 3 calculator-rule migration and plate-page UI expansion; vendor singles term no longer applies — Smoke 3 PRD does not use it)
+- [ ] ~~**Phase 11: Windows UAT & v2.0 Release**~~ - **SUPERSEDED 2026-05-11 by Phase 16** (v2.0 scope shifted to Smoke 3 PRD; UAT gate moved to the end of the new phases)
+- [ ] **Phase 12: Smoke 3 — Calculator Rules Migration** - INSERTED 2026-05-11 - Rounding (0.1 mL ceiling), diluent rule (concentration-keyed), dead volume (× setups), CALC-05 retention confirmation (SMK3-05, SMK3-06, SMK3-07)
+- [ ] **Phase 13: Smoke 3 — Panel XLSX Parser v3** - INSERTED 2026-05-11 - Rewrite parser.ts for Criteria/Values/Category sectioned format, per-reagent schema growth, Roman→Arabic panel normalization, wholesale-replace re-upload, delete legacy CSVs (SMK3-08, SMK3-09, SMK3-10, SMK3-11)
+- [ ] **Phase 14: Smoke 3 — Plate Page Input Expansion + UI Cleanup** - INSERTED 2026-05-11 - Old Beads / Old Antibodies / Number of Setups inputs, premix deselection UX, bead region flat-list, stock-concentration label removal (SMK3-01, SMK3-02, SMK3-03, SMK3-04, SMK3-13, SMK3-14)
+- [ ] **Phase 15: Smoke 3 — Run Document Audit Trail** - INSERTED 2026-05-11 - Full inputs+intermediates+outputs+diluent-decision breakdown, SAPE Name display, snapshot-frozen historical runs (SMK3-12, SMK3-15, SMK3-16, SMK3-17)
+- [ ] **Phase 16: Windows UAT & Release** - INSERTED 2026-05-11 - PLACEHOLDER - After Phases 12-15 ship, build .exe, install on Windows workstation, walk through Smoke 3 features end-to-end, tag release (version TBD: v0.8.0 vs v2.0.0 decided at gate)
 
 ## Phase Details
 
@@ -317,10 +324,71 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 12: Smoke 3 — Calculator Rules Migration (INSERTED 2026-05-11)
+**Goal**: Calculator math reflects the Smoke 3 PRD: round UP to nearest 0.1 mL, dead volume `= setups × 2 mL`, diluent selection by concentration-keyed rule (any 1× premix wins; else Values-table per reagent), CALC-05 max-5-singles cap explicitly retained.
+**Depends on**: Phase 4.1 (v1 stable baseline). Independent of Phase 13 — no schema change required for these rules.
+**Requirements**: SMK3-05, SMK3-06, SMK3-07; carries forward CALC-03 (extended), CALC-05 (retained), supersedes CALC-06.
+**Success Criteria** (what must be TRUE):
+  1. Calculator outputs round volumes UP to 0.1 mL precision (ceiling-at-0.1): 7.42 → 7.5, 7.40 → 7.4, 7.05 → 7.1 — verified by unit tests against the rounding pipeline in `src/renderer/src/lib/calculator.ts` and `lib/decimal.ts`
+  2. Dead volume = `number_of_setups × 2 mL` for setups ≥ 1; setups input defaults to 1; setups < 1 is rejected
+  3. Diluent resolver: given a selection set, if any selected premix has Premix Concentration = 1, that premix is the diluent for Beads and Antibodies (no ordering — picked deterministically when multiple 1× premixes are selected); else the resolver returns the per-reagent Values-table diluent string for that reagent
+  4. CALC-05 max-5-singles cap is preserved unchanged; explicit unit test confirms 6th single attempt is blocked when a premix is selected
+  5. STATE.md decision 02-01 superseded by 12-XX (round-to-0.1-mL); PROJECT.md §Domain Rules already updated to reflect the rules above
+**Plans**: TBD
+
+### Phase 13: Smoke 3 — Panel XLSX Parser v3 (INSERTED 2026-05-11)
+**Goal**: A new parser accepts the lab's actual xlsx format (sectioned `Criteria` / `Values` / `Category` per sheet with per-reagent rows and a Premix matrix) and writes per-reagent rows into a revised master_panels schema. Re-upload of a (Platform, Species, Panel) wholesale-replaces. Roman panel numerals normalize to Arabic at parse time. Master `Table` tab is ignored. Legacy CSV templates deleted.
+**Depends on**: Phase 5 (master_panels foundation — schema extension needed, not replacement). Phase 12 must precede so calculator math is correct before importer feeds new data.
+**Requirements**: SMK3-08, SMK3-09, SMK3-10, SMK3-11, SMK3-DIL-01.
+**Success Criteria** (what must be TRUE):
+  1. Parser reads a multi-tab xlsx, ignores the `Table` sheet, and emits a typed `ResolvedPanel[]` covering every other sheet
+  2. Each parsed sheet exposes: panel metadata (Platform, Species, normalized Panel name, Panel Description, SAPE Name), per-reagent rows (Beads / Antibodies / SAPE — each with Concentration / Diluent / Volume per well; `variable` cells ignored), Premix matrix (Premix Name, Premix Concentration, Count, member-analyte list per premix), and the Single Analytes list (Analyte / Bead Region / Concentration)
+  3. Roman → Arabic normalization on import: `Panel I` → `Panel 1`, `II` → `2`, …; lab can author either form; calculator displays Arabic
+  4. Re-upload of an existing (Platform, Species, Panel) wipes the existing panel's analytes + premixes + per-reagent rows + metadata and writes the new data in a single transaction; orphan preservation is REMOVED (supersedes MPAN-05)
+  5. Legacy `templates/panel-template.csv` and `sample-panel-import.csv` are deleted; v0.7.0 `src/main/import/parser.ts` is replaced; old IPC channel + UI button names may change but the import surface remains accessible from the Manage page
+  6. The 17 CSVs at `templates/panels/` (extracted from `Immuno Table for Calculator.xlsx` during the 2026-05-11 ingest) all parse successfully under the new parser — re-run the dry-run that produced 0/17 against the v0.7.0 parser and confirm 17/17 pass
+**Plans**: TBD
+
+### Phase 14: Smoke 3 — Plate Page Input Expansion + UI Cleanup (INSERTED 2026-05-11)
+**Goal**: The Plate page exposes `Old Beads` / `Old Antibodies` / `Number of Setups` inputs feeding the new calculator rules. Premix deselection re-enables members as singles without auto-adding. Bead region display becomes a flat list. Stock-concentration labels on platform-selection screens are removed.
+**Depends on**: Phase 12 (calculator math), Phase 13 (panel data shape).
+**Requirements**: SMK3-01, SMK3-02, SMK3-03, SMK3-04, SMK3-13, SMK3-14, SMK3-RPL-01, SMK3-RPL-02.
+**Success Criteria** (what must be TRUE):
+  1. Plate page renders three numeric inputs above the existing sample-count field: `Old Beads (mL)`, `Old Antibodies (mL)`, `Number of Setups`. Defaults: 0, 0, 1. Min: 0, 0, 1. No upper bound. All three drive the calculator volumes in real time.
+  2. Calculator subtracts Old Beads from the new-bead volume calc and adds it to the total bead volume reported on the run document; same for antibodies. Dead volume multiplies by setups.
+  3. Premix deselection: when a premix is selected and the user removes it, member analytes return to the singles pool as selectable. They are NOT auto-added to the singles selection. CALC-05 cap still applies if the user manually re-adds members.
+  4. Bead region display = single flat list of every analyte in the current selection (TA), sorted by bead region. Premix members and singles appear together; no grouping or hierarchy.
+  5. UI cleanup: `Stock Concentration: Xx` line in PlatformCard removed; `Stock concentration: Xx` and `Ready to proceed with reagent calculations.` lines in PlatformSelector removed; `Platform Selected: {name}` heading retained
+  6. Duplicate plate layout fills adjacent rows in the same column: col 4 = (A4,B4) (C4,D4) (E4,F4) (G4,H4), then col 5, …, through col 12 — supersedes the prior horizontal-pair + vertical-pair-col-12 layout where they conflict. Existing usePlateLayout hook updated; tests added.
+**Plans**: TBD
+
+### Phase 15: Smoke 3 — Run Document Audit Trail (INSERTED 2026-05-11)
+**Goal**: The finalized run document shows the full calculation work — inputs, intermediates, outputs, diluent decision — and surfaces SAPE Name for traceability. Historical runs saved under v1/v2 rules are snapshot-frozen: reopening shows persisted values, never recomputes.
+**Depends on**: Phase 12, Phase 13, Phase 14.
+**Requirements**: SMK3-12, SMK3-15, SMK3-16, SMK3-17.
+**Success Criteria** (what must be TRUE):
+  1. Finalized run document includes an Audit Trail section with: inputs (plates, samples, replicate mode, premix selection, singles selection, old beads, old antibodies, setups) → intermediates (total wells, volume/well per reagent, dead volume, total reagent before old-reagent subtraction) → outputs (new beads, new antibodies, total bead volume, total antibody volume, PE volume) → diluent decision (which premix won, or which Values-table diluent applied per reagent)
+  2. SAPE Name (from the panel's Values block) is displayed in the run document metadata header. No calculation impact.
+  3. PE volume = `Total Volume of the Assay ÷ SAPE concentration` (read from the SAPE row in the panel's Values block; typically 1×). Verified by unit test against the Thermofisher Human Panel I fixture (SAPE concentration = 1 → PE volume = total assay volume).
+  4. Historical runs (saved before Smoke 3 ships) reload showing the volumes that were persisted at save time. No retroactive recompute. Run document carries a small advisory note when reopening a pre-Smoke-3 run: "Computed under previous calculation rules."
+**Plans**: TBD
+
+### Phase 16: Windows UAT & Release (INSERTED 2026-05-11, PLACEHOLDER)
+**Goal**: After Phases 12-15 ship, build a Windows .exe, install on the lab workstation, walk through the Smoke 3 features against real panel data, tag a release.
+**Depends on**: Phase 15.
+**Requirements**: None new — verification gate for SMK3-* requirements above + carryover v1/v2 reqs.
+**Success Criteria** (what must be TRUE):
+  1. `npm run build:win` produces x64 + arm64 installers
+  2. Installer deploys cleanly on the Windows workstation
+  3. Operator imports the `Immuno Table for Calculator.xlsx` (or its successor) via the new parser; all 17 panels load
+  4. Operator walks through a full run: selects platform/species/panel → picks premixes + singles → enters samples + old reagents + setups → confirms calculator outputs match hand calculations → saves run document → reopens to verify snapshot-fidelity
+  5. Version tag chosen at gate (v0.8.0 for incremental, v2.0.0 for milestone — decision deferred from the 2026-05-11 ingest)
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11
+Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> ~~8~~ -> ~~9~~ -> ~~10~~ -> ~~11~~ -> 12 -> 13 -> 14 -> 15 -> 16
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -335,14 +403,19 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 | 5. Master-Panel Schema & Repository Foundation | 3/3 | Complete | 2026-04-24 |
 | 6. Network Layer & Central Server (INSERTED) | 0/TBD | Not started | - |
 | 7. Audit Trail (INSERTED) | 0/TBD | Not started | - |
-| 8. XLSX Parser & Validator | 0/TBD | Not started | - |
-| 9. Master-Panel Importer, IPC & UI Integration | 0/TBD | Not started | - |
-| 10. Vendor Term & Calculator Reagent-Volume Wiring | 0/TBD | Not started | - |
-| 11. Windows UAT & v2.0 Release | 0/TBD | Not started | - |
+| 8. XLSX Parser & Validator | — | **SUPERSEDED by Phase 13 (2026-05-11)** | - |
+| 9. Master-Panel Importer, IPC & UI Integration | — | **SUPERSEDED by Phase 13 (2026-05-11)** | - |
+| 10. Vendor Term & Calculator Reagent-Volume Wiring | — | **SUPERSEDED by Phases 12+14 (2026-05-11)** | - |
+| 11. Windows UAT & v2.0 Release | — | **SUPERSEDED by Phase 16 (2026-05-11)** | - |
+| 12. Smoke 3 — Calculator Rules Migration | 0/TBD | Not started | - |
+| 13. Smoke 3 — Panel XLSX Parser v3 | 0/TBD | Not started | - |
+| 14. Smoke 3 — Plate Page Inputs + UI Cleanup | 0/TBD | Not started | - |
+| 15. Smoke 3 — Run Document Audit Trail | 0/TBD | Not started | - |
+| 16. Windows UAT & Release (Smoke 3) | 0/TBD | Not started (placeholder; version TBD) | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-04-24 — Phases 6-7 inserted (Network Layer + Audit Trail); former Phases 6-9 renumbered to 8-11*
+*Last updated: 2026-05-11 — Smoke 3 PRD adopted; Phases 8-11 superseded; Phases 12-16 inserted for Smoke 3 calculator/parser/UI/run-doc work + UAT placeholder*
 *Plan template: see .planning/PLAN_TEMPLATE.md*
 
 ## Backlog

@@ -1,0 +1,55 @@
+Criteria,,,,,,,,
+Platform,Millipore ,,,,,,,
+Species,Human,,,,,,,
+Panel,Panel I,,,,,,,
+Panel Description,Cytokine/Chemokine,,,,,,,
+,,,,,,,,
+Values,,,,,,,,
+Reagent Description,Concentration,Diluent,Volume/well (ml),,,,,
+Beads,variable,L-AB,0.025,,,,,
+Antibodies ,variable,L-AB,0.025,,,,,
+SAPE,1,n/a,0.025,,,,,
+SAPE Name,SAPE-10,,,,,,,
+,,,,,,,,
+Category,,,,,,,,
+,,,,Premix,,,,
+Single Analytes,,,,Premix Name,Premix Panel I/A 33-plex,Th1/Th2 11-plex,JAMmate A 3-plex,JAMmate B 6-plex
+Analyte,Bead Region,Concentration,,Premix Concentration,1,1,20,20
+Eotaxin (CCL11),14,20,,Count,Analyte,Analyte,Analyte,Analyte
+Flt-3 ligand,18,20,,1,Eotaxin (CCL11),GM-CSF,IFN alpha 2,IP-10 (CXCL10)
+Fractalkine (CX3CL1),19,20,,2,G-CSF,IFN gamma,IL-6,MCP-1 (CCL2)
+G-CSF,20,20,,3,GM-CSF,IL-1 alpha,TNF alpha,MCP-3 (CCL7)
+GM-CSF,21,20,,4,GRO alpha,IL-1 beta,,MDC (CCL22)
+GRO alpha,22,20,,5,IFN alpha 2,IL-10,,MIG (CXCL9)
+IFN alpha 2,25,20,,6,IFN gamma,IL-12 (p40),,MIP-1 alpha (CCL3)
+IFN gamma,26,20,,7,IL-1 alpha,IL-12 (p70),,MIP-1 beta (CCL4)
+IL-1 alpha,27,20,,8,IL-1 beta,IL-13,,RANTES (CCL5)
+IL-1 beta,28,20,,9,IL-10,IL-15,,
+IL-10,42,20,,10,IL-12 (p40),IL-17A,,
+IL-12 (p40),43,20,,11,IL-12 (p70),IL-18,,
+IL-12 (p70),44,20,,12,IL-13,IL-1Ra,,
+IL-13,46,20,,13,IL-15,IL-2,,
+IL-15,47,20,,14,IL-17A,IL-4,,
+IL-17A,48,20,,15,IL-18,IL-5,,
+IL-18,54,20,,16,IL-1Ra,IL-6,,
+IL-1Ra,29,20,,17,IL-2,TNF alpha,,
+IL-2,30,20,,18,IL-3,,,
+IL-3,33,20,,19,IL-4,,,
+IL-4,34,20,,20,IL-5,,,
+IL-5,35,20,,21,IL-6,,,
+IL-6,36,20,,22,IL-7,,,
+IL-7,37,20,,23,IL-8,,,
+IL-8,38,20,,24,IP-10 (CXCL10),,,
+IL-9,39,20,,25,MCP-1 (CCL2),,,
+IP-10 (CXCL10),57,20,,26,MCP-3 (CCL7),,,
+MCP-1 (CCL2),61,20,,27,MDC (CCL22),,,
+MCP-3 (CCL7),62,20,,28,MIG (CXCL9),,,
+MDC (CCL22),64,20,,29,MIP-1 alpha (CCL3),,,
+MIG (CXCL9),65,20,,30,MIP-1 beta (CCL4),,,
+MIP-1 alpha (CCL3),66,20,,31,RANTES (CCL5),,,
+MIP-1 beta (CCL4),67,20,,32,TNF alpha,,,
+PDGF-AA,72,20,,33,VEGF,,,
+PDGF-AB/BB,73,20,,,,,,
+RANTES (CCL5),74,20,,,,,,
+TNF alpha,76,20,,,,,,
+VEGF,78,20,,,,,,

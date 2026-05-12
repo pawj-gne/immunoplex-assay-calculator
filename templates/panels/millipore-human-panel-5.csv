@@ -1,0 +1,43 @@
+Criteria,,,,,
+Platform,Millipore ,,,,
+Species,Human,,,,
+Panel,Panel V,,,,
+Panel Description,Th-17,,,,
+,,,,,
+Values,,,,,
+Reagent Description,Concentration,Diluent,Volume/well (ml),,
+Beads,variable,L-AB,0.025,,
+Antibodies ,variable,L-AB,0.025,,
+SAPE,1,n/a,0.025,,
+SAPE Name,SAPE-10,,,,
+,,,,,
+Category,,,,,
+,,,,Premix,
+,,,,Premix Name,Premix Panel V 25-plex
+Single Analytes,,,,Premix Concentration,1
+Analyte,Bead Region,Concentration,,Count,Analyte
+IL-17F,19,20,,1,IL-17F
+IL-28A/IFN alpha2,77,20,,2,IL-28A/IFN alpha2
+IL-10,27,20,,3,IL-10
+IFN gamma,25,20,,4,IFN gamma
+GM-CSF,20,20,,5,GM-CSF
+MIP-3 alpha,28,20,,6,MIP-3 alpha
+IL-12 (p70),33,20,,7,IL-12 (p70)
+IL-13,35,20,,8,IL-13
+IL-15,37,20,,9,IL-15
+IL-17A,39,20,,10,IL-17A
+IL-22,43,20,,11,IL-22
+IL-9,45,20,,12,IL-9
+IL-1 beta,46,20,,13,IL-1 beta
+IL-33/NF-HEV,47,20,,14,IL-33/NF-HEV
+IL-2,48,20,,15,IL-2
+IL-21,52,20,,16,IL-21
+IL-4,53,20,,17,IL-4
+IL-23,54,20,,18,IL-23
+IL-5,55,20,,19,IL-5
+IL-6,57,20,,20,IL-6
+IL-17E/IL-25,66,20,,21,IL-17E/IL-25
+IL-27,72,20,,22,IL-27
+IL-31,73,20,,23,IL-31
+TNF alpha,75,20,,24,TNF alpha
+TNF beta,76,20,,25,TNF beta

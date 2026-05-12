@@ -37,3 +37,6 @@ coverage/
 # Electron
 /release/
 *.asar
+
+# Ingest staging (raw docx/xlsx sources — converted artifacts get committed elsewhere)
+.planning/inbox/

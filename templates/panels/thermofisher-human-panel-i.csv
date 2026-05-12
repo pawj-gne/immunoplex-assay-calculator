@@ -1,0 +1,52 @@
+Criteria,,,,,
+Platform,Thermofisher,,,,
+Species,Human,,,,
+Panel,Panel I,,,,
+Panel Description,Cytokine/Chemokine,,,,
+,,,,,
+Values,,,,,
+Reagent Description,Concentration,Diluent,Volume/well (ml),,
+Beads,variable,Universal Buffer,0.05,,
+Antibodies ,variable,Human Diluent,0.025,,
+SAPE,1,n/a,0.05,,
+SAPE Name,SA-PE,,,,
+,,,,,
+Category,,,,,
+,,,,Premix,
+,,,,Premix Name,Premix Panel I 34-plex
+Single Analytes,,,,Premix Concentration,1
+Analyte,Bead Region,Concentration,,Count,Analyte
+Eotaxin (CCL11),33,50,,1,Eotaxin (CCL11)
+GM-CSF,44,50,,2,GM-CSF
+GRO alpha (KC/CXCL1),61,50,,3,GRO alpha (KC/CXCL1)
+IFN alpha,48,50,,4,IFN alpha
+IFN gamma,43,50,,5,IFN gamma
+IL-1 alpha,62,50,,6,IL-1 alpha
+IL-1 beta,18,50,,7,IL-1 beta
+IL-10,28,50,,8,IL-10
+IL-12 (p70),34,50,,9,IL-12 (p70)
+IL-13,35,50,,10,IL-13
+IL-15,65,50,,11,IL-15
+IL-17A (CTLA-8),36,50,,12,IL-17A (CTLA-8)
+IL-18,66,50,,13,IL-18
+IL-1RA,38,50,,14,IL-1RA
+IL-2,19,50,,15,IL-2
+IL-21,72,50,,16,IL-21
+IL-22,76,50,,17,IL-22
+IL-23,63,50,,18,IL-23
+IL-27,14,50,,19,IL-27
+IL-31,37,50,,20,IL-31
+IL-4,20,50,,21,IL-4
+IL-5,21,50,,22,IL-5
+IL-6,25,50,,23,IL-6
+IL-7,26,50,,24,IL-7
+IL-8 (CXCL8),27,50,,25,IL-8 (CXCL8)
+IL-9,52,50,,26,IL-9
+IP-10 (CXCL10),22,50,,27,IP-10 (CXCL10)
+MCP-1 (CCL2),51,50,,28,MCP-1 (CCL2)
+MIP-1 alpha (CCL3),12,50,,29,MIP-1 alpha (CCL3)
+MIP-1 beta (CCL4),47,50,,30,MIP-1 beta (CCL4)
+RANTES (CCL5),42,50,,31,RANTES (CCL5)
+SDF-1 alpha,13,50,,32,SDF-1 alpha
+TNF alpha,45,50,,33,TNF alpha
+TNF beta,54,50,,34,TNF beta

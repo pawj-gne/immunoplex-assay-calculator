@@ -1,0 +1,33 @@
+{
+  "source_path": "/Users/pawj/Lab_Dev/immunoplex-assay-calculator/.planning/inbox/smoke-3.md",
+  "type": "PRD",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Smoke 3 — Calculator UI flow + calculation rules",
+  "summary": "Lab owner's spec of the calculator UI flow (criteria, category, plate/sample inputs) and reagent volume calculation rules.",
+  "scope": [
+    "database tabs (Platform/Species/Panel)",
+    "criteria selection UI",
+    "category selection (Premix vs Single Analytes)",
+    "plate and sample count input",
+    "replicate mode limits",
+    "reagent volume calculation",
+    "dead volume and old reagent handling",
+    "PE volume calculation",
+    "plate layout snaking"
+  ],
+  "cross_refs": [
+    "smoke-3-images/image1.png",
+    "smoke-3-images/image2.png",
+    "smoke-3-images/image3.png",
+    "smoke-3-images/image4.png",
+    "smoke-3-images/image5.png",
+    "smoke-3-images/image6.png",
+    "smoke-3-images/image7.png",
+    "smoke-3-images/image8.png",
+    "smoke-3-images/image9.png"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Manifest declared type: PRD; frontmatter and content confirm — UI flow steps, user actions, and calculation rules are requirements-flavored (what the product must do), not architectural decisions. Contains both UX requirements and embedded calculation/business rules that the synthesizer should reconcile against PANEL-UPLOAD-V2-SPEC.md."
+}

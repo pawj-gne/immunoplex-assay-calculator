@@ -1,0 +1,35 @@
+Criteria,,,,,,
+Platform,Millipore,,,,,
+Species,Human,,,,,
+Panel,Panel 7,,,,,
+Panel Description,CD8+,,,,,
+,,,,,,
+Values,,,,,,
+Reagent Description,Concentration,Diluent,Volume/well (ml),,,
+Beads,variable,L-AB,0.025,,,
+Antibodies ,variable,L-AB,0.025,,,
+SAPE,1,n/a,0.025,,,
+SAPE Name,SAPE-4,,,,,
+,,,,,,
+Category,,,,,,
+,,,,Premix,,
+,,,,Premix Name,Premix CD8+ 17-plex,CD8+ JAMmate A 5-plex
+Single Analytes,,,,Premix Concentration,1,20
+Analyte,Bead Region,Concentration,,Count,Analyte,Analyte
+GM-CSF,20,20,,1,GM-CSF,Granzyme B
+Granzyme A,29,20,,2,Granzyme A,IFN gamma
+Granzyme B,37,20,,3,Granzyme B,IL-2
+IFN gamma,25,20,,4,IFN gamma,Perforin
+IL-10,27,20,,5,IL-10,TNF alpha
+IL-13,35,20,,6,IL-13,
+IL-2,48,20,,7,IL-2,
+IL-4,53,20,,8,IL-4,
+IL-5,55,20,,9,IL-5,
+IL-6,57,20,,10,IL-6,
+MIP-1 alpha (CCL3),72,20,,11,MIP-1 alpha (CCL3),
+MIP-1 beta (CCL4),73,20,,12,MIP-1 beta (CCL4),
+Perforin,78,20,,13,Perforin,
+TNF alpha,75,20,,14,TNF alpha,
+sCD137 (TNFRSF9),22,20,,15,sCD137 (TNFRSF9),
+sFAS (TNFRSF6),39,20,,16,sFAS (TNFRSF6),
+sFasL,67,20,,17,sFasL,

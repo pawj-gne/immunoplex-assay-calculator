@@ -1,5 +1,10 @@
 # Immunoplex Assay Calculator
 
+## Source of Truth
+
+> As of **2026-05-11**, the lab-owner-authored [`SMOKE-3-PRD.md`](./SMOKE-3-PRD.md) is the canonical product spec.
+> When PRD requirements conflict with previously locked v1/v2 decisions, **the PRD wins.** Affected supersedes are tracked in [`INGEST-RESOLUTIONS.md`](./INGEST-RESOLUTIONS.md) (R-01..R-15 + SMK3-01..17). [`PANEL-UPLOAD-V2-SPEC.md`](./PANEL-UPLOAD-V2-SPEC.md) is preserved but marked SUPERSEDED.
+
 ## What This Is
 
 A desktop application for lab operators to set up and document Luminex/Immunoplex assays. It replaces the current paper-and-pen workflow by calculating reagent volumes and dilutions, generating prep recipes, and maintaining searchable run records for troubleshooting and usage tracking.
@@ -55,13 +60,15 @@ Accurate reagent calculations with clear prep recipes — operators must be able
 4. Preps reagents following handwritten calculations
 5. Records lot numbers and takes plate photos for documentation
 
-**Domain rules:**
+**Domain rules** (Smoke 3 PRD authoritative — see [SMOKE-3-PRD.md](./SMOKE-3-PRD.md); resolution trail in [INGEST-RESOLUTIONS.md](./INGEST-RESOLUTIONS.md)):
 - 96-well microtiter plates: 72 wells for unknowns (singles) or 36 (duplicates), 24 wells reserved for protein standards
-- Volume calculation: `(total wells × vol per well) + dead volume`, rounded up to nearest mL
-- Premix panels are 1x ready-to-use (no dilution math)
-- Single analyte addition: `master mix volume ÷ stock concentration (e.g., 20x)`
-- Premix + singles: max 5 singles allowed (more dilutes premix concentration), premix is the diluent
-- Full custom: no limit on singles, Assay Buffer is the diluent
+- Plate snake: singles fill column-by-column starting `A4 → H4`, then `A5 → H5`, …, through col 12. Duplicates pair adjacent rows in the same column: samples 1–4 occupy col 4 as `(A4,B4) (C4,D4) (E4,F4) (G4,H4)`, then col 5, … through col 12 (R-10 / SMK3-14)
+- Volume calculation: `(total wells × vol per well) + dead volume`, **rounded UP to nearest 0.1 mL** (ceiling at 0.1 mL — supersedes the prior round-to-nearest-mL rule; R-03 / SMK3-06)
+- Dead volume: `number_of_setups × 2 mL`; default setups = 1 (R-07 / SMK3-05). Extends shipped CALC-03.
+- Premix panels are 1× ready-to-use (no dilution math). Single analyte addition: `master mix volume ÷ stock concentration` (e.g., 20×)
+- **Diluent for Beads + Antibodies (concentration-keyed; supersedes the prior request-type-keyed rule):** if ANY selected premix is 1×, that premix is the diluent for Beads and Antibodies (no ordering — any 1× premix wins). If all selections are >1× (no 1× premix selected), fall back to the per-reagent Values-table diluent for each reagent. (R-04 / SMK3-07)
+- Selection cap: max 5 singles when a premix is selected (CALC-05 retained per PRD silence ≠ removal; R-05). Replicate caps (72 single / 36 duplicate) per plate are separate constraints.
+- Per-reagent fields (Smoke 3 panel format): Beads, Antibodies, SAPE each carry their own Concentration + Diluent + Volume/well. SAPE has a vendor-named `SAPE Name` field (display-only, traceability; SMK3-12). PE volume = `Total Volume of the Assay ÷ SAPE concentration` (SMK3-17).
 - Reagents: capture antibody beads, biotinylated antibodies, SA-PE
 
 **Reference data available:**
