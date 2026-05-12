@@ -9,6 +9,15 @@ import { calculateItemizedVolumes } from '../../../lib/calculator'
  * Hook to access calculator state with computed values
  * Integrates selection store for analyte-based calculations
  * Reads plateCount from plateStore (auto-calculated, not manual input)
+ *
+ * Plan 14-06 extension (Smoke 3 SMK3-02/03/04 + D-10):
+ *   - Exposes the four new operator-typed inputs (plateCount,
+ *     oldBeads, oldAntibodies, numberOfSetups) AND the D-10
+ *     capPaused output-suppression flag.
+ *   - Exposes the five new setters (setPlateCount, setOldBeads,
+ *     setOldAntibodies, setNumberOfSetups, setCapPaused) so
+ *     CalculatorForm can drive the 7-input D-01 ordering without
+ *     reaching past the hook into the stores directly.
  */
 export function useCalculator() {
   const {
@@ -18,9 +27,16 @@ export function useCalculator() {
     // SMK3-05: store's deadVolume field replaced by numberOfSetups (Phase 12-03);
     // the live deadVolume is derived inside createCalculatorInputs/getOutputs.
     numberOfSetups,
+    oldBeads,
+    oldAntibodies,
+    capPaused,
     validationError,
     setSampleCount,
     setReplicateMode,
+    setNumberOfSetups,
+    setOldBeads,
+    setOldAntibodies,
+    setCapPaused,
     reset,
     getOutputs
   } = useCalculatorStore()
@@ -28,8 +44,11 @@ export function useCalculator() {
   const { getSelectedPlatform } = usePlatformStore()
   const selectedPlatform = getSelectedPlatform()
 
-  // Read plateCount from plateStore (auto-calculated)
+  // Read plateCount from plateStore (auto-calculated) and the new
+  // D-03 bidirectional setter that CalculatorForm's "Number of Plates"
+  // input will commit to.
   const plateCount = usePlateStore().getPlateCount()
+  const setPlateCount = usePlateStore((s) => s.setPlateCount)
 
   const {
     selectedPanel,
@@ -69,6 +88,11 @@ export function useCalculator() {
     plateCount,
     volumePerWell,
     numberOfSetups,
+    oldBeads,
+    oldAntibodies,
+    // D-10: UI gates outputs on this flag (CalculatorPanel renders the
+    // cap-paused placeholder when true).
+    capPaused,
 
     // Platform
     selectedPlatform,
@@ -95,6 +119,11 @@ export function useCalculator() {
     // Actions
     setSampleCount,
     setReplicateMode,
+    setNumberOfSetups,
+    setOldBeads,
+    setOldAntibodies,
+    setPlateCount,
+    setCapPaused,
     reset
   }
 }
