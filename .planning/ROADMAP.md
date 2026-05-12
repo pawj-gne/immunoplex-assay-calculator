@@ -374,7 +374,16 @@ Plans:
   4. Bead region display = single flat list of every analyte in the current selection (TA), sorted by bead region. Premix members and singles appear together; no grouping or hierarchy.
   5. UI cleanup: `Stock Concentration: Xx` line in PlatformCard removed; `Stock concentration: Xx` and `Ready to proceed with reagent calculations.` lines in PlatformSelector removed; `Platform Selected: {name}` heading retained
   6. Duplicate plate layout fills adjacent rows in the same column: col 4 = (A4,B4) (C4,D4) (E4,F4) (G4,H4), then col 5, …, through col 12 — supersedes the prior horizontal-pair + vertical-pair-col-12 layout where they conflict. Existing usePlateLayout hook updated; tests added.
-**Plans**: TBD
+**Plans**: 7 plans
+
+Plans:
+- [ ] 14-01-PLAN.md — Pure math foundation: lib/decimal.ts floorToTenthML + lib/calculator.ts applyOldReagentSubtraction + CalculatorOutputs type extension + 13 vitest cases (Wave 1)
+- [ ] 14-02-PLAN.md — Plate geometry rewrite: getDuplicatePair vertical-pair-within-column geometry + DUPLICATE_HORIZONTAL_PAIRS/DUPLICATE_VERTICAL_COL retirement + usePlateLayout + plateStore.autoFill duplicate branch + 86+ vitest cases (Wave 1, parallel with 14-01)
+- [ ] 14-03-PLAN.md — Stock-concentration UI label cleanup: PlatformCard footer strip + PlatformSelector green-box trim (Wave 1, parallel with 14-01 + 14-02)
+- [ ] 14-04-PLAN.md — Store extensions + snapshot fidelity: calculatorStore oldBeads/oldAntibodies fields + setters + extended getOutputs; plateStore.setPlateCount bidirectional action; RunRecord/RunCreate type extension; useRunSnapshot + runStore.loadRun cascade for SMK3-16; Groups H/I/J tests (Wave 2, depends_on 01)
+- [ ] 14-05-PLAN.md — Selection feature refinement: selectionStore.selectPanel preserve-on-null + prune-on-switch (SMK3-13 / D-18 D-20); SelectedAnalytesList flat bead-region-sorted list (SMK3-14 / D-14-D-17) + AnalyteSelectionPanel caller update (Wave 2)
+- [ ] 14-06-PLAN.md — CalculatorForm restructure + OldReagentCapModal: useCalculator hook extension + 7-input form in D-01 order + 20%-cap soft-block + confirm-once override modal (Wave 3, depends_on 01 + 04)
+- [ ] 14-07-PLAN.md — Integration test extension: Group K (PRD-fixture Old-reagent math E2E) + Group L (selectPanel preserve/prune E2E) — 7 new test cases locking the cross-store contracts (Wave 4, depends_on 01 + 02 + 04 + 05)
 
 ### Phase 15: Smoke 3 — Run Document Audit Trail (INSERTED 2026-05-11)
 **Goal**: The finalized run document shows the full calculation work — inputs, intermediates, outputs, diluent decision — and surfaces SAPE Name for traceability. Historical runs saved under v1/v2 rules are snapshot-frozen: reopening shows persisted values, never recomputes.
@@ -423,13 +432,13 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 | 11. Windows UAT & v2.0 Release | — | **SUPERSEDED by Phase 16 (2026-05-11)** | - |
 | 12. Smoke 3 — Calculator Rules Migration | 4/4 | Complete    | 2026-05-12 |
 | 13. Smoke 3 — Panel XLSX Parser v3 | 6/6 | Complete    | 2026-05-12 |
-| 14. Smoke 3 — Plate Page Inputs + UI Cleanup | 0/TBD | Not started | - |
+| 14. Smoke 3 — Plate Page Inputs + UI Cleanup | 0/7 | Planned | - |
 | 15. Smoke 3 — Run Document Audit Trail | 0/TBD | Not started | - |
 | 16. Windows UAT & Release (Smoke 3) | 0/TBD | Not started (placeholder; version TBD) | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-05-12 — Phase 13 plan list expanded from 5 to 6 plans (13-05 split per checker BLOCKER-1; no scope reduction)*
+*Last updated: 2026-05-12 — Phase 14 plan list expanded with 7 plans (Wave 1 foundations × 3 + Wave 2 stores + selection × 2 + Wave 3 UI form + Wave 4 integration tests)*
 *Plan template: see .planning/PLAN_TEMPLATE.md*
 
 ## Backlog
