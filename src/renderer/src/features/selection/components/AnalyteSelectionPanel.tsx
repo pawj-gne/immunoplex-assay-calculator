@@ -69,7 +69,6 @@ export function AnalyteSelectionPanel() {
 
         {/* Right: Selected analytes sidebar */}
         <SelectedAnalytesList
-          panelName={selectedPanel?.name ?? null}
           panelAnalytes={panelAnalytes}
           singleAnalytes={selectedSingles}
           onRemoveSingle={toggleSingleAnalyte}
