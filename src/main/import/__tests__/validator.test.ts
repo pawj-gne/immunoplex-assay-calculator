@@ -74,7 +74,9 @@ describe('validateAndResolve', () => {
     expect(err.sheetName).toBe('BadSpecies')
     expect(err.message).toMatch(/Unknown species "Mouse" for platform "Bio-Rad"/)
     expect(err.message).toMatch(/Valid: Human/)
-    expect(err.message).not.toMatch(/Mouse/) // Mouse NOT in Bio-Rad's species list
+    // Mouse exists for Millipore but NOT for Bio-Rad — confirm it is NOT in the Valid: list.
+    // (Mouse will appear once in the message — echoed back as the unknown species — but never inside "Valid: ...".)
+    expect(err.message).not.toMatch(/Valid: [^.]*Mouse/)
   })
 
   it('T-5: case-insensitive platform/species match', () => {
