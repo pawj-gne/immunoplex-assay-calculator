@@ -38,15 +38,6 @@ export function PlatformCard({ platform, isSelected, onSelect }: PlatformCardPro
           {platform.description}
         </p>
       )}
-
-      <div className="flex items-center gap-2 pt-2 border-t border-[var(--color-border)]">
-        <span className="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wide">
-          Stock Concentration:
-        </span>
-        <span className="text-sm font-semibold text-[var(--color-foreground)]">
-          {platform.stockConcentration}x
-        </span>
-      </div>
     </button>
   )
 }

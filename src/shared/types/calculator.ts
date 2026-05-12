@@ -35,6 +35,14 @@ export interface CalculatorOutputs {
   finalVolume: Decimal
   /** Final volume in mL for display */
   finalVolumeML: number
+  /** Smoke 3 D-11: new beads = max(0, calc - old). Optional; populated only when calculatorStore.getOutputs() runs the old-reagent extension (Plan 14-04). µL. */
+  newBeadsUL?: Decimal
+  /** Smoke 3 D-11: total beads = old + new + dead-included-in-rawVolume. µL. */
+  totalBeadsUL?: Decimal
+  /** Mirror of newBeadsUL for antibodies. µL. */
+  newAntibodiesUL?: Decimal
+  /** Mirror of totalBeadsUL for antibodies. µL. */
+  totalAntibodiesUL?: Decimal
 }
 
 /**

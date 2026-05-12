@@ -3,7 +3,8 @@ import { Decimal } from 'decimal.js'
 import {
   calculateFinalVolume,
   createCalculatorInputs,
-  calculateVolumes
+  calculateVolumes,
+  applyOldReagentSubtraction
 } from '../calculator'
 
 describe('calculateFinalVolume (0.1-mL ceiling per SMK3-06)', () => {
@@ -88,5 +89,45 @@ describe('calculateVolumes (end-to-end PRD worked example)', () => {
     expect(outputs.rawVolume.equals(new Decimal(13400))).toBe(true)
     expect(outputs.finalVolume.equals(new Decimal(13400))).toBe(true)
     expect(outputs.finalVolumeML).toBe(13.4)
+  })
+})
+
+describe('applyOldReagentSubtraction (SMK3-02/03 D-11 — old-reagent subtraction + floor-clamp)', () => {
+  it('T-1: oldReagent (500 µL) < raw (7400 µL) → new=6900, total=7400', () => {
+    const { newReagentUL, totalReagentUL } = applyOldReagentSubtraction(
+      new Decimal(7400),
+      new Decimal(500)
+    )
+    expect(newReagentUL.equals(new Decimal(6900))).toBe(true)
+    expect(totalReagentUL.equals(new Decimal(7400))).toBe(true)
+  })
+  it('T-2: oldReagent (2000 µL) < raw (7400 µL) → new=5400, total=7400', () => {
+    const { newReagentUL, totalReagentUL } = applyOldReagentSubtraction(
+      new Decimal(7400),
+      new Decimal(2000)
+    )
+    expect(newReagentUL.equals(new Decimal(5400))).toBe(true)
+    expect(totalReagentUL.equals(new Decimal(7400))).toBe(true)
+  })
+  it('T-3: oldReagent (5000 µL) > raw (3000 µL) → new floor-clamps to 0, total = 5000', () => {
+    const { newReagentUL, totalReagentUL } = applyOldReagentSubtraction(
+      new Decimal(3000),
+      new Decimal(5000)
+    )
+    expect(newReagentUL.equals(new Decimal(0))).toBe(true)
+    expect(totalReagentUL.equals(new Decimal(5000))).toBe(true)
+  })
+  it('T-4: oldReagent (0 µL) → new = raw unchanged, total = raw (default no-op)', () => {
+    const { newReagentUL, totalReagentUL } = applyOldReagentSubtraction(
+      new Decimal(7400),
+      new Decimal(0)
+    )
+    expect(newReagentUL.equals(new Decimal(7400))).toBe(true)
+    expect(totalReagentUL.equals(new Decimal(7400))).toBe(true)
+  })
+  it('T-5: returned values are Decimal instances (chainable)', () => {
+    const result = applyOldReagentSubtraction(new Decimal(7400), new Decimal(500))
+    expect(result.newReagentUL).toBeInstanceOf(Decimal)
+    expect(result.totalReagentUL).toBeInstanceOf(Decimal)
   })
 })
