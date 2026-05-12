@@ -550,3 +550,125 @@ describe('Phase 12-03 calculator integration', () => {
     })
   })
 })
+
+// =============================================================================
+// PHASE 14-04 — calculatorStore old-reagent extension (SMK3-02 / SMK3-03)
+// =============================================================================
+
+describe('Phase 14-04 calculatorStore old-reagent extension', () => {
+  // --------------------------------------------------------------------------
+  // GROUP H — oldBeads/oldAntibodies setter + initial state (SMK3-02/03)
+  // --------------------------------------------------------------------------
+  describe('Group H: oldBeads/oldAntibodies setter + initial state (SMK3-02/03)', () => {
+    beforeEach(() => useCalculatorStore.getState().reset())
+
+    it('T-H1: initial oldBeads === 0 and oldAntibodies === 0', () => {
+      expect(useCalculatorStore.getState().oldBeads).toBe(0)
+      expect(useCalculatorStore.getState().oldAntibodies).toBe(0)
+    })
+
+    it('T-H2: setOldBeads(0.5) updates state and clears validationError', () => {
+      useCalculatorStore.getState().setOldBeads(0.5)
+      expect(useCalculatorStore.getState().oldBeads).toBe(0.5)
+      expect(useCalculatorStore.getState().validationError).toBeNull()
+    })
+
+    it('T-H3: setOldBeads(-1) sets validationError and does NOT mutate state', () => {
+      useCalculatorStore.getState().setOldBeads(-1)
+      expect(useCalculatorStore.getState().oldBeads).toBe(0) // unchanged
+      expect(useCalculatorStore.getState().validationError).toMatch(
+        /Old beads must be a non-negative number/
+      )
+    })
+
+    it('T-H4: setOldBeads(NaN) rejects similarly', () => {
+      useCalculatorStore.getState().setOldBeads(NaN)
+      expect(useCalculatorStore.getState().oldBeads).toBe(0)
+      expect(useCalculatorStore.getState().validationError).not.toBeNull()
+    })
+
+    it('T-H5: setOldAntibodies mirrors setOldBeads behavior', () => {
+      useCalculatorStore.getState().setOldAntibodies(2.5)
+      expect(useCalculatorStore.getState().oldAntibodies).toBe(2.5)
+      useCalculatorStore.getState().setOldAntibodies(-1)
+      expect(useCalculatorStore.getState().oldAntibodies).toBe(2.5) // unchanged on bad input
+      expect(useCalculatorStore.getState().validationError).toMatch(
+        /Old antibodies must be a non-negative number/
+      )
+    })
+
+    it('T-H6: reset() restores oldBeads + oldAntibodies to 0', () => {
+      useCalculatorStore.getState().setOldBeads(0.5)
+      useCalculatorStore.getState().setOldAntibodies(1.2)
+      useCalculatorStore.getState().reset()
+      expect(useCalculatorStore.getState().oldBeads).toBe(0)
+      expect(useCalculatorStore.getState().oldAntibodies).toBe(0)
+    })
+  })
+
+  // --------------------------------------------------------------------------
+  // GROUP I — getOutputs() old-reagent subtraction at consumption (D-07/D-08/D-11)
+  // --------------------------------------------------------------------------
+  describe('Group I: getOutputs() old-reagent subtraction at consumption (D-07/D-08/D-11)', () => {
+    beforeEach(() => {
+      useCalculatorStore.getState().reset()
+      // PRD worked example seed: 100 samples × duplicates × 2 plates × 50 µL/well × setups=1.
+      // Note: setSampleCount cascades to plateStore.autoFill which yields the minimum
+      // plate count needed (ceil(100/36) = 3 for duplicates). We only care about
+      // rawVolume math here; tests assert relative to outputs!.rawVolume.
+      useCalculatorStore.getState().setReplicateMode('duplicates')
+      useCalculatorStore.getState().setSampleCount(100)
+      useCalculatorStore.setState({ volumePerWell: 50 })
+      useCalculatorStore.getState().setNumberOfSetups(1)
+    })
+
+    it('T-I1: oldBeads=0 + oldAntibodies=0 → newBeads/totalBeads = rawVolume (no-op)', () => {
+      const outputs = useCalculatorStore.getState().getOutputs()
+      expect(outputs).not.toBeNull()
+      expect(outputs!.newBeadsUL!.equals(outputs!.rawVolume)).toBe(true)
+      expect(outputs!.totalBeadsUL!.equals(outputs!.rawVolume)).toBe(true)
+      expect(outputs!.newAntibodiesUL!.equals(outputs!.rawVolume)).toBe(true)
+      expect(outputs!.totalAntibodiesUL!.equals(outputs!.rawVolume)).toBe(true)
+    })
+
+    it('T-I2: oldBeads=0.5 (mL) → newBeads = raw - 500 µL; totalBeads = raw', () => {
+      useCalculatorStore.getState().setOldBeads(0.5)
+      const outputs = useCalculatorStore.getState().getOutputs()
+      expect(outputs).not.toBeNull()
+      const expectedNew = outputs!.rawVolume.minus(500)
+      expect(outputs!.newBeadsUL!.equals(expectedNew)).toBe(true)
+      expect(outputs!.totalBeadsUL!.equals(outputs!.rawVolume)).toBe(true)
+      // antibodies unchanged (oldAntibodies still 0)
+      expect(outputs!.totalAntibodiesUL!.equals(outputs!.rawVolume)).toBe(true)
+    })
+
+    it('T-I3: oldBeads=1.59 (mL) → calculator floor-rounds to 1.5 mL = 1500 µL at consumption', () => {
+      useCalculatorStore.getState().setOldBeads(1.59)
+      expect(useCalculatorStore.getState().oldBeads).toBe(1.59) // raw value preserved in state
+      const outputs = useCalculatorStore.getState().getOutputs()
+      expect(outputs).not.toBeNull()
+      const expectedNew = outputs!.rawVolume.minus(1500) // floor-rounded to 1.5 mL
+      expect(outputs!.newBeadsUL!.equals(expectedNew)).toBe(true)
+    })
+
+    it('T-I4: oldBeads = 100 mL (>> raw) → newBeads floor-clamps to 0; totalBeads = 100000 µL', () => {
+      useCalculatorStore.getState().setOldBeads(100)
+      const outputs = useCalculatorStore.getState().getOutputs()
+      expect(outputs).not.toBeNull()
+      expect(outputs!.newBeadsUL!.equals(0)).toBe(true)
+      // total = oldUL + newUL = 100000 + 0 = 100000
+      expect(outputs!.totalBeadsUL!.equals(100000)).toBe(true)
+    })
+
+    it('T-I5: oldAntibodies=2.0 (mL) → newAntibodies = raw - 2000 µL; beads unchanged', () => {
+      useCalculatorStore.getState().setOldAntibodies(2.0)
+      const outputs = useCalculatorStore.getState().getOutputs()
+      expect(outputs).not.toBeNull()
+      const expectedNew = outputs!.rawVolume.minus(2000)
+      expect(outputs!.newAntibodiesUL!.equals(expectedNew)).toBe(true)
+      expect(outputs!.totalAntibodiesUL!.equals(outputs!.rawVolume)).toBe(true)
+      // beads unchanged (oldBeads still 0)
+      expect(outputs!.newBeadsUL!.equals(outputs!.rawVolume)).toBe(true)
+    })
+  })
+})
