@@ -9,7 +9,10 @@ import {
 import { getMaxSingles } from '../../../../shared/constants/calculator'
 import { useCalculatorStore } from '../../stores/calculatorStore'
 import { useRunStore } from '../../stores/runStore'
+import { usePlateStore } from '../../stores/plateStore'
+import { useSelectionStore } from '../../stores/selectionStore'
 import type { RunRecord } from '../../../../shared/types/run'
+import type { PanelWithAnalytes } from '../../../../shared/types/panel'
 
 /**
  * Phase 12 Plan 03 integration tests — wire the new numberOfSetups input
@@ -835,6 +838,212 @@ describe('Phase 14-04 calculatorStore old-reagent extension', () => {
       expect(useCalculatorStore.getState().numberOfSetups).toBe(3)
       expect(useCalculatorStore.getState().oldBeads).toBe(0.5)
       expect(useCalculatorStore.getState().oldAntibodies).toBe(1.0)
+    })
+  })
+
+  // --------------------------------------------------------------------------
+  // GROUP K — PRD-fixture Old-reagent math E2E through the full store chain
+  //           (SMK3-02 / SMK3-03 — cross-store: calculatorStore + plateStore)
+  // --------------------------------------------------------------------------
+  describe('Group K: PRD-fixture Old-reagent math E2E through the full store chain', () => {
+    beforeEach(() => {
+      // useCalculatorStore.reset() cascades to usePlateStore.reset()
+      // (calculatorStore.ts reset action — verified in worktree base 242842b).
+      // After this call: plateStore.sampleCount=0, plates={1: new Set()},
+      // replicateMode='singles', activePlate=1.
+      useCalculatorStore.getState().reset()
+    })
+
+    it('T-K1: PRD canonical (100 singles, 2 plates, 50 µL/well, setups=1, oldBeads=0.5 mL) → newBeads=8900 µL, total=9400 µL, finalVolumeML=9.4', () => {
+      useCalculatorStore.getState().setReplicateMode('singles')
+      useCalculatorStore.getState().setSampleCount(100)
+      // 100 samples / singles auto-fills 2 plates via plateStore cascade
+      // (ceil(100/72)=2), matching the PRD canonical fixture from Group A T-A1.
+      useCalculatorStore.setState({ volumePerWell: 50 })
+      useCalculatorStore.getState().setNumberOfSetups(1)
+      useCalculatorStore.getState().setOldBeads(0.5) // 0.5 mL
+
+      const outputs = useCalculatorStore.getState().getOutputs()
+      expect(outputs).not.toBeNull()
+      // Verify base math first — same as Phase 12 Group A T-A1
+      expect(outputs!.totalWells).toBe(148) // 100 unknown + 24 std × 2 plates
+      expect(outputs!.rawVolume.equals(new Decimal(9400))).toBe(true)
+      expect(outputs!.finalVolumeML).toBeCloseTo(9.4, 1)
+      // Old-reagent extension fields — beads subtracted, total reconstructs
+      expect(outputs!.newBeadsUL!.equals(new Decimal(8900))).toBe(true) // 9400 - 500
+      expect(outputs!.totalBeadsUL!.equals(new Decimal(9400))).toBe(true) // 500 + 8900
+      // Antibodies unaffected (oldAntibodies stays 0)
+      expect(outputs!.newAntibodiesUL!.equals(outputs!.rawVolume)).toBe(true)
+      expect(outputs!.totalAntibodiesUL!.equals(outputs!.rawVolume)).toBe(true)
+    })
+
+    it('T-K2: setups=3 (dead=6000), oldBeads=2.0 mL → raw=13400, newBeads=11400, total=13400', () => {
+      useCalculatorStore.getState().setReplicateMode('singles')
+      useCalculatorStore.getState().setSampleCount(100)
+      useCalculatorStore.setState({ volumePerWell: 50 })
+      useCalculatorStore.getState().setNumberOfSetups(3)
+      useCalculatorStore.getState().setOldBeads(2.0)
+
+      const outputs = useCalculatorStore.getState().getOutputs()
+      expect(outputs).not.toBeNull()
+      // raw = 148 × 50 + 6000 dead = 13400 µL — matches CONTEXT specifics row 2
+      expect(outputs!.rawVolume.equals(new Decimal(13400))).toBe(true)
+      expect(outputs!.newBeadsUL!.equals(new Decimal(11400))).toBe(true) // 13400 - 2000
+      expect(outputs!.totalBeadsUL!.equals(new Decimal(13400))).toBe(true)
+      expect(outputs!.finalVolumeML).toBeCloseTo(13.4, 1)
+    })
+
+    it('T-K3: override case — small fixture where oldBeads (5.0 mL) > raw → newBeads clamps to 0, total = old (5000 µL)', () => {
+      // NOTE: This test uses 20 samples / singles / 25 µL/well / setups=1
+      // (raw=3100 µL=3.1 mL) rather than CONTEXT specifics row 3's 1.0 mL
+      // raw value. The CONTEXT row appears to omit standards from the raw
+      // calc (which actual calculateRawVolume always includes). The
+      // load-bearing assertion is the SHAPE — old > raw → new clamps to 0,
+      // total = old + new (= old since new=0). See SUMMARY for the
+      // reconciliation note.
+      useCalculatorStore.getState().setReplicateMode('singles')
+      useCalculatorStore.getState().setSampleCount(20)
+      useCalculatorStore.setState({ volumePerWell: 25 })
+      useCalculatorStore.getState().setNumberOfSetups(1)
+      useCalculatorStore.getState().setOldBeads(5.0) // way over raw
+
+      const outputs = useCalculatorStore.getState().getOutputs()
+      expect(outputs).not.toBeNull()
+      // raw = (20 unknowns + 24 standards × 1 plate) × 25 + 2000 = 44 × 25 + 2000 = 3100 µL
+      expect(outputs!.rawVolume.equals(new Decimal(3100))).toBe(true)
+      // 5000 > 3100 → newBeads = max(0, 3100 - 5000) = 0
+      expect(outputs!.newBeadsUL!.equals(new Decimal(0))).toBe(true)
+      // total = old (5000) + new (0) = 5000
+      expect(outputs!.totalBeadsUL!.equals(new Decimal(5000))).toBe(true)
+    })
+
+    it('T-K4: cross-store — setPlateCount(3) directly via plateStore lifts plate count, calculator picks it up (D-03 bidirectional contract)', () => {
+      useCalculatorStore.getState().setReplicateMode('singles')
+      useCalculatorStore.getState().setSampleCount(50)
+      useCalculatorStore.setState({ volumePerWell: 25 })
+      // Initial autoFill from setSampleCount(50) singles → minPlates = ceil(50/72) = 1.
+      // Verify before bumping via the plateStore API.
+      expect(usePlateStore.getState().getPlateCount()).toBe(1)
+
+      usePlateStore.getState().setPlateCount(3) // bump to 3
+      expect(usePlateStore.getState().getPlateCount()).toBe(3)
+
+      const outputs = useCalculatorStore.getState().getOutputs()
+      expect(outputs).not.toBeNull()
+      // totalWells = 50 unknowns + 24 std × 3 plates = 50 + 72 = 122
+      expect(outputs!.totalWells).toBe(122)
+      expect(outputs!.unknownWells).toBe(50)
+      expect(outputs!.standardWells).toBe(72)
+    })
+
+    it('T-K5: floor-rounding regression — setOldBeads(1.59) → calculator consumes 1.5 mL = 1500 µL (D-08)', () => {
+      useCalculatorStore.getState().setReplicateMode('singles')
+      useCalculatorStore.getState().setSampleCount(100)
+      useCalculatorStore.setState({ volumePerWell: 50 })
+      useCalculatorStore.getState().setNumberOfSetups(1)
+      useCalculatorStore.getState().setOldBeads(1.59) // raw value preserved in state per D-08
+
+      // Verify state holds raw typed value (author intent per D-08)
+      expect(useCalculatorStore.getState().oldBeads).toBe(1.59)
+
+      const outputs = useCalculatorStore.getState().getOutputs()
+      expect(outputs).not.toBeNull()
+      // Calculator floor-rounds 1.59 mL → 1.5 mL = 1500 µL at consumption
+      // newBeads = raw - floor-rounded-to-0.1-mL = 9400 - 1500 = 7900
+      expect(outputs!.newBeadsUL!.equals(new Decimal(7900))).toBe(true)
+      expect(outputs!.totalBeadsUL!.equals(new Decimal(9400))).toBe(true) // 1500 + 7900 = 9400
+    })
+  })
+
+  // --------------------------------------------------------------------------
+  // GROUP L — selectionStore.selectPanel cross-checked at the integration
+  //           layer (SMK3-13 — D-18 preserve / D-20 prune)
+  // --------------------------------------------------------------------------
+  describe('Group L: selectionStore.selectPanel cross-checked with calculator state (SMK3-13)', () => {
+    beforeEach(() => {
+      useSelectionStore.getState().resetAllSelections()
+      useCalculatorStore.getState().reset()
+    })
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it('T-L1: selectPanel(null) with pre-existing singles preserves the singles (D-18)', async () => {
+      // Seed the store as if the operator had previously selected panel-A
+      // AND added a couple of singles. Then deselect the panel.
+      useSelectionStore.setState({
+        selectedPanelId: 'panel-A',
+        selectedSingleIds: ['a1', 'a2']
+      })
+
+      await useSelectionStore.getState().selectPanel(null)
+
+      // Panel cleared, but singles INTENTIONALLY preserved per D-18.
+      expect(useSelectionStore.getState().selectedPanelId).toBeNull()
+      expect(useSelectionStore.getState().selectedPanel).toBeNull()
+      expect(useSelectionStore.getState().selectedSingleIds).toEqual(['a1', 'a2'])
+    })
+
+    it('T-L2: selectPanel(panel-B) with overlapping singles prunes to non-members only (D-20)', async () => {
+      // Stub panel B with member analytes a2 + a4. Pre-existing singles
+      // a1, a2, a3 → after switching to panel B, a2 becomes a panel member
+      // (must be pruned), a1 + a3 are non-members (must survive).
+      const panelB: PanelWithAnalytes = {
+        id: 'panel-B',
+        name: 'Panel B',
+        description: null,
+        platformId: 'p1',
+        speciesId: 's1',
+        masterPanelId: null,
+        parentPanelId: null,
+        subPanelConc: 1,
+        createdAt: '2026-05-12T00:00:00Z',
+        updatedAt: '2026-05-12T00:00:00Z',
+        analytes: [
+          {
+            id: 'a2',
+            name: 'IL-2',
+            beadRegion: 12,
+            premixConc: 20,
+            singleConc: 20,
+            platformId: 'p1',
+            speciesId: 's1',
+            masterPanelId: null,
+            createdAt: '2026-05-12T00:00:00Z',
+            updatedAt: '2026-05-12T00:00:00Z'
+          },
+          {
+            id: 'a4',
+            name: 'IL-4',
+            beadRegion: 14,
+            premixConc: 20,
+            singleConc: 20,
+            platformId: 'p1',
+            speciesId: 's1',
+            masterPanelId: null,
+            createdAt: '2026-05-12T00:00:00Z',
+            updatedAt: '2026-05-12T00:00:00Z'
+          }
+        ]
+      }
+
+      vi.stubGlobal('window', {
+        electronAPI: {
+          panel: { getWithAnalytes: vi.fn().mockResolvedValue(panelB) }
+        }
+      })
+
+      // Seed pre-existing singles overlapping with panel B membership.
+      useSelectionStore.setState({ selectedSingleIds: ['a1', 'a2', 'a3'] })
+      await useSelectionStore.getState().selectPanel('panel-B')
+
+      expect(useSelectionStore.getState().selectedPanelId).toBe('panel-B')
+      // a2 was a member of panel-B → pruned; a1 + a3 are non-members → survive.
+      expect([...useSelectionStore.getState().selectedSingleIds].sort()).toEqual([
+        'a1',
+        'a3'
+      ])
     })
   })
 })
