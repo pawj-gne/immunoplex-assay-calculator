@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Release
-status: executing
-stopped_at: Completed 12-03-PLAN.md (Phase 12 complete)
-last_updated: "2026-05-12T03:48:00.000Z"
-last_activity: 2026-05-12
+status: ready_to_plan
+stopped_at: Phase 12 (Smoke 3 Calculator Rules) complete after 12-04 gap closure — 11/11 must-haves verified
+last_updated: "2026-05-12T05:17:36.126Z"
+last_activity: 2026-05-12 -- Phase 12 verified passed after gap closure
 progress:
   total_phases: 21
   completed_phases: 9
-  total_plans: 41
-  completed_plans: 40
-  percent: 97
+  total_plans: 42
+  completed_plans: 41
+  percent: 98
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Accurate reagent calculations with clear prep recipes - operators must be able to trust the math and follow the instructions without second-guessing.
-**Current focus:** Phase 12 — smoke-3-calculator-rules
+**Current focus:** Phase 12 complete — next: Phase 13 (Smoke 3 — Panel XLSX Parser v3)
 
 ## Current Position
 
 Milestone: v2.0 (Panel XLSX Upload + Master-Panel Data Model) — **scope shifted 2026-05-11 by Smoke 3 PRD adoption**
-Phase: 12 (smoke-3-calculator-rules) — COMPLETE (3/3 plans shipped; Phase 13 next, gated on `/gsd-discuss-phase 13`)
-Plan: 3 of 3 (12-03 complete)
-Status: Phase 12 functionally complete; ready to start Phase 13 (Panel XLSX Parser v3)
+Phase: 12 (smoke-3-calculator-rules) — **COMPLETE** (4/4 plans shipped; 11/11 must-haves verified after 12-04 gap closure)
+Plan: 12-04 complete (gap closure: WR-01/WR-03/WR-04 all closed; 94 → 105 tests)
+Status: Phase 12 complete; ready to start Phase 13 (Panel XLSX Parser v3) or Phase 13 discuss
 Last activity: 2026-05-12
 
-Progress: [█████████▓] 97%
+Progress: [█████████▓] 98%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 32 (23 planned + 1 ad-hoc 03.3-06); Phase 4 fully implemented; Windows physical smoke test pending HUMAN-UAT
+- Total plans completed: 35 (23 planned + 1 ad-hoc 03.3-06); Phase 4 fully implemented; Windows physical smoke test pending HUMAN-UAT
 - Released versions: v0.1.0, v0.2.0, v0.3.0, v0.4.0, v0.4.1, v0.4.2, v0.5.0
 
 **By Phase:**
@@ -211,10 +211,10 @@ Full audit trail in [.planning/INGEST-RESOLUTIONS.md](./INGEST-RESOLUTIONS.md). 
 
 ## Session Continuity
 
-Last session: 2026-05-12T03:48:00.000Z
-Stopped at: Completed 12-03-PLAN.md — Phase 12 (Smoke 3 Calculator Rules) functionally complete
+Last session: 2026-05-12T05:17:36.126Z
+Stopped at: Phase 12 (Smoke 3 Calculator Rules) complete after 12-04 gap closure — 11/11 must-haves verified; 94 → 105 tests
 Resume file: None
-Resume intent: Phase 12 is complete (3/3 plans). Next options: (a) **Phase 13 — Panel XLSX Parser v3** (the longest single phase remaining; rewrites parser.ts for the sectioned Criteria/Values/Category format and grows master_panels per-reagent rows — start via `/gsd-discuss-phase 13`), or (b) close out v1.0 by completing HUMAN-UAT-04.1-05-01 on Windows and tagging v0.6.0 before Smoke 3 work continues. The diluent resolver from Plan 12-02 is consumable as `import { resolveDiluent } from 'src/renderer/src/lib/diluentResolver'` but is NOT yet wired into any store — Phase 13/14/15 picks that up.
+Resume intent: Phase 12 is complete (4/4 plans; 12-04 closed WR-01/WR-03/WR-04 from the prior 9/11 verification). Next options: (a) **Phase 13 — Panel XLSX Parser v3** (the longest single phase remaining; rewrites parser.ts for the sectioned Criteria/Values/Category format and grows master_panels per-reagent rows — start via `/gsd-discuss-phase 13`), or (b) close out v1.0 by completing HUMAN-UAT-04.1-05-01 on Windows and tagging v0.6.0 before Smoke 3 work continues. The diluent resolver from Plan 12-02 is consumable as `import { resolveDiluent } from 'src/renderer/src/lib/diluentResolver'` but is NOT yet wired into any store — Phase 13/14/15 picks that up.
 
 ## Releases
 
@@ -226,4 +226,4 @@ Resume intent: Phase 12 is complete (3/3 plans). Next options: (a) **Phase 13 �
 - **v0.4.2** (2026-01-29): Remove R&D Systems, correct platform names
 - **v0.5.0** (2026-02-04): Selection UX Redesign & Interactive Plate Grid (Phase 3.3)
 
-**Planned Phase:** 12 (Smoke 3 — Calculator Rules Migration) — 3 plans — 2026-05-12T03:15:12.161Z
+**Planned Phase:** 12 (Smoke 3 — Calculator Rules Migration) — 4 plans — 2026-05-12T04:23:55.226Z

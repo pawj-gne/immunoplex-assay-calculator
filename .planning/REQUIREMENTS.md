@@ -186,9 +186,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | CALC-01 | Phase 2 | Pending |
 | CALC-02 | Phase 2 | Pending |
-| CALC-03 | Phase 2 | Pending |
+| CALC-03 | Phase 2 | Complete |
 | CALC-04 | Phase 2 | Pending |
-| CALC-05 | Phase 2 | Pending |
+| CALC-05 | Phase 2 | Complete |
 | CALC-06 | Phase 2 | Pending |
 | CALC-07 | Phase 1 | Pending |
 | PLAT-01 | Phase 3 | Pending |
