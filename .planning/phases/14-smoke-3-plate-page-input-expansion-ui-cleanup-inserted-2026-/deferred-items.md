@@ -43,31 +43,41 @@ worktree under `.claude/worktrees/`.
 
 ## From 14-04 (calculator/plate/run store layer + snapshot fidelity)
 
-### DB schema does not persist numberOfSetups / oldBeads / oldAntibodies
+### ~~DB schema does not persist numberOfSetups / oldBeads / oldAntibodies~~ — Resolved in 14-08
 
-The TypeScript `RunRecord` + `RunCreate` types and the Zod `runCreateSchema` carry
-`numberOfSetups`, `oldBeads`, `oldAntibodies` as optional fields with `?? 0/1` defaults
-on load. However, `src/main/db/schema.ts` (the Drizzle `runs` table) does NOT contain
-columns for any of these three fields, and `src/main/db/repositories/run.ts`
-(`runRepository.create` + `update`) does not write them.
+> **Resolved in 14-08.** Plan 14-08 added `number_of_setups REAL NOT NULL DEFAULT 1`,
+> `old_beads REAL NOT NULL DEFAULT 0`, `old_antibodies REAL NOT NULL DEFAULT 0` to the
+> `runs` table via Drizzle migration `0008_runs_setups_and_old_reagents.sql`. The
+> `runRepository.create` and `update` methods now write the three fields when supplied
+> (and let the DB DEFAULT fire when omitted, preserving the pre-Phase-14 round-trip
+> contract). Three column-presence assertions in `migration.test.ts` + six new
+> repository round-trip tests in `run.test.ts` (T-1..T-6) lock in the regression
+> guard. SMK3-16 snapshot fidelity now holds end-to-end (renderer → IPC → SQLite →
+> IPC → renderer).
 
-Consequence: a saved run will NOT round-trip the three new fields through SQLite.
-`runRepository.getById` will return `record.numberOfSetups === undefined` (and same
-for the two Phase-14 fields), which the renderer's `?? 0/1` defaults handle correctly
-but means the persisted-on-disk run is silently lossy.
+~~The TypeScript `RunRecord` + `RunCreate` types and the Zod `runCreateSchema` carry~~
+~~`numberOfSetups`, `oldBeads`, `oldAntibodies` as optional fields with `?? 0/1` defaults~~
+~~on load. However, `src/main/db/schema.ts` (the Drizzle `runs` table) does NOT contain~~
+~~columns for any of these three fields, and `src/main/db/repositories/run.ts`~~
+~~(`runRepository.create` + `update`) does not write them.~~
 
-The gap was inherited from Phase 12 (where `numberOfSetups` was added to the TS type +
-Zod but NOT to the DB schema). Phase 14 Plan 04 inherits the same shape for
-`oldBeads`/`oldAntibodies` rather than fixing the underlying gap in this plan.
+~~Consequence: a saved run will NOT round-trip the three new fields through SQLite.~~
+~~`runRepository.getById` will return `record.numberOfSetups === undefined` (and same~~
+~~for the two Phase-14 fields), which the renderer's `?? 0/1` defaults handle correctly~~
+~~but means the persisted-on-disk run is silently lossy.~~
 
-**Follow-up required:**
-1. Add `numberOfSetups`, `oldBeads`, `oldAntibodies` columns to the `runs` table in
-   `src/main/db/schema.ts` (all REAL with NULL allowed, or NOT NULL with defaults).
-2. Generate a drizzle migration (next available `00xx_*.sql`).
-3. Extend `runRepository.create()` and `runRepository.update()` to write/read these
-   three columns.
-4. Update `migration.test.ts` with column-presence assertions.
+~~The gap was inherited from Phase 12 (where `numberOfSetups` was added to the TS type +~~
+~~Zod but NOT to the DB schema). Phase 14 Plan 04 inherits the same shape for~~
+~~`oldBeads`/`oldAntibodies` rather than fixing the underlying gap in this plan.~~
 
-Recommend bundling this with the wider Phase 15 plan or as a Phase 14.5 hotfix BEFORE
-Plan 14-06 ships the UI — otherwise Plan 06's operator inputs will work in-session but
-silently drop on save/reload, undermining SMK3-16 for real on-disk persistence.
+~~**Follow-up required:**~~
+~~1. Add `numberOfSetups`, `oldBeads`, `oldAntibodies` columns to the `runs` table in~~
+~~   `src/main/db/schema.ts` (all REAL with NULL allowed, or NOT NULL with defaults).~~
+~~2. Generate a drizzle migration (next available `00xx_*.sql`).~~
+~~3. Extend `runRepository.create()` and `runRepository.update()` to write/read these~~
+~~   three columns.~~
+~~4. Update `migration.test.ts` with column-presence assertions.~~
+
+~~Recommend bundling this with the wider Phase 15 plan or as a Phase 14.5 hotfix BEFORE~~
+~~Plan 14-06 ships the UI — otherwise Plan 06's operator inputs will work in-session but~~
+~~silently drop on save/reload, undermining SMK3-16 for real on-disk persistence.~~
