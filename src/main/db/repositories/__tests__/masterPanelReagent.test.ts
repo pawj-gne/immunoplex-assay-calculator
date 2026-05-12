@@ -7,7 +7,7 @@ import type Database from 'better-sqlite3'
 /**
  * Phase 13 D-06 repository tests for master_panel_reagents.
  *
- * NOTE: every `it.skip(...)` is intentional and is REQUIRED to be un-skipped
+ * NOTE: every `it(...)` is intentional and is REQUIRED to be un-skipped
  * by Plan 13-03 Task 3 once the drizzle migration generates the
  * master_panel_reagents table + the master_panels delta. createTestDb()
  * runs migrate() against `drizzle/migrations` — without the new migration
@@ -43,7 +43,7 @@ describe('masterPanelReagentRepository (Phase 13 D-06)', () => {
     sqlite.close()
   })
 
-  it.skip('T-1: create returns row with UUID id + ISO timestamps // Unskipped after Plan 13-03 migration lands', () => {
+  it('T-1: create returns row with UUID id + ISO timestamps // Unskipped after Plan 13-03 migration lands', () => {
     const row = masterPanelReagentRepository.create({
       masterPanelId,
       reagentKind: 'beads',
@@ -56,7 +56,7 @@ describe('masterPanelReagentRepository (Phase 13 D-06)', () => {
     expect(row.updatedAt).toBe(row.createdAt)
   })
 
-  it.skip('T-2: findByMasterPanelId returns all 3 reagent rows // Unskipped after Plan 13-03 migration lands', () => {
+  it('T-2: findByMasterPanelId returns all 3 reagent rows // Unskipped after Plan 13-03 migration lands', () => {
     masterPanelReagentRepository.create({
       masterPanelId,
       reagentKind: 'beads',
@@ -83,7 +83,7 @@ describe('masterPanelReagentRepository (Phase 13 D-06)', () => {
     expect(rows.map((r) => r.reagentKind).sort()).toEqual(['antibodies', 'beads', 'sape'])
   })
 
-  it.skip('T-3: getById returns row or null // Unskipped after Plan 13-03 migration lands', () => {
+  it('T-3: getById returns row or null // Unskipped after Plan 13-03 migration lands', () => {
     const created = masterPanelReagentRepository.create({
       masterPanelId,
       reagentKind: 'beads',
@@ -95,7 +95,7 @@ describe('masterPanelReagentRepository (Phase 13 D-06)', () => {
     expect(masterPanelReagentRepository.getById('nonexistent-id')).toBeNull()
   })
 
-  it.skip('T-4: deleteByMasterPanelId removes all rows + returns count // Unskipped after Plan 13-03 migration lands', () => {
+  it('T-4: deleteByMasterPanelId removes all rows + returns count // Unskipped after Plan 13-03 migration lands', () => {
     masterPanelReagentRepository.create({
       masterPanelId,
       reagentKind: 'beads',
@@ -116,7 +116,7 @@ describe('masterPanelReagentRepository (Phase 13 D-06)', () => {
     expect(masterPanelReagentRepository.deleteByMasterPanelId(masterPanelId)).toBe(0)
   })
 
-  it.skip('T-5: composite UNIQUE on (master_panel_id, reagent_kind) rejects duplicate kind // Unskipped after Plan 13-03 migration lands', () => {
+  it('T-5: composite UNIQUE on (master_panel_id, reagent_kind) rejects duplicate kind // Unskipped after Plan 13-03 migration lands', () => {
     masterPanelReagentRepository.create({
       masterPanelId,
       reagentKind: 'beads',
@@ -135,7 +135,7 @@ describe('masterPanelReagentRepository (Phase 13 D-06)', () => {
     ).toThrow(/UNIQUE constraint failed/)
   })
 
-  it.skip('T-6: CHECK reagent_kind_enum rejects unknown reagent kind // Unskipped after Plan 13-03 migration lands', () => {
+  it('T-6: CHECK reagent_kind_enum rejects unknown reagent kind // Unskipped after Plan 13-03 migration lands', () => {
     expect(() =>
       masterPanelReagentRepository.create({
         masterPanelId,
@@ -148,7 +148,7 @@ describe('masterPanelReagentRepository (Phase 13 D-06)', () => {
     ).toThrow(/CHECK constraint failed/)
   })
 
-  it.skip('T-7: CHECK sape_conc_not_null rejects null concentration on sape // Unskipped after Plan 13-03 migration lands', () => {
+  it('T-7: CHECK sape_conc_not_null rejects null concentration on sape // Unskipped after Plan 13-03 migration lands', () => {
     expect(() =>
       masterPanelReagentRepository.create({
         masterPanelId,
@@ -160,7 +160,7 @@ describe('masterPanelReagentRepository (Phase 13 D-06)', () => {
     ).toThrow(/CHECK constraint failed/)
   })
 
-  it.skip('T-8: NULL concentration allowed for beads/antibodies (variable sentinel) // Unskipped after Plan 13-03 migration lands', () => {
+  it('T-8: NULL concentration allowed for beads/antibodies (variable sentinel) // Unskipped after Plan 13-03 migration lands', () => {
     const r = masterPanelReagentRepository.create({
       masterPanelId,
       reagentKind: 'antibodies',
@@ -171,7 +171,7 @@ describe('masterPanelReagentRepository (Phase 13 D-06)', () => {
     expect(r.concentration).toBeNull()
   })
 
-  it.skip('T-9: NULL diluent allowed (open text empty case) // Unskipped after Plan 13-03 migration lands', () => {
+  it('T-9: NULL diluent allowed (open text empty case) // Unskipped after Plan 13-03 migration lands', () => {
     const r = masterPanelReagentRepository.create({
       masterPanelId,
       reagentKind: 'beads',
@@ -182,7 +182,7 @@ describe('masterPanelReagentRepository (Phase 13 D-06)', () => {
     expect(r.diluent).toBeNull()
   })
 
-  it.skip('T-10: FK cascade — deleting parent master_panels row removes child reagent rows // Unskipped after Plan 13-03 migration lands', () => {
+  it('T-10: FK cascade — deleting parent master_panels row removes child reagent rows // Unskipped after Plan 13-03 migration lands', () => {
     masterPanelReagentRepository.create({
       masterPanelId,
       reagentKind: 'beads',

@@ -12,11 +12,15 @@ describe('client PRAGMA + FK enforcement (SC #4 / D-12)', () => {
     const { sqlite } = createTestDb()
     const { platformId, speciesId } = seedPlatformAndSpecies(sqlite)
     const now = new Date().toISOString()
+    // Phase 13 D-10: master_panels lost beads/ab/sape_volume_per_well columns
+    // and gained sape_name + description. Per-reagent volumes now live in
+    // master_panel_reagents — not exercised here since this test verifies the
+    // platform→master_panel FK restrict behavior only.
     sqlite
       .prepare(
         `INSERT INTO master_panels
-         (id, name, platform_id, species_id, beads_volume_per_well, ab_volume_per_well, sape_volume_per_well, vendor_singles_term, created_at, updated_at)
-         VALUES (?, 'P1', ?, ?, 25, 25, 25, NULL, ?, ?)`
+         (id, name, platform_id, species_id, sape_name, description, vendor_singles_term, created_at, updated_at)
+         VALUES (?, 'P1', ?, ?, NULL, NULL, NULL, ?, ?)`
       )
       .run(crypto.randomUUID(), platformId, speciesId, now, now)
 
@@ -42,11 +46,14 @@ describe('client PRAGMA + FK enforcement (SC #4 / D-12)', () => {
     const now = new Date().toISOString()
 
     const masterId = crypto.randomUUID()
+    // Phase 13 D-10: master_panels schema shifted (3 vol cols → sape_name + description).
+    // analytes.master_panel_id FK is unchanged by 0007 — runtime NO ACTION upward
+    // enforcement (per accepted-limitation comment above) still holds.
     sqlite
       .prepare(
         `INSERT INTO master_panels
-         (id, name, platform_id, species_id, beads_volume_per_well, ab_volume_per_well, sape_volume_per_well, vendor_singles_term, created_at, updated_at)
-         VALUES (?, 'P1', ?, ?, 25, 25, 25, NULL, ?, ?)`
+         (id, name, platform_id, species_id, sape_name, description, vendor_singles_term, created_at, updated_at)
+         VALUES (?, 'P1', ?, ?, NULL, NULL, NULL, ?, ?)`
       )
       .run(masterId, platformId, speciesId, now, now)
 

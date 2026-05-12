@@ -89,7 +89,7 @@ describe('master_panels composite UNIQUE INDEX enforcement (Phase 13 D-14 — su
   // Phase 13 D-14: UNIQUE swapped to (platform_id, species_id, name); the old
   // (platform_id, species_id) UNIQUE no longer exists post-migration. The two
   // tests below replace Phase 5 SC #3.
-  it.skip('Phase 13 D-14: composite UNIQUE on (platform_id, species_id, name) — same name + same plat/spec rejected // Unskipped after Plan 13-03 migration lands', () => {
+  it('Phase 13 D-14: composite UNIQUE on (platform_id, species_id, name) — same name + same plat/spec rejected', () => {
     const now = new Date().toISOString()
     sqlite
       .prepare(
@@ -107,7 +107,7 @@ describe('master_panels composite UNIQUE INDEX enforcement (Phase 13 D-14 — su
     ).toThrow(/UNIQUE constraint failed/)
   })
 
-  it.skip('Phase 13 D-14: different name in same (platform_id, species_id) succeeds // Unskipped after Plan 13-03 migration lands', () => {
+  it('Phase 13 D-14: different name in same (platform_id, species_id) succeeds', () => {
     const now = new Date().toISOString()
     sqlite
       .prepare(
