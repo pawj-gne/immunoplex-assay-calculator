@@ -671,4 +671,170 @@ describe('Phase 14-04 calculatorStore old-reagent extension', () => {
       expect(outputs!.newBeadsUL!.equals(outputs!.rawVolume)).toBe(true)
     })
   })
+
+  // --------------------------------------------------------------------------
+  // GROUP J — snapshot fidelity (SMK3-16): pre-Phase-14 runs reload as 0/0
+  // --------------------------------------------------------------------------
+  describe('Group J: snapshot fidelity (SMK3-16) — pre-Phase-14 runs reload as oldBeads=0/oldAntibodies=0', () => {
+    // Build a fully-shaped RunRecord mock. Mirrors makeMockRun pattern from
+    // Group G — required by TypeScript (every non-optional RunRecord field
+    // must be present). Helper centralizes the boilerplate so each test only
+    // overrides the load-bearing fields.
+    function makeMockRunForJ(overrides: Partial<RunRecord> = {}): RunRecord {
+      return {
+        id: 'run-j-1',
+        requestNumber: 42001,
+        requestOverrideAdHoc: false,
+        userName: 'Phase 14-04 Test',
+        operatorId: 'op-test',
+        runDate: '2026-05-12',
+        sampleType: 'Plasma',
+        dilutionFactor: 1,
+        sampleCount: 100,
+        replicateMode: 'duplicates',
+        requestType: 'premix',
+        platformId: 'platform-test',
+        speciesId: 'species-test',
+        panelId: null,
+        volumePerWell: 50,
+        deadVolume: 2000,
+        numberOfSetups: 1,
+        // oldBeads / oldAntibodies intentionally left undefined for the
+        // legacy-run regression test (T-J2); T-J1 supplies them via overrides.
+        hamilton: 1,
+        runPlatePosition: 1,
+        standardPosition: 1,
+        troughPosition: 1,
+        comments: null,
+        plex: 10,
+        plateCount: 3,
+        plates: { 1: [], 2: [], 3: [] },
+        singleAnalyteIds: [],
+        createdAt: '2026-05-12T00:00:00Z',
+        updatedAt: '2026-05-12T00:00:00Z',
+        machineName: null,
+        isOfflineSave: false,
+        ...overrides
+      }
+    }
+
+    beforeEach(() => {
+      useCalculatorStore.getState().reset()
+
+      // Stub window.electronAPI for the loadRun cascade. Same shape as Group G.
+      vi.stubGlobal('window', {
+        electronAPI: {
+          run: {
+            getAll: vi.fn().mockResolvedValue([]),
+            getById: vi.fn(),
+            create: vi.fn(),
+            update: vi.fn(),
+            delete: vi.fn()
+          },
+          platform: {
+            getAll: vi.fn().mockResolvedValue([
+              { id: 'platform-test', name: 'Test Platform', active: true }
+            ]),
+            getById: vi.fn().mockResolvedValue({
+              id: 'platform-test',
+              name: 'Test Platform',
+              active: true
+            }),
+            create: vi.fn(),
+            update: vi.fn()
+          },
+          species: {
+            getByPlatformId: vi.fn().mockResolvedValue([
+              {
+                id: 'species-test',
+                platformId: 'platform-test',
+                name: 'Test Species',
+                active: true
+              }
+            ])
+          },
+          panel: {
+            getByPlatformAndSpecies: vi.fn().mockResolvedValue([]),
+            getWithAnalytes: vi.fn().mockResolvedValue(null),
+            update: vi.fn(),
+            delete: vi.fn(),
+            addAnalyte: vi.fn(),
+            removeAnalyte: vi.fn()
+          },
+          analyte: {
+            getByPlatformAndSpecies: vi.fn().mockResolvedValue([]),
+            getByPanelId: vi.fn().mockResolvedValue([]),
+            update: vi.fn(),
+            delete: vi.fn()
+          }
+        }
+      })
+    })
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it('T-J1: loading a run with oldBeads=1.5 + oldAntibodies=2.0 restores both fields', async () => {
+      const mockRun = makeMockRunForJ({
+        oldBeads: 1.5,
+        oldAntibodies: 2.0
+      })
+      ;(window.electronAPI.run.getById as ReturnType<typeof vi.fn>).mockResolvedValue(mockRun)
+
+      await useRunStore.getState().loadRun(mockRun.id)
+
+      expect(useCalculatorStore.getState().validationError).toBeNull()
+      expect(useCalculatorStore.getState().oldBeads).toBe(1.5)
+      expect(useCalculatorStore.getState().oldAntibodies).toBe(2.0)
+    })
+
+    it('T-J2: pre-Phase-14 run (oldBeads + oldAntibodies absent) reloads with 0/0 (SMK3-16)', async () => {
+      // Pre-mutate the store so we can prove loadRun ACTIVELY restored 0/0
+      // (rather than relying on the initial 0 state). This exercises the
+      // ?? 0 fall-back path in runStore.loadRun explicitly.
+      useCalculatorStore.getState().setOldBeads(0.9)
+      useCalculatorStore.getState().setOldAntibodies(1.7)
+      expect(useCalculatorStore.getState().oldBeads).toBe(0.9)
+
+      // Simulate a run saved BEFORE Plan 14-04 introduced oldBeads/oldAntibodies.
+      // The TypeScript type marks both fields optional; omit them on the mock
+      // to assert the ?? 0 fall-back path in runStore.loadRun.
+      const legacyRun = makeMockRunForJ({
+        oldBeads: undefined,
+        oldAntibodies: undefined
+      })
+      ;(window.electronAPI.run.getById as ReturnType<typeof vi.fn>).mockResolvedValue(legacyRun)
+
+      await useRunStore.getState().loadRun(legacyRun.id)
+
+      expect(useCalculatorStore.getState().validationError).toBeNull()
+      // Both fields restored to 0 (the ?? 0 default) — equivalent to v1.0 /
+      // pre-Smoke-3 behavior. The pre-mutation above ensures this is an
+      // active restore, not a coincident initial-state match.
+      expect(useCalculatorStore.getState().oldBeads).toBe(0)
+      expect(useCalculatorStore.getState().oldAntibodies).toBe(0)
+    })
+
+    it('T-J3: loadRun cascade ORDER — oldBeads/oldAntibodies are restored alongside numberOfSetups', async () => {
+      // Verifies the SMK3-16 invariant: all snapshot-frozen calculator inputs
+      // (volumePerWell, numberOfSetups, oldBeads, oldAntibodies) are restored
+      // on load. Bundled assertion proves the cascade reaches the bottom.
+      const mockRun = makeMockRunForJ({
+        volumePerWell: 50,
+        numberOfSetups: 3,
+        oldBeads: 0.5,
+        oldAntibodies: 1.0
+      })
+      ;(window.electronAPI.run.getById as ReturnType<typeof vi.fn>).mockResolvedValue(mockRun)
+
+      await useRunStore.getState().loadRun(mockRun.id)
+
+      expect(useCalculatorStore.getState().validationError).toBeNull()
+      expect(useCalculatorStore.getState().volumePerWell).toBe(50)
+      expect(useCalculatorStore.getState().numberOfSetups).toBe(3)
+      expect(useCalculatorStore.getState().oldBeads).toBe(0.5)
+      expect(useCalculatorStore.getState().oldAntibodies).toBe(1.0)
+    })
+  })
 })
