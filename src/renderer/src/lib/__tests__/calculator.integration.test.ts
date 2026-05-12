@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { Decimal } from 'decimal.js'
 import {
   createCalculatorInputs,
@@ -8,6 +8,8 @@ import {
 } from '../calculator'
 import { getMaxSingles } from '../../../../shared/constants/calculator'
 import { useCalculatorStore } from '../../stores/calculatorStore'
+import { useRunStore } from '../../stores/runStore'
+import type { RunRecord } from '../../../../shared/types/run'
 
 /**
  * Phase 12 Plan 03 integration tests — wire the new numberOfSetups input
@@ -281,10 +283,270 @@ describe('Phase 12-03 calculator integration', () => {
       expect(useCalculatorStore.getState().validationError).toMatch(/setups/i)
     })
 
-    it('T-F3: setNumberOfSetups accepts large integer (e.g., 100) — store does not enforce upper bound', () => {
+    it('T-F3: setNumberOfSetups accepts mid-range integer (e.g., 100) — within the [1, 1000] bound', () => {
       useCalculatorStore.getState().setNumberOfSetups(100)
       expect(useCalculatorStore.getState().numberOfSetups).toBe(100)
       expect(useCalculatorStore.getState().validationError).toBeNull()
+    })
+
+    // --- Bounds-rejection tests for setNumberOfSetups (WR-04 closure) ---
+    it('T-F4: setNumberOfSetups(1000) accepted — upper boundary inclusive', () => {
+      useCalculatorStore.getState().setNumberOfSetups(1000)
+      expect(useCalculatorStore.getState().numberOfSetups).toBe(1000)
+      expect(useCalculatorStore.getState().validationError).toBeNull()
+    })
+
+    it('T-F5: setNumberOfSetups(1001) rejected — one past upper boundary', () => {
+      // Baseline: numberOfSetups starts at 1 from reset.
+      expect(useCalculatorStore.getState().numberOfSetups).toBe(1)
+      useCalculatorStore.getState().setNumberOfSetups(1001)
+      // State unchanged on reject.
+      expect(useCalculatorStore.getState().numberOfSetups).toBe(1)
+      // Error message includes the new "between 1 and 1000" phrasing.
+      expect(useCalculatorStore.getState().validationError).toMatch(/between 1 and 1000/i)
+    })
+
+    it('T-F6: setNumberOfSetups(1500) rejected — verbatim case from 12-VERIFICATION gap #2', () => {
+      expect(useCalculatorStore.getState().numberOfSetups).toBe(1)
+      useCalculatorStore.getState().setNumberOfSetups(1500)
+      expect(useCalculatorStore.getState().numberOfSetups).toBe(1)
+      expect(useCalculatorStore.getState().validationError).toMatch(/between 1 and 1000/i)
+      // Per WR-04 acceptance: subsequent getOutputs() must not throw,
+      // since the bound was caught at the store layer.
+      expect(() => useCalculatorStore.getState().getOutputs()).not.toThrow()
+    })
+
+    // --- setVolumePerWell action tests (WR-01 closure — new action from Task 1) ---
+    it('T-F7: setVolumePerWell(50) accepted — state mutates, validationError null', () => {
+      useCalculatorStore.getState().setVolumePerWell(50)
+      expect(useCalculatorStore.getState().volumePerWell).toBe(50)
+      expect(useCalculatorStore.getState().validationError).toBeNull()
+    })
+
+    it('T-F8: setVolumePerWell(0) rejected — state unchanged, validationError set', () => {
+      // Baseline: DEFAULT_VOLUME_PER_WELL = 25 from reset.
+      const baseline = useCalculatorStore.getState().volumePerWell
+      useCalculatorStore.getState().setVolumePerWell(0)
+      expect(useCalculatorStore.getState().volumePerWell).toBe(baseline)
+      expect(useCalculatorStore.getState().validationError).toMatch(/volume per well/i)
+    })
+
+    it('T-F9: setVolumePerWell(-5) rejected — negative volumes invalid', () => {
+      const baseline = useCalculatorStore.getState().volumePerWell
+      useCalculatorStore.getState().setVolumePerWell(-5)
+      expect(useCalculatorStore.getState().volumePerWell).toBe(baseline)
+      expect(useCalculatorStore.getState().validationError).toMatch(/volume per well/i)
+    })
+
+    it('T-F10: setVolumePerWell(NaN) rejected — non-finite invalid', () => {
+      const baseline = useCalculatorStore.getState().volumePerWell
+      useCalculatorStore.getState().setVolumePerWell(NaN)
+      expect(useCalculatorStore.getState().volumePerWell).toBe(baseline)
+      expect(useCalculatorStore.getState().validationError).toMatch(/volume per well/i)
+    })
+
+    it('T-F11: setVolumePerWell(Infinity) rejected — non-finite invalid', () => {
+      const baseline = useCalculatorStore.getState().volumePerWell
+      useCalculatorStore.getState().setVolumePerWell(Infinity)
+      expect(useCalculatorStore.getState().volumePerWell).toBe(baseline)
+      expect(useCalculatorStore.getState().validationError).toMatch(/volume per well/i)
+    })
+
+    it('T-F12: validationError cleared after a valid call following a rejection', () => {
+      // Trip the error first.
+      useCalculatorStore.getState().setVolumePerWell(-1)
+      expect(useCalculatorStore.getState().validationError).toMatch(/volume per well/i)
+      // Recover with a valid call — error must clear, state must mutate.
+      useCalculatorStore.getState().setVolumePerWell(40)
+      expect(useCalculatorStore.getState().volumePerWell).toBe(40)
+      expect(useCalculatorStore.getState().validationError).toBeNull()
+    })
+  })
+
+  // --------------------------------------------------------------------------
+  // GROUP G — runStore.loadRun cascade end-to-end (SMK3-16 contract; WR-01 + WR-03)
+  // --------------------------------------------------------------------------
+  describe('Group G: runStore.loadRun preserves persisted volumePerWell + numberOfSetups (SMK3-16)', () => {
+    /**
+     * Why a separate group from Group F:
+     *   Group F drives setNumberOfSetups DIRECTLY on the calculatorStore — it
+     *   does NOT exercise the runStore.loadRun cascade. WR-03 from 12-REVIEW.md
+     *   flagged this exact gap: "Group F is documented as the SMK3-16 enabler
+     *   test but it calls setNumberOfSetups directly on the calculatorStore,
+     *   never via the runStore.loadRun → calculator cascade."
+     *
+     * Test-env note: vitest.config.ts sets environment: 'node'. There is no
+     * window global by default. We use vi.stubGlobal('window', ...) inside
+     * beforeEach (Approach A per 12-04-PLAN.md — minimum blast radius) and
+     * clean up with vi.unstubAllGlobals() in afterEach.
+     *
+     * Stub shape note: the endpoint names below are the REAL names from
+     * src/preload/index.ts (verified during plan revision 2026-05-11):
+     *   - species.getByPlatformId          (species is its OWN namespace)
+     *   - panel.getByPlatformAndSpecies    (NOT getByPlatformSpecies)
+     *   - analyte.getByPlatformAndSpecies  (NOT getByPlatformSpecies)
+     *   - panel.getWithAnalytes            (NOT panel.getAnalytesByPanel)
+     * If the loadRun cascade ever calls an endpoint not listed here, add
+     * it; if anything below is unused, delete it (smaller stub = less coupling).
+     */
+
+    // Build a fully-shaped RunRecord mock. Required by TypeScript — every
+    // non-optional field on RunRecord must be present. Helper centralizes
+    // the boilerplate so each test only overrides the load-bearing fields.
+    function makeMockRun(overrides: Partial<RunRecord> = {}): RunRecord {
+      return {
+        id: 'run-test-1',
+        requestNumber: 99001,
+        requestOverrideAdHoc: false,
+        userName: 'Test Operator',
+        operatorId: 'op-test',
+        runDate: '2026-05-11',
+        sampleType: 'Plasma',
+        dilutionFactor: 1,
+        sampleCount: 100,
+        replicateMode: 'singles',
+        requestType: 'premix',
+        platformId: 'platform-test',
+        speciesId: 'species-test',
+        panelId: null,
+        volumePerWell: 50,
+        deadVolume: 6000,
+        numberOfSetups: 3,
+        hamilton: 1,
+        runPlatePosition: 1,
+        standardPosition: 1,
+        troughPosition: 1,
+        comments: null,
+        plex: 0,
+        plateCount: 2,
+        plates: { 1: [], 2: [] },
+        singleAnalyteIds: [],
+        createdAt: '2026-05-11T00:00:00Z',
+        updatedAt: '2026-05-11T00:00:00Z',
+        machineName: null,
+        isOfflineSave: false,
+        ...overrides
+      }
+    }
+
+    beforeEach(() => {
+      // Reset calculator + run stores so each test starts clean.
+      useCalculatorStore.getState().reset()
+
+      // Stub window.electronAPI for the loadRun cascade. Approach A from
+      // 12-04-PLAN.md — narrow stub, no DOM env switch. Endpoint names
+      // mirror src/preload/index.ts exactly (see Step A above).
+      vi.stubGlobal('window', {
+        electronAPI: {
+          run: {
+            getAll: vi.fn().mockResolvedValue([]),
+            getById: vi.fn(),
+            create: vi.fn(),
+            update: vi.fn(),
+            delete: vi.fn()
+          },
+          platform: {
+            getAll: vi.fn().mockResolvedValue([
+              { id: 'platform-test', name: 'Test Platform', active: true }
+            ]),
+            getById: vi.fn().mockResolvedValue({
+              id: 'platform-test', name: 'Test Platform', active: true
+            }),
+            create: vi.fn(),
+            update: vi.fn()
+          },
+          species: {
+            // species is its OWN top-level namespace (NOT nested under platform).
+            getByPlatformId: vi.fn().mockResolvedValue([
+              { id: 'species-test', platformId: 'platform-test', name: 'Test Species', active: true }
+            ])
+          },
+          panel: {
+            getByPlatformAndSpecies: vi.fn().mockResolvedValue([]),
+            getWithAnalytes: vi.fn().mockResolvedValue(null),
+            update: vi.fn(),
+            delete: vi.fn(),
+            addAnalyte: vi.fn(),
+            removeAnalyte: vi.fn()
+          },
+          analyte: {
+            getByPlatformAndSpecies: vi.fn().mockResolvedValue([]),
+            getByPanelId: vi.fn().mockResolvedValue([]),
+            update: vi.fn(),
+            delete: vi.fn()
+          }
+        }
+      })
+    })
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it('T-G1: Smoke 3 run (volumePerWell=50, numberOfSetups=3) round-trips through loadRun → 13.4 mL', async () => {
+      const mockRun = makeMockRun({
+        volumePerWell: 50,
+        numberOfSetups: 3,
+        sampleCount: 100,
+        deadVolume: 6000
+      })
+      // Cast: TS sees the stubbed window as unknown; the cast is local.
+      ;(window.electronAPI.run.getById as ReturnType<typeof vi.fn>).mockResolvedValue(mockRun)
+
+      await useRunStore.getState().loadRun(mockRun.id)
+
+      // Assert no validation error surfaced anywhere in the loadRun
+      // cascade (setReplicateMode → setSampleCount → setVolumePerWell →
+      // setNumberOfSetups). Placed BEFORE the math assertions so any
+      // regression in the validation cascade fails on this contract line.
+      expect(useCalculatorStore.getState().validationError).toBeNull()
+
+      // The load-bearing assertions: volumePerWell was restored (NOT the
+      // 25 µL fall-back), numberOfSetups was restored, and getOutputs()
+      // reproduces the persisted PRD worked-example total.
+      expect(useCalculatorStore.getState().volumePerWell).toBe(50)
+      expect(useCalculatorStore.getState().numberOfSetups).toBe(3)
+      expect(useCalculatorStore.getState().sampleCount).toBe(100)
+
+      const outputs = useCalculatorStore.getState().getOutputs()
+      expect(outputs).not.toBeNull()
+      // 148 wells × 50 µL + 6000 dead = 13400 µL = 13.4 mL
+      expect(outputs!.totalWells).toBe(148)
+      expect(outputs!.rawVolume.equals(new Decimal(13400))).toBe(true)
+      expect(outputs!.finalVolume.equals(new Decimal(13400))).toBe(true)
+      expect(outputs!.finalVolumeML).toBeCloseTo(13.4, 1)
+    })
+
+    it('T-G2: pre-Smoke-3 legacy run (numberOfSetups undefined) defaults to setups=1 → 9.4 mL', async () => {
+      // Simulate a run saved BEFORE Plan 12-03 introduced numberOfSetups.
+      // The TypeScript type marks the field optional; omit it on the mock
+      // to assert the ?? 1 fall-back path in runStore.loadRun.
+      const legacyRun = makeMockRun({
+        volumePerWell: 50,
+        numberOfSetups: undefined,
+        sampleCount: 100,
+        deadVolume: 2000
+      })
+      ;(window.electronAPI.run.getById as ReturnType<typeof vi.fn>).mockResolvedValue(legacyRun)
+
+      await useRunStore.getState().loadRun(legacyRun.id)
+
+      // Assert no validation error from the loadRun cascade. Placed
+      // BEFORE the math assertions so any regression in the validation
+      // cascade fails on this contract line.
+      expect(useCalculatorStore.getState().validationError).toBeNull()
+
+      // volumePerWell is REQUIRED on RunRecord, so it's still restored.
+      expect(useCalculatorStore.getState().volumePerWell).toBe(50)
+      // numberOfSetups falls back to 1 (the runStore.loadRun ?? 1).
+      expect(useCalculatorStore.getState().numberOfSetups).toBe(1)
+
+      const outputs = useCalculatorStore.getState().getOutputs()
+      expect(outputs).not.toBeNull()
+      // 148 wells × 50 µL + 2000 dead = 9400 µL = 9.4 mL (matches T-A1)
+      expect(outputs!.rawVolume.equals(new Decimal(9400))).toBe(true)
+      expect(outputs!.finalVolume.equals(new Decimal(9400))).toBe(true)
+      expect(outputs!.finalVolumeML).toBeCloseTo(9.4, 1)
     })
   })
 })

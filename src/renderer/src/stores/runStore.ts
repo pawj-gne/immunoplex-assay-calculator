@@ -127,6 +127,14 @@ export const useRunStore = create<RunState>((set, get) => ({
       //    layout; that default gets overwritten in step 7.
       calculator.setReplicateMode(run.replicateMode)
       calculator.setSampleCount(run.sampleCount)
+      // SMK3-16 (snapshot-frozen contract): restore volumePerWell BEFORE
+      // setNumberOfSetups so any getOutputs() between the two — or after
+      // a setNumberOfSetups validation failure — uses the run's persisted
+      // per-well volume, not the 25 µL DEFAULT_VOLUME_PER_WELL fall-back.
+      // Closes WR-01 from 12-VERIFICATION.md gap #1 (truth #11 partial:
+      // PRD worked example uses 50 µL/well; without this line, reload
+      // silently rewrites to 25 µL).
+      calculator.setVolumePerWell(run.volumePerWell)
       // SMK3-05/16: reapply numberOfSetups so getOutputs() recomputes the
       // same dead volume the run was saved with. Pre-Smoke-3 runs lack
       // this field; default to 1 (equivalent to v1.0 single-setup behavior).
