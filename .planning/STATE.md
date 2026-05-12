@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Release
-status: ready_to_plan
-stopped_at: Phase 12 (Smoke 3 Calculator Rules) complete after 12-04 gap closure — 11/11 must-haves verified
-last_updated: "2026-05-12T05:17:36.126Z"
-last_activity: 2026-05-12 -- Phase 12 verified passed after gap closure
+status: completed
+stopped_at: Phase 13 context gathered
+last_updated: "2026-05-12T13:58:35.790Z"
+last_activity: 2026-05-12
 progress:
   total_phases: 21
   completed_phases: 9
@@ -211,9 +211,9 @@ Full audit trail in [.planning/INGEST-RESOLUTIONS.md](./INGEST-RESOLUTIONS.md). 
 
 ## Session Continuity
 
-Last session: 2026-05-12T05:17:36.126Z
-Stopped at: Phase 12 (Smoke 3 Calculator Rules) complete after 12-04 gap closure — 11/11 must-haves verified; 94 → 105 tests
-Resume file: None
+Last session: --stopped-at
+Stopped at: Phase 13 context gathered
+Resume file: --resume-file
 Resume intent: Phase 12 is complete (4/4 plans; 12-04 closed WR-01/WR-03/WR-04 from the prior 9/11 verification). Next options: (a) **Phase 13 — Panel XLSX Parser v3** (the longest single phase remaining; rewrites parser.ts for the sectioned Criteria/Values/Category format and grows master_panels per-reagent rows — start via `/gsd-discuss-phase 13`), or (b) close out v1.0 by completing HUMAN-UAT-04.1-05-01 on Windows and tagging v0.6.0 before Smoke 3 work continues. The diluent resolver from Plan 12-02 is consumable as `import { resolveDiluent } from 'src/renderer/src/lib/diluentResolver'` but is NOT yet wired into any store — Phase 13/14/15 picks that up.
 
 ## Releases
