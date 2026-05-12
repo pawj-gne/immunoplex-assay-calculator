@@ -28,7 +28,29 @@ export function multiplyVolume(volume: Decimal, factor: number | Decimal): Decim
 }
 
 /**
+ * Round volume UP to nearest 0.1 mL (ceiling at 0.1 mL precision).
+ * Per Smoke 3 PRD (SMK3-06): supersedes the previous "round up to nearest mL"
+ * rule from CALC-06 / STATE decision 02-01.
+ *
+ * Input: volume in µL (Decimal)
+ * Output: volume in µL (Decimal), rounded UP at 0.1 mL precision
+ *
+ * Examples (µL → µL):
+ *   7400 → 7400  (already at 0.1 mL)
+ *   7401 → 7500
+ *   50   → 100
+ *   0    → 0     (exactly zero stays zero)
+ */
+export function ceilToTenthML(volumeUL: Decimal): Decimal {
+  const mL = volumeUL.dividedBy(1000)
+  const roundedML = mL.toDecimalPlaces(1, Decimal.ROUND_CEIL)
+  return roundedML.times(1000)
+}
+
+/**
  * Round volume up to nearest mL (for reagent prep)
+ *
+ * @deprecated Use ceilToTenthML for Smoke 3 0.1-mL precision. Removed after Task 2.
  */
 export function roundUpToNearestML(volumeUL: Decimal): Decimal {
   const mL = volumeUL.dividedBy(1000)
