@@ -2,9 +2,7 @@ import { create } from 'zustand'
 import {
   UNKNOWN_WELLS_SINGLES,
   UNKNOWN_WELLS_DUPLICATES,
-  getDuplicatePair,
-  DUPLICATE_HORIZONTAL_PAIRS,
-  DUPLICATE_VERTICAL_COL
+  getDuplicatePair
 } from '../../../shared/constants/calculator'
 import { ROWS, STANDARD_COLS } from '../../../shared/types/plate'
 
@@ -114,9 +112,10 @@ export const usePlateStore = create<PlateState>((set, get) => ({
     }
 
     // Helper: fill a single plate's Set<string> up to `sampleCount`, incrementing
-    // samplesAssigned. Uses the column-major duplicates loop landed by Plan 04.1-01
-    // (outer DUPLICATE_HORIZONTAL_PAIRS, inner rows A-H). Returns when
-    // samplesAssigned >= sampleCount or the plate is full.
+    // samplesAssigned. Singles: column-first column-major fill (Phase 4.1 BUG-01).
+    // Duplicates (SMK3-RPL-02 / Phase 14): vertical pairs (A,B)(C,D)(E,F)(G,H)
+    // within each unknown column 4-12 — uniform geometry, column-first iteration.
+    // Returns when samplesAssigned >= sampleCount or the plate is full.
     const fillPlate = (plateWells: Set<string>): void => {
       if (replicateMode === 'singles') {
         // Fill column-first: A4, B4, C4... H4, A5, B5... for columns 4-12
@@ -128,25 +127,18 @@ export const usePlateStore = create<PlateState>((set, get) => ({
           }
         }
       } else {
-        // Duplicates mode: horizontal pairs (cols 4-5, 6-7, 8-9, 10-11), then
-        // vertical pairs in col 12. Per D-4.1-01 (Phase 4.1), fill COLUMN-MAJOR:
-        // each column-pair fills top-to-bottom before moving to the next pair.
-        // This matches how Hamilton liquid handlers pipette (column-by-column).
-        for (const [col1, col2] of DUPLICATE_HORIZONTAL_PAIRS) {
-          for (let rowIndex = 0; rowIndex < ROWS.length; rowIndex++) {
+        // Duplicates mode (SMK3-RPL-02): vertical pairs (A,B)(C,D)(E,F)(G,H)
+        // within each unknown column 4-12. Column-first iteration matches
+        // the singles fill order and the Hamilton liquid-handler pipetting
+        // direction (Phase 4.1 BUG-01 fix preserved in spirit).
+        const PAIR_TOP_ROWS = [0, 2, 4, 6] as const
+        for (const col of UNKNOWN_COLS_ORDERED) {
+          for (const topRow of PAIR_TOP_ROWS) {
             if (samplesAssigned >= sampleCount) return
-            plateWells.add(wellId(rowIndex, col1))
-            plateWells.add(wellId(rowIndex, col2))
+            plateWells.add(wellId(topRow, col))
+            plateWells.add(wellId(topRow + 1, col))
             samplesAssigned++
           }
-        }
-
-        // Vertical pairs in column 12: A/E, B/F, C/G, D/H (4 pairs)
-        for (let topRow = 0; topRow < 4; topRow++) {
-          if (samplesAssigned >= sampleCount) return
-          plateWells.add(wellId(topRow, DUPLICATE_VERTICAL_COL))
-          plateWells.add(wellId(topRow + 4, DUPLICATE_VERTICAL_COL))
-          samplesAssigned++
         }
       }
     }

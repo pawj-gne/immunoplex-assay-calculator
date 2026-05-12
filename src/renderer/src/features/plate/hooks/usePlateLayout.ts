@@ -3,10 +3,6 @@ import { useCalculatorStore } from '../../../stores/calculatorStore'
 import { usePlateStore } from '../../../stores/plateStore'
 import type { WellData, PlateLayout } from '../../../../../shared/types/plate'
 import { ROWS, COLS, STANDARD_COLS } from '../../../../../shared/types/plate'
-import {
-  DUPLICATE_HORIZONTAL_PAIRS,
-  DUPLICATE_VERTICAL_COL
-} from '../../../../../shared/constants/calculator'
 
 interface UsePlateLayoutResult {
   layouts: PlateLayout[]
@@ -20,8 +16,8 @@ interface UsePlateLayoutResult {
  * - Standards always occupy columns 1-3 (24 wells per plate)
  * - Unknown samples fill columns 4-12
  * - For singles mode: each sample uses 1 well, filled column-first (A4, B4... H4, A5...)
- * - For duplicates mode: horizontal pairs in cols 4-5, 6-7, 8-9, 10-11 (4 pairs x 8 rows = 32)
- *   plus vertical pairs in col 12 (A/E, B/F, C/G, D/H = 4 pairs). Total: 36 samples per plate.
+ * - For duplicates mode (SMK3-RPL-02): vertical pairs (A,B)(C,D)(E,F)(G,H) within
+ *   each unknown column 4-12. 9 cols × 4 pairs/col = 36 samples per plate.
  * - Sample numbering continues across plates
  */
 export function usePlateLayout(): UsePlateLayoutResult {
@@ -80,54 +76,31 @@ export function usePlateLayout(): UsePlateLayoutResult {
           if (globalSampleIndex > sampleCount) break
         }
       } else {
-        // Duplicates: each sample uses 2 wells
-        // Horizontal pairs: cols 4-5, 6-7, 8-9, 10-11 (4 pairs per row x 8 rows = 32 samples)
-        // Fill row-by-row for horizontal pairs
-        for (let rowIndex = 0; rowIndex < ROWS.length; rowIndex++) {
-          for (const [col1, col2] of DUPLICATE_HORIZONTAL_PAIRS) {
+        // Duplicates: vertical pairs (A,B)(C,D)(E,F)(G,H) within each
+        // unknown column 4-12 (SMK3-RPL-02). 9 cols × 4 pairs/col = 36
+        // samples per plate (= UNKNOWN_WELLS_DUPLICATES cap).
+        const PAIR_TOP_ROWS = [0, 2, 4, 6] as const // A pairs with B; C with D; E with F; G with H
+        for (const col of unknownCols) {
+          for (const topRow of PAIR_TOP_ROWS) {
             if (globalSampleIndex > sampleCount) break
-
-            wells[rowIndex][col1 - 1] = {
-              id: `${ROWS[rowIndex]}${col1}`,
-              row: ROWS[rowIndex],
-              col: col1,
+            const bottomRow = topRow + 1
+            wells[topRow][col - 1] = {
+              id: `${ROWS[topRow]}${col}`,
+              row: ROWS[topRow],
+              col,
               type: 'unknown',
               sampleIndex: globalSampleIndex
             }
-            wells[rowIndex][col2 - 1] = {
-              id: `${ROWS[rowIndex]}${col2}`,
-              row: ROWS[rowIndex],
-              col: col2,
+            wells[bottomRow][col - 1] = {
+              id: `${ROWS[bottomRow]}${col}`,
+              row: ROWS[bottomRow],
+              col,
               type: 'unknown',
               sampleIndex: globalSampleIndex
             }
             globalSampleIndex++
           }
           if (globalSampleIndex > sampleCount) break
-        }
-
-        // Vertical pairs in column 12: A/E, B/F, C/G, D/H (4 pairs)
-        if (globalSampleIndex <= sampleCount) {
-          for (let topRow = 0; topRow < 4; topRow++) {
-            if (globalSampleIndex > sampleCount) break
-            const bottomRow = topRow + 4
-
-            wells[topRow][DUPLICATE_VERTICAL_COL - 1] = {
-              id: `${ROWS[topRow]}${DUPLICATE_VERTICAL_COL}`,
-              row: ROWS[topRow],
-              col: DUPLICATE_VERTICAL_COL,
-              type: 'unknown',
-              sampleIndex: globalSampleIndex
-            }
-            wells[bottomRow][DUPLICATE_VERTICAL_COL - 1] = {
-              id: `${ROWS[bottomRow]}${DUPLICATE_VERTICAL_COL}`,
-              row: ROWS[bottomRow],
-              col: DUPLICATE_VERTICAL_COL,
-              type: 'unknown',
-              sampleIndex: globalSampleIndex
-            }
-            globalSampleIndex++
-          }
         }
       }
 
