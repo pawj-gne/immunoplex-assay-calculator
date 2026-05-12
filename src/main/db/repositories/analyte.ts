@@ -177,5 +177,20 @@ export const analyteRepository = {
     const db = getDatabase()
     db.delete(panelAnalytes).where(eq(panelAnalytes.analyteId, id)).run()
     db.delete(analytes).where(eq(analytes.id, id)).run()
+  },
+
+  /**
+   * Phase 13 D-16: hard-delete all analytes scoped to a master_panel during
+   * wholesale-replace. Returns delete count for caller diagnostics.
+   * Pairs with schema.ts run_single_analytes.analyteId onDelete:'set null' (D-17)
+   * so historical run rows survive with NULL analyte_id.
+   */
+  deleteByMasterPanelId(masterPanelId: string): number {
+    const db = getDatabase()
+    const result = db
+      .delete(analytes)
+      .where(eq(analytes.masterPanelId, masterPanelId))
+      .run()
+    return result.changes
   }
 }

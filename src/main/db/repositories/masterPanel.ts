@@ -12,6 +12,12 @@ export const masterPanelRepository = {
    * Find a master_panel by exact (platform_id, species_id) composite. IDs are
    * normalized UUIDs — NO case-insensitive matching (D-16). Returns null if
    * no row matches.
+   *
+   * NOTE (Phase 13 D-14): the underlying composite UNIQUE on master_panels is
+   * now (platform_id, species_id, name); the (platform_id, species_id) pair is
+   * NO LONGER unique. This method still returns the FIRST matching row for
+   * v0.7.0 back-compat callers, but new Smoke 3 paths should call
+   * findByPlatformSpeciesName instead.
    */
   findByPlatformAndSpecies(platformId: string, speciesId: string): MasterPanel | null {
     const db = getDatabase()
@@ -26,12 +32,38 @@ export const masterPanelRepository = {
   },
 
   /**
+   * Phase 13 D-13 lookup: composite (platform_id, species_id, name).
+   * `name` is the NORMALIZED form (D-18) — exact match, not case-insensitive.
+   */
+  findByPlatformSpeciesName(
+    platformId: string,
+    speciesId: string,
+    normalizedName: string
+  ): MasterPanel | null {
+    const db = getDatabase()
+    const result = db
+      .select()
+      .from(masterPanels)
+      .where(
+        and(
+          eq(masterPanels.platformId, platformId),
+          eq(masterPanels.speciesId, speciesId),
+          eq(masterPanels.name, normalizedName)
+        )
+      )
+      .get()
+    return (result as MasterPanel | undefined) ?? null
+  },
+
+  /**
    * Upsert a master_panel keyed on (platform_id, species_id) composite.
-   * - On match => UPDATE all fields except id and created_at; action: 'updated'.
+   * - On match => UPDATE name + vendorSinglesTerm + updatedAt; action: 'updated'.
    * - On miss  => INSERT with new crypto.randomUUID() id; action: 'created'.
-   * Never throws on the 'updated' case; better-sqlite3 surfaces native errors
-   * (UNIQUE, FK) on schema violations. Does NOT open a transaction — Phase 7
-   * importer owns transaction scope (D-18).
+   *
+   * Phase 13 (D-10): the three per-reagent volume columns are gone from
+   * master_panels; this method no longer accepts/writes them. v0.7.0
+   * back-compat only — new Smoke 3 callers use createWithMetadata / updateMetadata.
+   * Does NOT open a transaction — Phase 7 importer owns transaction scope (D-18).
    */
   upsertByPlatformAndSpecies(input: MasterPanelUpsertInput): UpsertResult {
     const db = getDatabase()
@@ -46,9 +78,8 @@ export const masterPanelRepository = {
       db.update(masterPanels)
         .set({
           name: input.name,
-          beadsVolumePerWell: input.beadsVolumePerWell,
-          abVolumePerWell: input.abVolumePerWell,
-          sapeVolumePerWell: input.sapeVolumePerWell,
+          sapeName: input.sapeName ?? null,
+          description: input.description ?? null,
           vendorSinglesTerm: input.vendorSinglesTerm ?? null,
           updatedAt: now
         })
@@ -64,15 +95,66 @@ export const masterPanelRepository = {
         name: input.name,
         platformId: input.platformId,
         speciesId: input.speciesId,
-        beadsVolumePerWell: input.beadsVolumePerWell,
-        abVolumePerWell: input.abVolumePerWell,
-        sapeVolumePerWell: input.sapeVolumePerWell,
+        sapeName: input.sapeName ?? null,
+        description: input.description ?? null,
         vendorSinglesTerm: input.vendorSinglesTerm ?? null,
         createdAt: now,
         updatedAt: now
       })
       .run()
     return { id, action: 'created' }
+  },
+
+  /**
+   * Phase 13 D-12: create a new master_panel with Smoke 3 metadata.
+   * vendorSinglesTerm always null in Phase 13 (D-11); preserved for v0.7.0 callers.
+   * Does NOT open a transaction — importer owns scope.
+   */
+  createWithMetadata(input: {
+    platformId: string
+    speciesId: string
+    name: string
+    description: string | null
+    sapeName: string | null
+    vendorSinglesTerm?: string | null
+  }): MasterPanel {
+    const db = getDatabase()
+    const id = crypto.randomUUID()
+    const now = new Date().toISOString()
+    const row: MasterPanel = {
+      id,
+      name: input.name,
+      platformId: input.platformId,
+      speciesId: input.speciesId,
+      sapeName: input.sapeName,
+      description: input.description,
+      vendorSinglesTerm: input.vendorSinglesTerm ?? null,
+      createdAt: now,
+      updatedAt: now
+    }
+    db.insert(masterPanels).values(row).run()
+    return row
+  },
+
+  /**
+   * Phase 13 D-12 wholesale-replace: UPDATE name + description + sapeName + updatedAt;
+   * preserves id + createdAt + platformId + speciesId + vendorSinglesTerm.
+   */
+  updateMetadata(
+    id: string,
+    input: { name: string; description: string | null; sapeName: string | null }
+  ): void {
+    const db = getDatabase()
+    const now = new Date().toISOString()
+    db.update(masterPanels)
+      .set({
+        name: input.name,
+        description: input.description,
+        sapeName: input.sapeName,
+        updatedAt: now
+      })
+      .where(eq(masterPanels.id, id))
+      .run()
   },
 
   getById(id: string): MasterPanel | null {

@@ -70,6 +70,7 @@ export const panelRepository = {
     description?: string | null
     platformId: string
     speciesId: string
+    masterPanelId?: string | null
     parentPanelId?: string | null
     subPanelConc?: number
   }): PremixPanel {
@@ -83,7 +84,9 @@ export const panelRepository = {
       description: data.description ?? null,
       platformId: data.platformId,
       speciesId: data.speciesId,
-      masterPanelId: null,
+      // Phase 13 OQ-1: extended create() to accept masterPanelId directly
+      // (replaces hard-coded null; new Smoke 3 importer wires the FK at insert time).
+      masterPanelId: data.masterPanelId ?? null,
       parentPanelId: data.parentPanelId ?? null,
       subPanelConc: data.subPanelConc ?? 1,
       createdAt: now,
@@ -119,6 +122,31 @@ export const panelRepository = {
     const db = getDatabase()
     db.delete(panelAnalytes).where(eq(panelAnalytes.panelId, id)).run()
     db.delete(premixPanels).where(eq(premixPanels.id, id)).run()
+  },
+
+  /**
+   * Phase 13 D-12: hard-delete all premix_panels rows for a master_panel
+   * + their junction rows. Pairs with schema.ts runs.panelId onDelete:'set null'
+   * (D-15) so historical runs survive with NULL panel_id. Returns delete count.
+   */
+  deleteByMasterPanelId(masterPanelId: string): number {
+    const db = getDatabase()
+    // First gather premix ids so we can cascade-clean junction rows
+    const premixIds = db
+      .select({ id: premixPanels.id })
+      .from(premixPanels)
+      .where(eq(premixPanels.masterPanelId, masterPanelId))
+      .all()
+      .map((r) => r.id)
+    if (premixIds.length === 0) return 0
+    for (const pid of premixIds) {
+      db.delete(panelAnalytes).where(eq(panelAnalytes.panelId, pid)).run()
+    }
+    const result = db
+      .delete(premixPanels)
+      .where(eq(premixPanels.masterPanelId, masterPanelId))
+      .run()
+    return result.changes
   },
 
   removeAnalyteFromPanel(panelId: string, analyteId: string): void {
