@@ -62,6 +62,16 @@ interface CalculatorState {
 
   // Validation
   validationError: string | null
+  /**
+   * Smoke 3 SMK3-02/03 D-10: output-suppression flag set by CalculatorForm
+   * when any old-reagent input exceeds its 20% cap WITHOUT operator
+   * override accepted. While true, getOutputs() returns null so the
+   * downstream CalculatorPanel renders a "Cap exceeded — override or
+   * lower the value to resume calculation" placeholder instead of
+   * ItemizedVolumeDisplay. Cleared when the override is accepted OR the
+   * input is lowered to within the cap.
+   */
+  capPaused: boolean
 
   // Actions
   setSampleCount: (count: number) => void
@@ -71,6 +81,8 @@ interface CalculatorState {
   setVolumePerWell: (volumeUL: number) => void
   setOldBeads: (mL: number) => void
   setOldAntibodies: (mL: number) => void
+  /** Smoke 3 D-10: UI-driven cap-pause toggle. See capPaused field above. */
+  setCapPaused: (paused: boolean) => void
   addSingle: (analyte: Omit<SingleAnalyte, 'id'>) => void
   removeSingle: (id: string) => void
   clearSingles: () => void
@@ -92,7 +104,9 @@ const initialState = {
   oldBeads: 0,
   oldAntibodies: 0,
   singles: [] as SingleAnalyte[],
-  validationError: null as string | null
+  validationError: null as string | null,
+  // D-10 — UI sets true when any over-cap old-reagent input is awaiting decision
+  capPaused: false
 }
 
 export const useCalculatorStore = create<CalculatorState>((set, get) => ({
@@ -206,6 +220,17 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
     set({ oldAntibodies: mL, validationError: null })
   },
 
+  /**
+   * Smoke 3 D-10: cap-pause toggle. Driven by CalculatorForm's useEffect
+   * whenever an old-reagent input is over-cap without override accepted.
+   * No validation — boolean state, no failure mode. While true,
+   * getOutputs() short-circuits to null so CalculatorPanel renders the
+   * cap-paused placeholder instead of ItemizedVolumeDisplay.
+   */
+  setCapPaused: (paused: boolean) => {
+    set({ capPaused: paused })
+  },
+
   addSingle: (analyte) => {
     const { requestType, singles } = get()
 
@@ -253,9 +278,18 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
       numberOfSetups,
       oldBeads,
       oldAntibodies,
-      validationError
+      validationError,
+      capPaused
     } = get()
     const plateCount = usePlateStore.getState().getPlateCount()
+
+    // D-10: pause computation while any over-cap old-reagent input is
+    // awaiting decision. Returning null here propagates through
+    // useCalculator → CalculatorPanel, which renders the cap-paused
+    // placeholder instead of ItemizedVolumeDisplay.
+    if (capPaused) {
+      return null
+    }
 
     if (validationError || sampleCount <= 0) {
       return null
