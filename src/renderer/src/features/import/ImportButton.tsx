@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 
-// Phase 13: importer.ts shape changed (v0.7.0 created/skipped → Smoke 3
-// summaries/ImportSheetError). UI surface adoption is deferred to Plan 13-06
-// (the next wave). This file's banner-rendering keeps working against the
-// preload-exposed ImportResult type without throwing in renderer; the full
-// summary-rendering work lands in 13-06.
+// Phase 13 Plan 13-06: ImportResult is the Smoke 3 contract
+// (summaries[] + errors[]). Banner renders per-sheet success summaries
+// + grouped per-sheet errors per RESOLVED 6 (RESEARCH OQ-4).
+// Type-only import from the main-process source-of-truth keeps the
+// renderer-side surface aligned with the preload bridge declaration
+// (src/preload/index.d.ts duplicates the same shape for the .d.ts
+// reachability constraint).
 import type { ImportResult } from '../../../../main/import/importer'
 
 interface BannerState {
@@ -36,20 +38,36 @@ export function ImportButton(): JSX.Element {
       }
 
       if (result.success) {
-        const summaries = result.summaries
-        const totalAnalytes = summaries.reduce((acc, s) => acc + s.analyteCount, 0)
-        const totalPremixes = summaries.reduce((acc, s) => acc + s.premixCount, 0)
-        const msg = `Imported ${summaries.length} panel${summaries.length !== 1 ? 's' : ''}: ${totalAnalytes} analyte${totalAnalytes !== 1 ? 's' : ''}, ${totalPremixes} premix${totalPremixes !== 1 ? 'es' : ''}. (Plan 13-06 will surface per-panel details.)`
-        setBanner({ type: 'success', message: msg })
-      } else {
-        const details = result.errors.flatMap((e) =>
-          e.issues.map((issue) => (e.sheetName ? `[${e.sheetName}] ${issue}` : issue))
-        )
-        setBanner({
-          type: 'error',
-          message: `Import failed with ${result.errors.length} error${result.errors.length !== 1 ? 's' : ''}:`,
-          details
+        // Per-sheet success summaries (RESOLVED 6 / OQ-4): headline shows
+        // total + new/updated counts; details list each panel with platform,
+        // species, normalized name, analyte/premix counts, optional SAPE
+        // name + concentration, and an [updated] marker for wholesale-replace.
+        const total = result.summaries.length
+        const newCount = result.summaries.filter((s) => !s.wasUpdate).length
+        const updatedCount = result.summaries.filter((s) => s.wasUpdate).length
+        const headline = `Imported ${total} panel${total === 1 ? '' : 's'} (${newCount} new, ${updatedCount} updated).`
+        const details = result.summaries.map((s) => {
+          const sapeBit = s.sapeName ? `, SAPE: ${s.sapeName} (${s.sapeConc}x)` : ''
+          const updateBit = s.wasUpdate ? ' [updated]' : ''
+          return `${s.platform} / ${s.species} / ${s.normalizedName}: ${s.analyteCount} analytes, ${s.premixCount} premix${s.premixCount === 1 ? '' : 'es'}${sapeBit}${updateBit}`
         })
+        setBanner({ type: 'success', message: headline, details })
+      } else {
+        // Grouped per-sheet errors: file-level errors (sheetName === '')
+        // get a [file-level] prefix; per-sheet errors get a [sheetName]
+        // prefix. Headline reports error counts split by scope.
+        const errorCount = result.errors.reduce((acc, e) => acc + e.issues.length, 0)
+        const sheetCount = result.errors.filter((e) => e.sheetName !== '').length
+        const fileLevelCount = result.errors.filter((e) => e.sheetName === '').length
+        const summary =
+          sheetCount > 0
+            ? `Import failed (${errorCount} error${errorCount === 1 ? '' : 's'} across ${sheetCount} sheet${sheetCount === 1 ? '' : 's'}${fileLevelCount > 0 ? ' + ' + fileLevelCount + ' file-level' : ''}); no data written.`
+            : `Import failed (${errorCount} file-level error${errorCount === 1 ? '' : 's'}); no data written.`
+        const details = result.errors.flatMap((e) => {
+          const prefix = e.sheetName === '' ? '[file-level]' : `[${e.sheetName}]`
+          return e.issues.map((issue) => `${prefix} ${issue}`)
+        })
+        setBanner({ type: 'error', message: summary, details })
       }
     } catch (err) {
       setBanner({
