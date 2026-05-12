@@ -394,7 +394,14 @@ Plans:
   2. SAPE Name (from the panel's Values block) is displayed in the run document metadata header. No calculation impact.
   3. PE volume = `Total Volume of the Assay ÷ SAPE concentration` (read from the SAPE row in the panel's Values block; typically 1×). Verified by unit test against the Thermofisher Human Panel I fixture (SAPE concentration = 1 → PE volume = total assay volume).
   4. Historical runs (saved before Smoke 3 ships) reload showing the volumes that were persisted at save time. No retroactive recompute. Run document carries a small advisory note when reopening a pre-Smoke-3 run: "Computed under previous calculation rules."
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 15-01-PLAN.md — Schema delta + migration 0009 + repository extension + types/zod (Wave 1)
+- [ ] 15-02-PLAN.md — IPC channel + master-panel-with-reagents read path (Wave 1, parallel with 15-01)
+- [ ] 15-03-PLAN.md — Lift override flags into store + async snapshot rewrite + IPC fetch + snapshot tests (Wave 2, depends_on 15-01 + 15-02)
+- [ ] 15-04-PLAN.md — Pure helpers (PE math + branch label) + audit trail UI + SAPE row + advisory banner + override badge (Wave 2, depends_on 15-01)
+- [ ] 15-05-PLAN.md — Group M integration test + cross-phase regression check + final phase verification (Wave 3, depends_on 15-01..15-04)
 
 ### Phase 16: Windows UAT & Release (INSERTED 2026-05-11, PLACEHOLDER)
 **Goal**: After Phases 12-15 ship, build a Windows .exe, install on the lab workstation, walk through the Smoke 3 features against real panel data, tag a release.
@@ -433,7 +440,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 | 12. Smoke 3 — Calculator Rules Migration | 4/4 | Complete    | 2026-05-12 |
 | 13. Smoke 3 — Panel XLSX Parser v3 | 6/6 | Complete    | 2026-05-12 |
 | 14. Smoke 3 — Plate Page Inputs + UI Cleanup | 8/8 | Complete    | 2026-05-12 |
-| 15. Smoke 3 — Run Document Audit Trail | 0/TBD | Not started | - |
+| 15. Smoke 3 — Run Document Audit Trail | 0/5 | Planned | - |
 | 16. Windows UAT & Release (Smoke 3) | 0/TBD | Not started (placeholder; version TBD) | - |
 
 ---
