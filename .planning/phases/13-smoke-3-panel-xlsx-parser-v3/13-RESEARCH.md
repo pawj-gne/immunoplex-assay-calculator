@@ -1352,13 +1352,13 @@ setMasterPanelId(panelId: string, masterPanelId: string): void {
 },
 ```
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 ### OQ-1: Should `panelRepository.create()` take `masterPanelId` directly (vs separate setMasterPanelId)?
 
 - **What we know:** Existing signature does NOT take `masterPanelId` (panel.ts:68-95). Phase 5 D-19 deferred premix upsert to Phase 13.
 - **What's unclear:** Cleanest API — extend `create` to accept `masterPanelId?: string | null`, or add a separate `setMasterPanelId`?
-- **Recommendation:** Extend `create` to accept optional `masterPanelId`. Add a single migration to the existing `create` method:
+- **RESOLVED:** Extend `create` to accept optional `masterPanelId`. Add a single migration to the existing `create` method:
   ```typescript
   create(data: { ..., masterPanelId?: string | null }): PremixPanel {
     // ...existing code...
@@ -1371,7 +1371,7 @@ setMasterPanelId(panelId: string, masterPanelId: string): void {
 
 - **What we know:** D-17 requires SET NULL behavior; current schema has `.notNull()` on the column (schema.ts:166).
 - **What's unclear:** Two options: (a) drop notNull, allow nullable; (b) hard-delete row instead of nulling, snapshot the name elsewhere.
-- **Recommendation:** Adopt (a) — drop `.notNull()` and add `onDelete: 'set null'` per Pitfall E above. Mirror Phase 4's pattern for `runs.panelId` which is already nullable. UI shows `(analyte data archived)` for NULL rows. Document in schema.ts comment.
+- **RESOLVED:** Adopt (a) — drop `.notNull()` and add `onDelete: 'set null'` per Pitfall E above. Mirror Phase 4's pattern for `runs.panelId` which is already nullable. UI shows `(analyte data archived)` for NULL rows. Document in schema.ts comment.
 - **Risk:** Existing tests may assume `analyteId` is always non-null. Audit `src/main/__tests__/expressServer.test.ts` and any other run-related tests for assumptions during Wave 1.
 
 ### OQ-3: Sheet name convention in generated `all-panels.xlsx`
@@ -1380,13 +1380,13 @@ setMasterPanelId(panelId: string, masterPanelId: string): void {
 - **What's unclear:** What case should the script use for sheet names inside the .xlsx? Options:
   - Filename-preserved: `bio-rad-mouse-panel-1`, `thermofisher-human-panel-i`
   - Title-case: `Bio-Rad Mouse Panel 1`, `Thermofisher Human Panel I`
-- **Recommendation:** Title-case form (mirrors what a lab author would type). This exercises D-19 Roman→Arabic by including `Panel I` (the Thermofisher fixtures) in sheet names that map to `Panel 1` after normalization — making the SC #6 integration test a meaningful regression test for the normalization path.
+- **RESOLVED:** Title-case form (mirrors what a lab author would type). This exercises D-19 Roman→Arabic by including `Panel I` (the Thermofisher fixtures) in sheet names that map to `Panel 1` after normalization — making the SC #6 integration test a meaningful regression test for the normalization path.
 
 ### OQ-4: Banner enrichment vs minimum acceptable
 
 - **What we know:** CONTEXT Discretion item 6 leaves banner content open. Specifics section sketches enriched per-sheet content.
 - **What's unclear:** Wave-of-implementation: should the enriched banner ship in Phase 13, or just the minimum success/failure message with details deferred to Phase 14/15?
-- **Recommendation:** Phase 13 implements the structured `summaries: PanelSummary[]` and `errors: { sheetName, issues }[]` return shape (data plumbing). Phase 13 UI banner ships the basic grouped rendering. Richer comparison-diff banners deferred per CONTEXT.md `<deferred>` ("banner detail richness").
+- **RESOLVED:** Phase 13 implements the structured `summaries: PanelSummary[]` and `errors: { sheetName, issues }[]` return shape (data plumbing). Phase 13 UI banner ships the basic grouped rendering. Richer comparison-diff banners deferred per CONTEXT.md `<deferred>` ("banner detail richness").
 
 ## Environment Availability
 
