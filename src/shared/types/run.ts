@@ -32,6 +32,19 @@ export interface RunRecord {
    * advisory marker UI is Phase 15).
    */
   numberOfSetups?: number
+  /**
+   * Smoke 3 SMK3-02 input: operator-entered Old Beads volume in mL.
+   * Default 0; optional — pre-Phase-14 saved runs lack this field and
+   * round-trip with `?? 0` defaulting (equivalent to v1.0 behavior).
+   * Stored as the raw typed value per D-08; floor-rounded at consumption
+   * inside calculatorStore.getOutputs (SMK3-16 snapshot fidelity).
+   */
+  oldBeads?: number
+  /**
+   * Smoke 3 SMK3-03 input: mirror of oldBeads for antibodies. Same
+   * SMK3-16 contract (optional + `?? 0` default on reload).
+   */
+  oldAntibodies?: number
   hamilton: number // 1-5
   runPlatePosition: number // 1-4
   standardPosition: number // 1-2
@@ -71,6 +84,14 @@ export interface RunCreate {
    * Zod schema defaults to 1 (backwards-compatible with v1.0 saves).
    */
   numberOfSetups?: number
+  /**
+   * Smoke 3 SMK3-02/03 inputs: pre-Phase-14 callers can omit; the persist
+   * pipeline defaults absent values to 0 on reload (SMK3-16 snapshot
+   * fidelity). Raw typed values per D-08; calculator floor-rounds at
+   * consumption.
+   */
+  oldBeads?: number
+  oldAntibodies?: number
   hamilton: number
   runPlatePosition: number
   standardPosition: number
