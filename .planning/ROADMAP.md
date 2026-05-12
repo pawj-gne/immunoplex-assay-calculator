@@ -334,7 +334,12 @@ Plans:
   3. Diluent resolver: given a selection set, if any selected premix has Premix Concentration = 1, that premix is the diluent for Beads and Antibodies (no ordering — picked deterministically when multiple 1× premixes are selected); else the resolver returns the per-reagent Values-table diluent string for that reagent
   4. CALC-05 max-5-singles cap is preserved unchanged; explicit unit test confirms 6th single attempt is blocked when a premix is selected
   5. STATE.md decision 02-01 superseded by 12-XX (round-to-0.1-mL); PROJECT.md §Domain Rules already updated to reflect the rules above
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 12-01-PLAN.md — Rounding + dead-volume migration in lib/calculator.ts + lib/decimal.ts + shared types (Wave 1)
+- [ ] 12-02-PLAN.md — Diluent resolver (new lib/diluentResolver.ts module, 13 vitest cases, decoupled from panel/analyte types) (Wave 1, parallel with 12-01)
+- [ ] 12-03-PLAN.md — calculatorStore numberOfSetups plumbing + PRD-worked-example integration test + CALC-05 regression + STATE.md decision-supersession (Wave 2)
 
 ### Phase 13: Smoke 3 — Panel XLSX Parser v3 (INSERTED 2026-05-11)
 **Goal**: A new parser accepts the lab's actual xlsx format (sectioned `Criteria` / `Values` / `Category` per sheet with per-reagent rows and a Premix matrix) and writes per-reagent rows into a revised master_panels schema. Re-upload of a (Platform, Species, Panel) wholesale-replaces. Roman panel numerals normalize to Arabic at parse time. Master `Table` tab is ignored. Legacy CSV templates deleted.
