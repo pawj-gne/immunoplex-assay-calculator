@@ -337,8 +337,8 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 12-01-PLAN.md — Rounding + dead-volume migration in lib/calculator.ts + lib/decimal.ts + shared types (Wave 1)
-- [ ] 12-02-PLAN.md — Diluent resolver (new lib/diluentResolver.ts module, 13 vitest cases, decoupled from panel/analyte types) (Wave 1, parallel with 12-01)
+- [x] 12-01-PLAN.md — Rounding + dead-volume migration in lib/calculator.ts + lib/decimal.ts + shared types (Wave 1) ✅ 2026-05-12
+- [x] 12-02-PLAN.md — Diluent resolver (new lib/diluentResolver.ts module, 14 vitest cases, decoupled from panel/analyte types) (Wave 1, parallel with 12-01) ✅ 2026-05-12
 - [ ] 12-03-PLAN.md — calculatorStore numberOfSetups plumbing + PRD-worked-example integration test + CALC-05 regression + STATE.md decision-supersession (Wave 2)
 
 ### Phase 13: Smoke 3 — Panel XLSX Parser v3 (INSERTED 2026-05-11)

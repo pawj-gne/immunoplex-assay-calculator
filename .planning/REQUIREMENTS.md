@@ -97,7 +97,7 @@ Net-new requirements derived from [SMOKE-3-PRD.md](./SMOKE-3-PRD.md) (lab-owner-
 **: Dead volume = `number_of_setups × 2 mL` (default setups = 1). Extends CALC-03.
 - [x] **SMK3-06
 **: Final volumes round UP to nearest **0.1 mL** (ceiling at 0.1 mL). Supersedes CALC-06 + STATE.md decision 02-01.
-- [ ] **SMK3-07**: Diluent for Beads + Antibodies: if ANY selected premix is 1×, that premix is the diluent (any 1× premix wins, no ordering). If all selections are >1×, fall back to the per-reagent Values-table diluent. Supersedes the request-type-keyed rule in PROJECT.md §Domain Rules.
+- [x] **SMK3-07**: Diluent for Beads + Antibodies: if ANY selected premix is 1×, that premix is the diluent (any 1× premix wins, no ordering). If all selections are >1×, fall back to the per-reagent Values-table diluent. Supersedes the request-type-keyed rule in PROJECT.md §Domain Rules.
 
 ### Plate Page Input Expansion
 

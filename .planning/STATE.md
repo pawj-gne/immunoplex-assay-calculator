@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Release
 status: executing
-stopped_at: Completed 12-01-PLAN.md
-last_updated: "2026-05-12T03:34:28.153Z"
+stopped_at: Completed 12-02-PLAN.md
+last_updated: "2026-05-12T03:43:00.000Z"
 last_activity: 2026-05-12
 progress:
   total_phases: 21
   completed_phases: 8
   total_plans: 41
-  completed_plans: 38
-  percent: 93
+  completed_plans: 39
+  percent: 95
 ---
 
 # Project State
@@ -27,11 +27,11 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 
 Milestone: v2.0 (Panel XLSX Upload + Master-Panel Data Model) — **scope shifted 2026-05-11 by Smoke 3 PRD adoption**
 Phase: 12 (smoke-3-calculator-rules) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-05-12
 
-Progress: [█████████░] 93%
+Progress: [█████████░] 95%
 
 ## Performance Metrics
 
@@ -65,6 +65,7 @@ Progress: [█████████░] 93%
 | Phase 04-run-documentation-persistence-deployment P04 | 9m 0s | 5 tasks | 7 files |
 | Phase 04-run-documentation-persistence-deployment P03 | ~25m | 2 of 3 tasks (Task 3 deferred to HUMAN-UAT) | 1 file |
 | Phase 12-smoke-3-calculator-rules P01 | 4m 17s | 2 tasks | 7 files |
+| Phase 12-smoke-3-calculator-rules P02 | ~6m | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -156,6 +157,12 @@ Recent decisions affecting current work:
 - 12-01: DEFAULT_DEAD_VOLUME renamed to DEAD_VOLUME_PER_SETUP_UL — semantic shift per SMK3-05 (per-setup contribution, not total)
 - 12-01: createCalculatorInputs sanity cap (numberOfSetups > 1000 throws) is intentional forcing function — calculatorStore.getOutputs() throws at runtime until Plan 12-03 reworks the store
 - 12-01: CalculatorInputs keeps both numberOfSetups (input) and deadVolume (computed Decimal) — dual-field design preserves useRunSnapshot read of inputs.deadVolume
+- 12-02: Multi-1×-premix tiebreaker = INPUT-ARRAY-ORDER (FIRST wins). Locked by two opposing-order tests (T-A4 + T-A5). Caller (Plan 12-03 calculatorStore) controls ordering policy (recommend panel-authored order)
+- 12-02: resolveDiluent lives in src/renderer/src/lib/diluentResolver.ts (NEW), not folded into calculator.ts — per CONTEXT §Claude's Discretion: distinct domain concern, will grow in Phase 13, easier to test in isolation
+- 12-02: DiluentResult discriminated union lives in src/shared/types/diluent.ts so renderer + main + Phases 13/14/15 share one source of truth without re-defining
+- 12-02: Resolver accepts structural SelectedPremixForDiluent (just `name` + `concentration`) — zero imports from PremixPanel / Analyte / calculator.ts; Phase 13's master_panels schema growth (R-02) won't break this contract
+- 12-02: SMK3-DIL-01 verbatim string contract locked by T-B3 — Values-table strings returned with whitespace AND case preserved (no trim, no case fold, no enum check); Phase 15 display layer owns sanitization if/when added
+- 12-02: Strict equality `concentration === 1` (NOT `<= 1`) locked by T-D2 (concentration 0 → values_table) + T-D3 (0.5 → legacy when no valuesTable)
 
 #### 2026-05-11 — Smoke 3 PRD Ingest (orchestrator rule: PRD wins every blocker)
 
@@ -198,10 +205,10 @@ Full audit trail in [.planning/INGEST-RESOLUTIONS.md](./INGEST-RESOLUTIONS.md). 
 
 ## Session Continuity
 
-Last session: 2026-05-12T03:34:28.147Z
-Stopped at: Completed 12-01-PLAN.md
+Last session: 2026-05-12T03:43:00.000Z
+Stopped at: Completed 12-02-PLAN.md
 Resume file: None
-Resume intent: Either (a) close out v1.0 by completing HUMAN-UAT-04.1-05-01 on Windows and tagging v0.6.0, or (b) start v2.0 Phase 5 with `/gsd-discuss-phase 5` to lock open decisions before planning. Both can proceed in parallel since v2.0 Phase 5 does not depend on v1.0 UAT outcome (schema-only work).
+Resume intent: Execute Plan 12-03 (calculatorStore wiring — consumes resolveDiluent + DiluentResult; also unblocks the runtime sanity-cap throw introduced by 12-01). Plan 12-03 PLAN already exists at `.planning/phases/12-smoke-3-calculator-rules/12-03-PLAN.md`. After 12-03 completes Phase 12 → either (a) close out v1.0 by completing HUMAN-UAT-04.1-05-01 on Windows and tagging v0.6.0, or (b) start v2.0 Phase 5 with `/gsd-discuss-phase 5`.
 
 ## Releases
 
