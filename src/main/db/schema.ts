@@ -194,7 +194,17 @@ export const runs = sqliteTable('runs', {
   updatedAt: text('updated_at').notNull(),
   // Phase 6: machine provenance for D-02 conflict display
   machineName: text('machine_name'), // os.hostname() at save time; null for pre-Phase-6 rows
-  isOfflineSave: integer('is_offline_save', { mode: 'boolean' }).notNull().default(false)
+  isOfflineSave: integer('is_offline_save', { mode: 'boolean' }).notNull().default(false),
+  // Phase 14 Plan 08 — DB persistence for the three Smoke-3 fields that the
+  // TS types + Zod schema already carry as optional with `?? 0/1` defaults on
+  // load. Without these columns, save→reload silently drops the values and
+  // breaks SMK3-16 snapshot fidelity on disk.
+  //   - numberOfSetups (Phase 12 SMK3-05): integer >= 1, default 1
+  //   - oldBeads      (Phase 14 SMK3-02): non-negative mL, default 0
+  //   - oldAntibodies (Phase 14 SMK3-03): non-negative mL, default 0
+  numberOfSetups: real('number_of_setups').notNull().default(1),
+  oldBeads: real('old_beads').notNull().default(0),
+  oldAntibodies: real('old_antibodies').notNull().default(0)
 })
 
 // Phase 4: Single analytes selected for a given run (D-19)

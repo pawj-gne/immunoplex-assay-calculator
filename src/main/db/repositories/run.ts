@@ -46,38 +46,46 @@ export const runRepository = {
     const now = new Date().toISOString()
     const id = data.id ?? crypto.randomUUID()
     const insertAll = sqlite.transaction(() => {
-      db.insert(runs)
-        .values({
-          id,
-          requestNumber: data.requestNumber,
-          requestOverrideAdHoc: data.requestOverrideAdHoc,
-          userName: data.userName,
-          operatorId: data.operatorId,
-          runDate: data.runDate,
-          sampleType: data.sampleType,
-          dilutionFactor: data.dilutionFactor,
-          sampleCount: data.sampleCount,
-          replicateMode: data.replicateMode,
-          requestType: data.requestType, // set on create; immutable after
-          platformId: data.platformId, // set on create; immutable after
-          speciesId: data.speciesId, // set on create; immutable after
-          panelId: data.panelId,
-          volumePerWell: data.volumePerWell,
-          deadVolume: data.deadVolume,
-          hamilton: data.hamilton,
-          runPlatePosition: data.runPlatePosition,
-          standardPosition: data.standardPosition,
-          troughPosition: data.troughPosition,
-          comments: data.comments,
-          plex: data.plex,
-          plateCount: data.plateCount,
-          platesJson: JSON.stringify(data.plates),
-          createdAt: now,
-          updatedAt: now,
-          machineName: data.machineName ?? null,
-          isOfflineSave: data.isOfflineSave ?? false
-        })
-        .run()
+      // Phase 14 Plan 08: build the values literal incrementally so the three
+      // new Smoke-3 fields (numberOfSetups / oldBeads / oldAntibodies) only
+      // appear in the INSERT when the caller actually supplied them. Omitting
+      // them lets the DB DEFAULT (1 / 0 / 0) fire — preserves the no-op
+      // contract for pre-Phase-14 callers that round-trip through the legacy
+      // RunCreate shape.
+      const insertValues: typeof runs.$inferInsert = {
+        id,
+        requestNumber: data.requestNumber,
+        requestOverrideAdHoc: data.requestOverrideAdHoc,
+        userName: data.userName,
+        operatorId: data.operatorId,
+        runDate: data.runDate,
+        sampleType: data.sampleType,
+        dilutionFactor: data.dilutionFactor,
+        sampleCount: data.sampleCount,
+        replicateMode: data.replicateMode,
+        requestType: data.requestType, // set on create; immutable after
+        platformId: data.platformId, // set on create; immutable after
+        speciesId: data.speciesId, // set on create; immutable after
+        panelId: data.panelId,
+        volumePerWell: data.volumePerWell,
+        deadVolume: data.deadVolume,
+        hamilton: data.hamilton,
+        runPlatePosition: data.runPlatePosition,
+        standardPosition: data.standardPosition,
+        troughPosition: data.troughPosition,
+        comments: data.comments,
+        plex: data.plex,
+        plateCount: data.plateCount,
+        platesJson: JSON.stringify(data.plates),
+        createdAt: now,
+        updatedAt: now,
+        machineName: data.machineName ?? null,
+        isOfflineSave: data.isOfflineSave ?? false
+      }
+      if (data.numberOfSetups !== undefined) insertValues.numberOfSetups = data.numberOfSetups
+      if (data.oldBeads !== undefined) insertValues.oldBeads = data.oldBeads
+      if (data.oldAntibodies !== undefined) insertValues.oldAntibodies = data.oldAntibodies
+      db.insert(runs).values(insertValues).run()
       for (const analyteId of data.singleAnalyteIds) {
         db.insert(runSingleAnalytes)
           .values({
@@ -143,9 +151,17 @@ export const runRepository = {
       const setWithProvenance: typeof baseSet & {
         machineName?: string | null
         isOfflineSave?: boolean
+        numberOfSetups?: number
+        oldBeads?: number
+        oldAntibodies?: number
       } = { ...baseSet }
       if (data.machineName !== undefined) setWithProvenance.machineName = data.machineName
       if (data.isOfflineSave !== undefined) setWithProvenance.isOfflineSave = data.isOfflineSave
+      // Phase 14 Plan 08: write Smoke-3 fields only when caller supplied them
+      // (omit-and-DB-default mirrors the create() shape above).
+      if (data.numberOfSetups !== undefined) setWithProvenance.numberOfSetups = data.numberOfSetups
+      if (data.oldBeads !== undefined) setWithProvenance.oldBeads = data.oldBeads
+      if (data.oldAntibodies !== undefined) setWithProvenance.oldAntibodies = data.oldAntibodies
       db.update(runs).set(setWithProvenance).where(eq(runs.id, id)).run()
       // Replace singles in the join table
       db.delete(runSingleAnalytes).where(eq(runSingleAnalytes.runId, id)).run()
