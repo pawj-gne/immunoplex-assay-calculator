@@ -3,6 +3,7 @@ import { useCalculator } from '../hooks/useCalculator'
 import { SampleCountInput } from './SampleCountInput'
 import { OldReagentCapModal } from '../../plate/components/OldReagentCapModal'
 import { DEAD_VOLUME_PER_SETUP_UL } from '../../../../../shared/constants/calculator'
+import { floorToTenthML } from '../../../lib/decimal'
 import { evaluateOldReagentCommit } from '../lib/oldReagentCommit'
 
 /**
@@ -178,12 +179,23 @@ export function CalculatorForm() {
 
   const handleCancel = () => {
     // Snap input back to the cap value per D-10.
+    //
+    // WR-02: capML = 0.2 * totalReactionVolumeML is a JS double, so values
+    // like 0.2 * 9.4 yield 1.8800000000000001. Writing the raw double to
+    // the store and then formatting separately with toFixed(1) makes the
+    // input display flicker (1.9 → 1.8800000000000001) once the sync
+    // effect re-runs against the stored double, and can even push the
+    // floored value back over the cap. Floor-round to 0.1 mL (matching
+    // the calculator's consumption rule D-07) BEFORE writing so the
+    // store and the display agree, and the snapped value is guaranteed
+    // to be ≤ cap.
+    const flooredCap = floorToTenthML(capML).toNumber()
     if (activeModal === 'beads') {
-      setOldBeads(capML)
-      setOldBeadsDisplay(capML.toFixed(1))
+      setOldBeads(flooredCap)
+      setOldBeadsDisplay(flooredCap.toFixed(1))
     } else if (activeModal === 'antibodies') {
-      setOldAntibodies(capML)
-      setOldAntibodiesDisplay(capML.toFixed(1))
+      setOldAntibodies(flooredCap)
+      setOldAntibodiesDisplay(flooredCap.toFixed(1))
     }
     setActiveModal(null)
   }
