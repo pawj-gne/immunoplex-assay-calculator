@@ -15,11 +15,13 @@ export function registerImportHandlers(): void {
     })
 
     if (result.canceled || result.filePaths.length === 0) {
+      // Phase 13: new ImportResult shape (summaries / ImportSheetError). UI surface
+      // adoption deferred to Plan 13-06; this branch is the minimal-update path
+      // required to keep tsc --noEmit -p tsconfig.node.json at exit 0.
       return {
         success: false,
         canceled: true,
-        created: { analytes: 0, panels: 0, subPanels: 0, links: 0 },
-        skipped: { analytes: 0 },
+        summaries: [],
         errors: []
       }
     }
@@ -29,9 +31,13 @@ export function registerImportHandlers(): void {
     } catch (err) {
       return {
         success: false,
-        created: { analytes: 0, panels: 0, subPanels: 0, links: 0 },
-        skipped: { analytes: 0 },
-        errors: [{ row: 0, issues: [err instanceof Error ? err.message : 'Unknown error'] }]
+        summaries: [],
+        errors: [
+          {
+            sheetName: '',
+            issues: [err instanceof Error ? err.message : 'Unknown error']
+          }
+        ]
       }
     }
   })
