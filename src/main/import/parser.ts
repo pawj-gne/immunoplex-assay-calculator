@@ -1,161 +1,426 @@
+/**
+ * Phase 13 (SMK3-08 + SMK3-09 + SMK3-10): multi-sheet XLSX parser for the
+ * Smoke 3 sectioned panel format. Reads a workbook, skips the `Table` summary
+ * sheet, emits a typed ParsedPanel[] for every other sheet.
+ *
+ * Block structure per sheet:
+ *   - Criteria  block: Platform / Species / Panel / Panel Description rows
+ *   - Values    block: header + 3 reagent rows (beads/antibodies/sape) + optional SAPE Name row
+ *   - Category  block: premix matrix headers + single-analyte data rows
+ *
+ * Pattern A (16 of 17 fixtures): analyte-header row is BELOW the Premix Concentration row.
+ * Pattern B (Millipore Human Panel 1): analyte-header row COINCIDES with Premix Concentration row.
+ *
+ * Locator logic uses TEXT MARKERS not hardcoded row offsets — robust across both patterns.
+ */
 import * as XLSX from 'xlsx'
+import {
+  normalizePanelName,
+  canonReagentKind,
+  isSapeNameLabel,
+  type ReagentKind
+} from './normalize'
+
+export type { ReagentKind } from './normalize'
+
+export interface ParsedReagent {
+  kind: ReagentKind
+  concentration: number | null // D-07: null when source cell = 'variable' (beads/antibodies only)
+  diluent: string | null // SMK3-DIL-01: open text; null when source cell empty
+  volumePerWell: number
+}
 
 export interface ParsedAnalyte {
   name: string
-  bead_region: number
-  single_conc: number
+  beadRegion: number
+  concentration: number
 }
 
-export interface ParsedSubPanel {
+export interface ParsedPremix {
   name: string
-  sub_panel_conc: number
-  analyte_names: string[]
+  premixConc: number
+  memberNames: string[] // verbatim names from analyte rows in that premix column; validator does case-insensitive match
 }
 
 export interface ParsedPanel {
-  panel_name: string
+  sheetName: string
   platform: string
   species: string
+  panelNameRaw: string
+  panelNameNormalized: string
+  panelDescription: string | null
+  sapeName: string | null
+  reagents: ParsedReagent[]
   analytes: ParsedAnalyte[]
-  sub_panels: ParsedSubPanel[]
+  premixes: ParsedPremix[]
 }
 
-export class ParseError extends Error {}
-
-export function parseImportFile(filePath: string): ParsedPanel {
-  const workbook = XLSX.readFile(filePath)
-  const sheet = workbook.Sheets[workbook.SheetNames[0]]
-  const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, blankrows: false }) as unknown[][]
-
-  return parseLabFormat(rows)
+export class ParseError extends Error {
+  constructor(
+    message: string,
+    public sheetName?: string
+  ) {
+    super(sheetName ? `[${sheetName}] ${message}` : message)
+    this.name = 'ParseError'
+  }
 }
 
-function parseLabFormat(rows: unknown[][]): ParsedPanel {
-  const cell = (r: number, c: number): string => String(rows[r]?.[c] ?? '').trim()
+// ------- Cell accessor helpers --------------------------------------------
 
-  // ---------- Header block (rows 1-3) ----------
-  if (cell(0, 0).toLowerCase() !== 'panel name') {
-    throw new ParseError('Cell A1 must be "Panel Name"')
+function cell(rows: unknown[][], r: number, c: number): string {
+  const raw = rows[r]?.[c]
+  if (raw === null || raw === undefined) return ''
+  return String(raw).trim()
+}
+
+function cellNumber(
+  rows: unknown[][],
+  r: number,
+  c: number,
+  label: string,
+  sheetName: string
+): number {
+  const raw = rows[r]?.[c]
+  const num = typeof raw === 'number' ? raw : Number(String(raw ?? '').trim())
+  if (!Number.isFinite(num)) {
+    throw new ParseError(
+      `${label} at row ${r + 1}, col ${String.fromCharCode(65 + c)} must be numeric (got "${raw}")`,
+      sheetName
+    )
   }
-  if (cell(1, 0).toLowerCase() !== 'platform') {
-    throw new ParseError('Cell A2 must be "Platform"')
+  return num
+}
+
+function cellNumberOrVariable(
+  rows: unknown[][],
+  r: number,
+  c: number,
+  label: string,
+  sheetName: string
+): number | null {
+  const raw = String(rows[r]?.[c] ?? '')
+    .trim()
+    .toLowerCase()
+  if (raw === 'variable') return null
+  return cellNumber(rows, r, c, label, sheetName)
+}
+
+// ------- Top-level workbook reader -----------------------------------------
+
+export function parseWorkbook(filePath: string): ParsedPanel[] {
+  const workbook = XLSX.readFile(filePath, { cellFormula: false, cellDates: false })
+  const panels: ParsedPanel[] = []
+  for (const sheetName of workbook.SheetNames) {
+    if (sheetName.trim().toLowerCase() === 'table') continue // D-02
+    const sheet = workbook.Sheets[sheetName]
+    const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, {
+      header: 1,
+      blankrows: false,
+      defval: null
+    }) as unknown[][]
+    panels.push(parseSheet(sheetName, rows))
   }
-  if (cell(2, 0).toLowerCase() !== 'species') {
-    throw new ParseError('Cell A3 must be "Species"')
+  return panels
+}
+
+/** Test-friendly entry: parse already-loaded rows for one sheet. */
+export function parseSheet(sheetName: string, rows: unknown[][]): ParsedPanel {
+  const criteriaRow = findRowWith(rows, 0, 'criteria')
+  const valuesRow = findRowWith(rows, 0, 'values')
+  const categoryRow = findRowWith(rows, 0, 'category')
+  if (criteriaRow < 0)
+    throw new ParseError('Missing "Criteria" section marker in column A', sheetName)
+  if (valuesRow < 0) throw new ParseError('Missing "Values" section marker in column A', sheetName)
+  if (categoryRow < 0)
+    throw new ParseError('Missing "Category" section marker in column A', sheetName)
+  if (!(criteriaRow < valuesRow && valuesRow < categoryRow)) {
+    throw new ParseError(
+      'Criteria/Values/Category markers must appear in that order',
+      sheetName
+    )
   }
 
-  const panel_name = cell(0, 1)
-  const platform = cell(1, 1)
-  const species = cell(2, 1)
-  if (!panel_name) throw new ParseError('Panel Name (cell B1) is empty')
-  if (!platform) throw new ParseError('Platform (cell B2) is empty')
-  if (!species) throw new ParseError('Species (cell B3) is empty')
+  const criteria = parseCriteria(sheetName, rows, criteriaRow + 1, valuesRow)
+  const reagents = parseValues(sheetName, rows, valuesRow + 1, categoryRow)
+  const sapeName = findSapeName(rows, valuesRow + 1, categoryRow)
+  const category = parseCategory(sheetName, rows, categoryRow + 1)
 
-  // ---------- Locate the analyte header row ----------
-  // Look for a row with col A = "Target" and col B = "Bead Region".
-  let analyteHeaderRow = -1
-  for (let i = 0; i < rows.length; i++) {
-    if (cell(i, 0).toLowerCase() === 'target' && cell(i, 1).toLowerCase() === 'bead region') {
-      analyteHeaderRow = i
+  return {
+    sheetName,
+    platform: criteria.platform,
+    species: criteria.species,
+    panelNameRaw: criteria.panelNameRaw,
+    panelNameNormalized: normalizePanelName(criteria.panelNameRaw, sheetName),
+    panelDescription: criteria.description,
+    sapeName,
+    reagents,
+    analytes: category.analytes,
+    premixes: category.premixes
+  }
+}
+
+function findRowWith(rows: unknown[][], col: number, marker: string): number {
+  const want = marker.trim().toLowerCase()
+  for (let r = 0; r < rows.length; r++) {
+    if (cell(rows, r, col).toLowerCase() === want) return r
+  }
+  return -1
+}
+
+// ------- Criteria block parser ---------------------------------------------
+
+interface CriteriaBlock {
+  platform: string
+  species: string
+  panelNameRaw: string
+  description: string | null
+}
+
+function parseCriteria(
+  sheetName: string,
+  rows: unknown[][],
+  startRow: number,
+  endRow: number
+): CriteriaBlock {
+  const findLabel = (label: string): number => {
+    for (let r = startRow; r < endRow; r++) {
+      if (cell(rows, r, 0).toLowerCase() === label.toLowerCase()) return r
+    }
+    return -1
+  }
+  const platformRow = findLabel('Platform')
+  const speciesRow = findLabel('Species')
+  const panelRow = findLabel('Panel')
+  const descRow = findLabel('Panel Description')
+
+  if (platformRow < 0) throw new ParseError('Criteria block missing "Platform" row', sheetName)
+  if (speciesRow < 0) throw new ParseError('Criteria block missing "Species" row', sheetName)
+  if (panelRow < 0) throw new ParseError('Criteria block missing "Panel" row', sheetName)
+
+  const platform = cell(rows, platformRow, 1)
+  const species = cell(rows, speciesRow, 1)
+  const panelNameRaw = cell(rows, panelRow, 1)
+  const description = descRow >= 0 ? cell(rows, descRow, 1) || null : null
+
+  if (!platform) throw new ParseError('Platform value (col B) is empty', sheetName)
+  if (!species) throw new ParseError('Species value (col B) is empty', sheetName)
+  if (!panelNameRaw) throw new ParseError('Panel value (col B) is empty', sheetName)
+
+  return { platform, species, panelNameRaw, description }
+}
+
+// ------- Values block parser -----------------------------------------------
+
+function parseValues(
+  sheetName: string,
+  rows: unknown[][],
+  startRow: number,
+  endRow: number
+): ParsedReagent[] {
+  // Locate header row: col A = 'Reagent Description'
+  let headerRow = -1
+  for (let r = startRow; r < endRow; r++) {
+    if (cell(rows, r, 0).toLowerCase() === 'reagent description') {
+      headerRow = r
       break
     }
   }
-  if (analyteHeaderRow === -1) {
-    throw new ParseError('Could not find analyte header row (expected "Target" in col A and "Bead Region" in col B)')
+  if (headerRow < 0) {
+    throw new ParseError(
+      'Values block missing "Reagent Description" header row',
+      sheetName
+    )
   }
 
-  // Find Single Concentration column index in the analyte header row
-  const headerCells = (rows[analyteHeaderRow] ?? []).map((v) => String(v ?? '').trim().toLowerCase())
-  const singleConcIdx = headerCells.indexOf('single concentration')
-  if (singleConcIdx === -1) {
-    throw new ParseError('Could not find "Single Concentration" column in analyte header row')
+  const reagents: ParsedReagent[] = []
+  const seenKinds = new Set<ReagentKind>()
+  for (let r = headerRow + 1; r < endRow; r++) {
+    const labelRaw = cell(rows, r, 0)
+    if (!labelRaw) continue
+    if (isSapeNameLabel(labelRaw)) continue // SAPE Name handled separately
+    const kind = canonReagentKind(labelRaw)
+    if (kind === null) continue // unknown label; skip (preserves robustness — cosmetic rows tolerated)
+    if (seenKinds.has(kind)) {
+      throw new ParseError(`Duplicate reagent kind "${kind}" in Values block`, sheetName)
+    }
+    seenKinds.add(kind)
+    const concentration =
+      kind === 'sape'
+        ? cellNumber(rows, r, 1, `${kind} Concentration`, sheetName) // SAPE must be numeric (D-06 CHECK)
+        : cellNumberOrVariable(rows, r, 1, `${kind} Concentration`, sheetName)
+    const diluentRaw = cell(rows, r, 2)
+    const diluent = diluentRaw === '' ? null : diluentRaw // SMK3-DIL-01: verbatim; empty -> null
+    const volumePerWell = cellNumber(rows, r, 3, `${kind} Volume/well`, sheetName)
+    if (volumePerWell <= 0) {
+      throw new ParseError(
+        `${kind} Volume/well at row ${r + 1} must be > 0 (got ${volumePerWell})`,
+        sheetName
+      )
+    }
+    reagents.push({ kind, concentration, diluent, volumePerWell })
   }
+  if (reagents.length < 3) {
+    throw new ParseError(
+      `Values block must have 3 reagent rows (beads + antibodies + sape); found ${reagents.length}`,
+      sheetName
+    )
+  }
+  // Sort canonical order: beads, antibodies, sape
+  const order: ReagentKind[] = ['beads', 'antibodies', 'sape']
+  reagents.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind))
+  return reagents
+}
 
-  // ---------- Locate sub-panel header rows ----------
-  // Sub-panels are listed as columns to the right of Single Concentration.
-  // Convention: the row labelled "sub-panel conc" carries the concentrations,
-  // and the row IMMEDIATELY ABOVE it carries the sub-panel names.
-  const subPanelConcRow = findRowAbove(rows, analyteHeaderRow, (rowCells) =>
-    rowCells.some((v) => String(v ?? '').trim().toLowerCase() === 'sub-panel conc')
-  )
+function findSapeName(rows: unknown[][], startRow: number, endRow: number): string | null {
+  for (let r = startRow; r < endRow; r++) {
+    const labelRaw = cell(rows, r, 0)
+    if (isSapeNameLabel(labelRaw)) {
+      const val = cell(rows, r, 1)
+      return val === '' ? null : val
+    }
+  }
+  return null
+}
 
-  const subPanelHeaderRow = subPanelConcRow > 0 ? subPanelConcRow - 1 : -1
+// ------- Category block parser ---------------------------------------------
 
-  const sub_panels: ParsedSubPanel[] = []
-  const subPanelColumns: { col: number; name: string; conc: number }[] = []
+interface CategoryBlock {
+  analytes: ParsedAnalyte[]
+  premixes: ParsedPremix[]
+}
 
-  if (subPanelHeaderRow !== -1 && subPanelConcRow !== -1) {
-    const headerRow = rows[subPanelHeaderRow] ?? []
-    const concRow = rows[subPanelConcRow] ?? []
-    for (let c = singleConcIdx + 1; c < headerRow.length; c++) {
-      const name = String(headerRow[c] ?? '').trim()
-      if (!name) continue
-      const conc = Number(concRow[c])
-      if (!Number.isFinite(conc) || conc <= 0) {
-        throw new ParseError(`Sub-panel "${name}" is missing a valid concentration in the sub-panel conc row`)
+function parseCategory(sheetName: string, rows: unknown[][], startRow: number): CategoryBlock {
+  // Phase 1: locate Premix Name + Premix Concentration cells (col >= 4).
+  // In all 17 fixtures these are in col E (index 4); search anyway in case future fixtures shift.
+  let premixNameRow = -1
+  let premixNameCol = -1
+  let premixConcRow = -1
+  for (let r = startRow; r < rows.length; r++) {
+    for (let c = 4; c < (rows[r]?.length ?? 0); c++) {
+      if (cell(rows, r, c).toLowerCase() === 'premix name') {
+        premixNameRow = r
+        premixNameCol = c
+        break
       }
-      subPanelColumns.push({ col: c, name, conc })
+    }
+    if (premixNameRow >= 0) break
+  }
+  if (premixNameRow >= 0) {
+    for (let r = premixNameRow; r < rows.length; r++) {
+      if (cell(rows, r, premixNameCol).toLowerCase() === 'premix concentration') {
+        premixConcRow = r
+        break
+      }
+    }
+    if (premixConcRow < 0) {
+      throw new ParseError(
+        'Category block has "Premix Name" but no "Premix Concentration" row',
+        sheetName
+      )
     }
   }
 
-  // ---------- Read master analyte rows ----------
+  // Phase 2: locate analyte data header row (col A = Analyte, col B = Bead Region, col C = Concentration)
+  let analyteHeaderRow = -1
+  for (let r = startRow; r < rows.length; r++) {
+    if (
+      cell(rows, r, 0).toLowerCase() === 'analyte' &&
+      cell(rows, r, 1).toLowerCase() === 'bead region' &&
+      cell(rows, r, 2).toLowerCase() === 'concentration'
+    ) {
+      analyteHeaderRow = r
+      break
+    }
+  }
+  if (analyteHeaderRow < 0) {
+    throw new ParseError(
+      'Category block missing analyte header row (expected "Analyte | Bead Region | Concentration" in cols A-C)',
+      sheetName
+    )
+  }
+  if (premixConcRow >= 0 && analyteHeaderRow < premixConcRow) {
+    throw new ParseError(
+      `Analyte header row (${analyteHeaderRow + 1}) must be at or after Premix Concentration row (${premixConcRow + 1})`,
+      sheetName
+    )
+  }
+
+  // Phase 3: collect premix column positions (header col > premixNameCol)
+  const premixColumns: { col: number; name: string; premixConc: number }[] = []
+  if (premixNameRow >= 0) {
+    const headerRowCells = rows[premixNameRow] ?? []
+    for (let c = premixNameCol + 1; c < headerRowCells.length; c++) {
+      const name = cell(rows, premixNameRow, c)
+      if (!name) continue
+      const conc = cellNumber(
+        rows,
+        premixConcRow,
+        c,
+        `Premix "${name}" Concentration`,
+        sheetName
+      )
+      if (conc <= 0) {
+        throw new ParseError(
+          `Premix "${name}" Concentration must be > 0 (got ${conc})`,
+          sheetName
+        )
+      }
+      premixColumns.push({ col: c, name, premixConc: conc })
+    }
+  }
+
+  // Phase 4: walk analyte data rows downward; blank col A stops the walk (Pitfall 8).
   const analytes: ParsedAnalyte[] = []
   const seenNames = new Set<string>()
+  const membersByCol = new Map<number, string[]>()
+  for (const p of premixColumns) membersByCol.set(p.col, [])
+
   for (let r = analyteHeaderRow + 1; r < rows.length; r++) {
-    const name = cell(r, 0)
-    if (!name) continue
-    const beadRegion = Number(rows[r][1])
-    const singleConc = Number(rows[r][singleConcIdx])
+    const name = cell(rows, r, 0)
+    if (!name) break // blank col A stops the walk (Pitfall 8)
+    const lcName = name.toLowerCase()
+    if (seenNames.has(lcName)) {
+      throw new ParseError(`Duplicate analyte name "${name}" at row ${r + 1}`, sheetName)
+    }
+    seenNames.add(lcName)
 
-    if (!Number.isFinite(beadRegion) || beadRegion <= 0) {
-      throw new ParseError(`Analyte "${name}" has an invalid Bead Region`)
+    const beadRegion = cellNumber(rows, r, 1, `Analyte "${name}" Bead Region`, sheetName)
+    if (!Number.isInteger(beadRegion) || beadRegion <= 0) {
+      throw new ParseError(
+        `Analyte "${name}" Bead Region at row ${r + 1} must be a positive integer (got ${beadRegion})`,
+        sheetName
+      )
     }
-    if (!Number.isFinite(singleConc) || singleConc <= 0) {
-      throw new ParseError(`Analyte "${name}" has an invalid Single Concentration`)
+    const concentration = cellNumber(
+      rows,
+      r,
+      2,
+      `Analyte "${name}" Concentration`,
+      sheetName
+    )
+    if (concentration <= 0) {
+      throw new ParseError(
+        `Analyte "${name}" Concentration at row ${r + 1} must be > 0 (got ${concentration})`,
+        sheetName
+      )
     }
-    if (seenNames.has(name.toLowerCase())) {
-      throw new ParseError(`Analyte "${name}" appears more than once in the master list`)
-    }
-    seenNames.add(name.toLowerCase())
+    analytes.push({ name, beadRegion: Math.trunc(beadRegion), concentration })
 
-    analytes.push({
-      name,
-      bead_region: Math.trunc(beadRegion),
-      single_conc: singleConc
-    })
+    for (const p of premixColumns) {
+      const memberName = cell(rows, r, p.col)
+      if (memberName) membersByCol.get(p.col)!.push(memberName)
+    }
   }
 
   if (analytes.length === 0) {
-    throw new ParseError('No analytes found below the Target / Bead Region header row')
+    throw new ParseError('Category block has zero analyte rows below the header', sheetName)
   }
 
-  // ---------- Read sub-panel memberships ----------
-  for (const sp of subPanelColumns) {
-    const member_names: string[] = []
-    for (let r = analyteHeaderRow + 1; r < rows.length; r++) {
-      const name = String(rows[r][sp.col] ?? '').trim()
-      if (!name) continue
-      member_names.push(name)
-    }
-    sub_panels.push({ name: sp.name, sub_panel_conc: sp.conc, analyte_names: member_names })
-  }
+  const premixes: ParsedPremix[] = premixColumns.map((p) => ({
+    name: p.name,
+    premixConc: p.premixConc,
+    memberNames: membersByCol.get(p.col) ?? []
+  }))
 
-  return {
-    panel_name,
-    platform,
-    species,
-    analytes,
-    sub_panels
-  }
-}
-
-function findRowAbove(
-  rows: unknown[][],
-  belowRow: number,
-  predicate: (cells: unknown[]) => boolean
-): number {
-  for (let i = belowRow - 1; i >= 0; i--) {
-    if (predicate(rows[i] ?? [])) return i
-  }
-  return -1
+  return { analytes, premixes }
 }
