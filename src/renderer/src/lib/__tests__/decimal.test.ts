@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Decimal, createVolume, ceilToTenthML } from '../decimal'
+import { Decimal, createVolume, ceilToTenthML, floorToTenthML } from '../decimal'
 
 describe('ceilToTenthML', () => {
   it('returns a Decimal instance', () => {
@@ -45,5 +45,38 @@ describe('ceilToTenthML', () => {
   it('passes PRD worked-example antibody volume 3700 µL through unchanged (already at 0.1 mL)', () => {
     const result = ceilToTenthML(createVolume(3700, 'uL'))
     expect(result.equals(new Decimal(3700))).toBe(true)
+  })
+})
+
+describe('floorToTenthML (SMK3 D-07 floor-to-0.1-mL for operator inputs)', () => {
+  it('T-1: 1.51 mL → 1.5 mL (round down across 0.05 boundary)', () => {
+    expect(floorToTenthML(1.51).equals(new Decimal('1.5'))).toBe(true)
+  })
+  it('T-2: 1.59 mL → 1.5 mL (round down close to next tenth)', () => {
+    expect(floorToTenthML(1.59).equals(new Decimal('1.5'))).toBe(true)
+  })
+  it('T-3: 1.50 mL → 1.5 mL (idempotent at boundary)', () => {
+    expect(floorToTenthML(1.5).equals(new Decimal('1.5'))).toBe(true)
+  })
+  it('T-4: 0.04 mL → 0.0 mL', () => {
+    expect(floorToTenthML(0.04).equals(new Decimal('0.0'))).toBe(true)
+  })
+  it('T-5: 0.00 mL → 0.0 mL', () => {
+    expect(floorToTenthML(0.0).equals(new Decimal('0.0'))).toBe(true)
+  })
+  it('T-6: accepts a Decimal instance', () => {
+    expect(floorToTenthML(new Decimal('2.78')).equals(new Decimal('2.7'))).toBe(true)
+  })
+  it('T-7: returns a Decimal instance (not number) for chainable consumption', () => {
+    expect(floorToTenthML(1.5)).toBeInstanceOf(Decimal)
+  })
+  it('T-8: asymmetric with ceilToTenthML — floor(1.51 mL) = 1.5; ceil(1510 µL) = 1.6 (≠)', () => {
+    // floor on mL-domain input
+    const floored = floorToTenthML(1.51)
+    // ceil on µL-domain input (1.51 mL = 1510 µL → rounds UP to 1600 µL = 1.6 mL)
+    const ceiledML = ceilToTenthML(new Decimal(1510)).dividedBy(1000)
+    expect(floored.equals(ceiledML)).toBe(false)
+    expect(floored.equals(new Decimal('1.5'))).toBe(true)
+    expect(ceiledML.equals(new Decimal('1.6'))).toBe(true)
   })
 })
