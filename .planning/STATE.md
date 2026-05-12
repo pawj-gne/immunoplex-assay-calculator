@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Release
-status: planning
-stopped_at: Phase 6 context gathered
-last_updated: "2026-05-12T03:15:12.171Z"
-last_activity: 2026-05-11
+status: executing
+stopped_at: Completed 12-01-PLAN.md
+last_updated: "2026-05-12T03:34:28.153Z"
+last_activity: 2026-05-12
 progress:
   total_phases: 21
   completed_phases: 8
   total_plans: 41
-  completed_plans: 37
-  percent: 90
+  completed_plans: 38
+  percent: 93
 ---
 
 # Project State
@@ -21,17 +21,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Accurate reagent calculations with clear prep recipes - operators must be able to trust the math and follow the instructions without second-guessing.
-**Current focus:** Phase 12 — Smoke 3 Calculator Rules Migration (post-PRD ingest)
+**Current focus:** Phase 12 — smoke-3-calculator-rules
 
 ## Current Position
 
 Milestone: v2.0 (Panel XLSX Upload + Master-Panel Data Model) — **scope shifted 2026-05-11 by Smoke 3 PRD adoption**
-Phase: 12 (Smoke 3 — Calculator Rules Migration) is next in queue; Phases 8-11 superseded
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-05-11
+Phase: 12 (smoke-3-calculator-rules) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-05-12
 
-Progress: [██████████] v1.0 code-complete (pending HUMAN-UAT-04.1-05-01); v0.7.0 shipped (master-panel schema + lab CSV importer); Smoke 3 PRD ingested 2026-05-11; Phases 12-16 inserted, ready for Phase 12 discuss/plan
+Progress: [█████████░] 93%
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Progress: [██████████] v1.0 code-complete (pending HUMAN-UAT
 | Phase 04-run-documentation-persistence-deployment P02 | 10m 39s | 6 tasks | 12 files |
 | Phase 04-run-documentation-persistence-deployment P04 | 9m 0s | 5 tasks | 7 files |
 | Phase 04-run-documentation-persistence-deployment P03 | ~25m | 2 of 3 tasks (Task 3 deferred to HUMAN-UAT) | 1 file |
+| Phase 12-smoke-3-calculator-rules P01 | 4m 17s | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -151,6 +152,10 @@ Recent decisions affecting current work:
 - 04-03: D-26 deferrals (custom appId, icon, code signing, auto-updater URL) untouched as designed; Windows SmartScreen click-through accepted for v1 internal deployment.
 - 04-03: Windows physical workstation smoke test (14 steps from Plan 04-03 Task 3) deferred to HUMAN-UAT — macOS dev host cannot exercise a Windows .exe per CLAUDE.md §Testing Windows-only. Not a methodology failure; it is the documented project test cycle.
 - 04-03: Plan text labels build "v0.6.0 (Phase 4 bundle)" but package.json is still 0.5.0 — version bump and tag handled separately by .claude/release.md when ready to cut the actual v0.6.0 release.
+- 12-01: ceilToTenthML uses Decimal.toDecimalPlaces(1, ROUND_CEIL) — supersedes STATE 02-01 'round up to nearest mL' per SMK3-06
+- 12-01: DEFAULT_DEAD_VOLUME renamed to DEAD_VOLUME_PER_SETUP_UL — semantic shift per SMK3-05 (per-setup contribution, not total)
+- 12-01: createCalculatorInputs sanity cap (numberOfSetups > 1000 throws) is intentional forcing function — calculatorStore.getOutputs() throws at runtime until Plan 12-03 reworks the store
+- 12-01: CalculatorInputs keeps both numberOfSetups (input) and deadVolume (computed Decimal) — dual-field design preserves useRunSnapshot read of inputs.deadVolume
 
 #### 2026-05-11 — Smoke 3 PRD Ingest (orchestrator rule: PRD wins every blocker)
 
@@ -193,9 +198,9 @@ Full audit trail in [.planning/INGEST-RESOLUTIONS.md](./INGEST-RESOLUTIONS.md). 
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 6 context gathered
-Resume file: --resume-file
+Last session: 2026-05-12T03:34:28.147Z
+Stopped at: Completed 12-01-PLAN.md
+Resume file: None
 Resume intent: Either (a) close out v1.0 by completing HUMAN-UAT-04.1-05-01 on Windows and tagging v0.6.0, or (b) start v2.0 Phase 5 with `/gsd-discuss-phase 5` to lock open decisions before planning. Both can proceed in parallel since v2.0 Phase 5 does not depend on v1.0 UAT outcome (schema-only work).
 
 ## Releases

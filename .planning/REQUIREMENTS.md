@@ -11,10 +11,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **CALC-01**: App calculates total reagent volume based on sample count, replicate mode (singles/duplicates), and plate capacity (72/36 unknowns + 24 standards per plate)
 - [ ] **CALC-02**: App calculates single analyte addition volumes (master mix volume / stock concentration)
-- [ ] **CALC-03**: App includes dead volume in all volume calculations *(EXTENDED 2026-05-11 by SMK3-05: dead volume = `number_of_setups × 2 mL`)*
+- [x] **CALC-03**: App includes dead volume in all volume calculations *(EXTENDED 2026-05-11 by SMK3-05
+: dead volume = `number_of_setups × 2 mL`)*
 - [ ] **CALC-04**: App displays calculations in real-time as operator enters inputs
 - [ ] **CALC-05**: App enforces max 5 singles rule when premix is selected *(RETAINED 2026-05-11 per R-05 — PRD silence ≠ removal)*
-- [ ] **CALC-06**: ~~App rounds final volumes up to nearest mL~~ *(SUPERSEDED 2026-05-11 by SMK3-06: round UP to nearest 0.1 mL)*
+- [x] **CALC-06**: ~~App rounds final volumes up to nearest mL~~ *(SUPERSEDED 2026-05-11 by SMK3-06
+: round UP to nearest 0.1 mL)*
 - [ ] **CALC-07**: App supports platform-specific stock concentrations (Milliplex, BioRad, ProCartaPlex, R&D)
 
 ### Plate Planning
@@ -91,15 +93,18 @@ Net-new requirements derived from [SMOKE-3-PRD.md](./SMOKE-3-PRD.md) (lab-owner-
 
 ### Calculator Rules Migration
 
-- [ ] **SMK3-05**: Dead volume = `number_of_setups × 2 mL` (default setups = 1). Extends CALC-03.
-- [ ] **SMK3-06**: Final volumes round UP to nearest **0.1 mL** (ceiling at 0.1 mL). Supersedes CALC-06 + STATE.md decision 02-01.
+- [x] **SMK3-05
+**: Dead volume = `number_of_setups × 2 mL` (default setups = 1). Extends CALC-03.
+- [x] **SMK3-06
+**: Final volumes round UP to nearest **0.1 mL** (ceiling at 0.1 mL). Supersedes CALC-06 + STATE.md decision 02-01.
 - [ ] **SMK3-07**: Diluent for Beads + Antibodies: if ANY selected premix is 1×, that premix is the diluent (any 1× premix wins, no ordering). If all selections are >1×, fall back to the per-reagent Values-table diluent. Supersedes the request-type-keyed rule in PROJECT.md §Domain Rules.
 
 ### Plate Page Input Expansion
 
 - [ ] **SMK3-02**: Plate page exposes **Old Beads** numeric input (mL, ≥ 0, default 0). Subtracted from new-bead volume calc; added to total bead volume.
 - [ ] **SMK3-03**: Plate page exposes **Old Antibodies** numeric input (mL, ≥ 0, default 0). Subtracted from new-antibody volume calc; added to total antibody volume.
-- [ ] **SMK3-04**: Plate page exposes **Number of Setups** numeric input (default 1, min 1, no max). Drives dead-volume multiplier in SMK3-05.
+- [x] **SMK3-04**: Plate page exposes **Number of Setups** numeric input (default 1, min 1, no max). Drives dead-volume multiplier in SMK3-05
+.
 
 ### UI Behavior
 
