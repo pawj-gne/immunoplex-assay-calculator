@@ -6,8 +6,10 @@ import {
   canAddSingle,
   getRemainingSingles,
   validateSampleCount,
-  createCalculatorInputs
+  createCalculatorInputs,
+  applyOldReagentSubtraction
 } from '../lib/calculator'
+import { floorToTenthML } from '../lib/decimal'
 import {
   DEFAULT_VOLUME_PER_WELL,
   type ReplicateMode,
@@ -40,6 +42,20 @@ interface CalculatorState {
    * 12-VERIFICATION.md gap #2 (truth #10 partial).
    */
   numberOfSetups: number
+  /**
+   * Smoke 3 SMK3-02 (D-04): Old Beads operator input in mL. Default 0,
+   * min 0 (no upper bound at store layer — the 20%-cap is enforced by
+   * the UI layer in Plan 14-06). Raw typed value stored as-is per D-08
+   * (author intent preserved); floor-rounded to 0.1 mL at consumption
+   * time inside getOutputs() per D-07/D-08.
+   */
+  oldBeads: number
+  /**
+   * Smoke 3 SMK3-03 (D-04): mirror of oldBeads for antibodies. Same
+   * contract (default 0, min 0, raw typed value, floor-round at
+   * consumption).
+   */
+  oldAntibodies: number
 
   // Singles
   singles: SingleAnalyte[]
@@ -53,6 +69,8 @@ interface CalculatorState {
   setRequestType: (type: RequestType) => void
   setNumberOfSetups: (n: number) => void
   setVolumePerWell: (volumeUL: number) => void
+  setOldBeads: (mL: number) => void
+  setOldAntibodies: (mL: number) => void
   addSingle: (analyte: Omit<SingleAnalyte, 'id'>) => void
   removeSingle: (id: string) => void
   clearSingles: () => void
@@ -71,6 +89,8 @@ const initialState = {
   requestType: 'premix' as RequestType,
   volumePerWell: DEFAULT_VOLUME_PER_WELL,
   numberOfSetups: 1,
+  oldBeads: 0,
+  oldAntibodies: 0,
   singles: [] as SingleAnalyte[],
   validationError: null as string | null
 }
@@ -159,6 +179,33 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
     set({ volumePerWell: volumeUL, validationError: null })
   },
 
+  /**
+   * SMK3-02 (D-04): mL ≥ 0 required. NaN / Infinity / negative rejected
+   * with validationError; state unchanged. Upper bound (20%-cap) is
+   * enforced by the UI (Plan 14-06) via D-10 confirm-once modal —
+   * store accepts any non-negative finite number, override semantics
+   * are a UI concern. Raw typed value preserved per D-08; floor-rounded
+   * to 0.1 mL at consumption inside getOutputs().
+   */
+  setOldBeads: (mL: number) => {
+    if (!Number.isFinite(mL) || mL < 0) {
+      set({ validationError: `Old beads must be a non-negative number (got ${mL})` })
+      return
+    }
+    set({ oldBeads: mL, validationError: null })
+  },
+
+  /**
+   * Mirror of setOldBeads — SMK3-03 (D-04).
+   */
+  setOldAntibodies: (mL: number) => {
+    if (!Number.isFinite(mL) || mL < 0) {
+      set({ validationError: `Old antibodies must be a non-negative number (got ${mL})` })
+      return
+    }
+    set({ oldAntibodies: mL, validationError: null })
+  },
+
   addSingle: (analyte) => {
     const { requestType, singles } = get()
 
@@ -199,7 +246,15 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
   },
 
   getOutputs: () => {
-    const { sampleCount, replicateMode, volumePerWell, numberOfSetups, validationError } = get()
+    const {
+      sampleCount,
+      replicateMode,
+      volumePerWell,
+      numberOfSetups,
+      oldBeads,
+      oldAntibodies,
+      validationError
+    } = get()
     const plateCount = usePlateStore.getState().getPlateCount()
 
     if (validationError || sampleCount <= 0) {
@@ -216,7 +271,30 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
       numberOfSetups
     )
 
-    return calculateVolumes(inputs)
+    const baseOutputs = calculateVolumes(inputs)
+
+    // Smoke 3 SMK3-02/03 + D-07/D-08/D-11: floor-round old-reagent inputs
+    // at consumption (mL → 0.1 mL precision, then convert to µL), apply
+    // per-reagent subtraction (independent for beads vs antibodies), and
+    // expose the four derived fields on the outputs object. When both
+    // old-reagent values are 0, newReagent collapses to rawVolume (the
+    // no-op case) and totalReagent = 0 + raw = raw.
+    //
+    // floorToTenthML returns a Decimal in mL; multiply by 1000 to convert
+    // to µL before passing to applyOldReagentSubtraction (which expects µL).
+    const oldBeadsUL = floorToTenthML(oldBeads).times(1000)
+    const oldAntibodiesUL = floorToTenthML(oldAntibodies).times(1000)
+
+    const beadsResult = applyOldReagentSubtraction(baseOutputs.rawVolume, oldBeadsUL)
+    const antibodiesResult = applyOldReagentSubtraction(baseOutputs.rawVolume, oldAntibodiesUL)
+
+    return {
+      ...baseOutputs,
+      newBeadsUL: beadsResult.newReagentUL,
+      totalBeadsUL: beadsResult.totalReagentUL,
+      newAntibodiesUL: antibodiesResult.newReagentUL,
+      totalAntibodiesUL: antibodiesResult.totalReagentUL
+    }
   },
 
   getSinglesWithVolumes: () => {

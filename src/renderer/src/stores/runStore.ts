@@ -139,6 +139,14 @@ export const useRunStore = create<RunState>((set, get) => ({
       // same dead volume the run was saved with. Pre-Smoke-3 runs lack
       // this field; default to 1 (equivalent to v1.0 single-setup behavior).
       calculator.setNumberOfSetups(run.numberOfSetups ?? 1)
+      // SMK3-02/03 + SMK3-16: restore old-reagent values from the snapshot.
+      // Pre-Phase-14 saved runs lack these fields → default to 0 (the no-op
+      // case — calculator output ignores zero old reagents, matching v1
+      // behavior exactly). Order: AFTER setNumberOfSetups so the cascade
+      // sequence is volumePerWell → numberOfSetups → oldBeads → oldAntibodies
+      // → loadPlates (matches Pattern S2 in 14-PATTERNS.md).
+      calculator.setOldBeads(run.oldBeads ?? 0)
+      calculator.setOldAntibodies(run.oldAntibodies ?? 0)
 
       // 7. Plate layout — AFTER setSampleCount so the auto-fill cascade
       //    does not clobber the restored per-plate layout (D-24). This

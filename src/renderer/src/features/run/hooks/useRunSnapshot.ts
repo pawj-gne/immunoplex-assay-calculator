@@ -104,6 +104,13 @@ export function buildRunSnapshot(metadata: MetadataFields): RunCreate | { error:
     // enabler — allows a Smoke 3 run to round-trip its dead volume on reload).
     deadVolume: calculator.numberOfSetups * 2000,
     numberOfSetups: calculator.numberOfSetups,
+    // Smoke 3 SMK3-02/03 + SMK3-16: persist raw typed values per D-08 (the
+    // operator's author intent is preserved). Floor-rounding (to 0.1 mL)
+    // happens at consumption inside calculatorStore.getOutputs(), NOT at the
+    // snapshot boundary. Pre-Phase-14 runs that lack these fields load as 0
+    // via the `?? 0` default in runStore.loadRun.
+    oldBeads: calculator.oldBeads,
+    oldAntibodies: calculator.oldAntibodies,
     hamilton: metadata.hamilton,
     runPlatePosition: metadata.runPlatePosition,
     standardPosition: metadata.standardPosition,

@@ -26,6 +26,14 @@ export const runCreateSchema = z
     // this field; the schema fills it in so the renderer round-trips legacy
     // runs with the v1.0 single-setup default.
     numberOfSetups: z.number().int().min(1).default(1),
+    // Smoke 3 SMK3-02/03 (D-04, D-08): optional with default 0 — pre-Phase-14
+    // saved runs lack these fields; the schema defaults absent values to 0
+    // (the no-op case — equivalent to v1.0 behavior). Raw mL value stored
+    // per D-08 (author intent); calculator floor-rounds at consumption.
+    // Non-negative finite at the store layer; the 20%-cap is a UI concern
+    // (Plan 14-06 confirm-once modal).
+    oldBeads: z.number().nonnegative().default(0),
+    oldAntibodies: z.number().nonnegative().default(0),
     hamilton: z.number().int().min(1).max(5),
     runPlatePosition: z.number().int().min(1).max(4),
     standardPosition: z.number().int().min(1).max(2),
