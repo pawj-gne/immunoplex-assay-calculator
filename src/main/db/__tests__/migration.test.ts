@@ -365,3 +365,53 @@ describe('migration 0007 — Phase 13 master_panel_reagents + schema delta', () 
     expect(runRow.panel_id).toBeNull()
   })
 })
+
+describe('migration 14-08 — runs.numberOfSetups + oldBeads + oldAntibodies columns (SMK3-02/03/16)', () => {
+  // Plan 14-08 closes the DB-schema gap surfaced by 14-04: TS types + Zod schema
+  // carry numberOfSetups (Phase 12), oldBeads, oldAntibodies (Phase 14) as
+  // optional fields with `?? 0/1` defaults on load, but the SQLite `runs` table
+  // had no columns to persist them. Without these columns, save→reload silently
+  // drops the values, breaking SMK3-16 snapshot fidelity on disk.
+  //
+  // Mirrors the column-presence pattern from migration 0005 (machine_name /
+  // is_offline_save) above.
+  it('runs table has number_of_setups column (NOT NULL with default 1) after latest migration', () => {
+    const { sqlite } = createTestDb()
+    const cols = sqlite.prepare("PRAGMA table_info('runs')").all() as Array<{
+      name: string
+      notnull: number
+      dflt_value: string | null
+    }>
+    const col = cols.find((c) => c.name === 'number_of_setups')
+    expect(col).toBeDefined()
+    expect(col?.notnull).toBe(1) // NOT NULL
+    // Drizzle emits `DEFAULT 1`; SQLite stores the literal — accept either '1' or 1.
+    expect(['1', 1]).toContain(col?.dflt_value as unknown as string | number)
+  })
+
+  it('runs table has old_beads column (NOT NULL with default 0) after latest migration', () => {
+    const { sqlite } = createTestDb()
+    const cols = sqlite.prepare("PRAGMA table_info('runs')").all() as Array<{
+      name: string
+      notnull: number
+      dflt_value: string | null
+    }>
+    const col = cols.find((c) => c.name === 'old_beads')
+    expect(col).toBeDefined()
+    expect(col?.notnull).toBe(1) // NOT NULL
+    expect(['0', 0]).toContain(col?.dflt_value as unknown as string | number)
+  })
+
+  it('runs table has old_antibodies column (NOT NULL with default 0) after latest migration', () => {
+    const { sqlite } = createTestDb()
+    const cols = sqlite.prepare("PRAGMA table_info('runs')").all() as Array<{
+      name: string
+      notnull: number
+      dflt_value: string | null
+    }>
+    const col = cols.find((c) => c.name === 'old_antibodies')
+    expect(col).toBeDefined()
+    expect(col?.notnull).toBe(1) // NOT NULL
+    expect(['0', 0]).toContain(col?.dflt_value as unknown as string | number)
+  })
+})
