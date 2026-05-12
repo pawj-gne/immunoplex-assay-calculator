@@ -24,10 +24,15 @@ Accurate reagent calculations with clear prep recipes — operators must be able
 - [x] Generate clear reagent prep recipe for operator to follow (Phase 3, shipped v0.2.0)
 - [x] Display bead regions for plate reader instrument setup (Phase 3, shipped v0.2.0)
 - [x] Capture run metadata (user, date, operator, sample count, sample type, replicate mode, platform, species, Hamilton assignment, positions, panel, analytes) (Phase 4, code-complete — pending Windows smoke test HUMAN-UAT-04-03-01)
+- [x] **SMK3-08**: Importer accepts Smoke 3 sectioned xlsx format (Criteria/Values/Category per sheet; per-reagent rows; Premix matrix) (Phase 13, validated 2026-05-12 — supersedes v0.7.0 parser; 28 parser tests + SC #6 fixture gate 12/12 green)
+- [x] **SMK3-09**: Importer normalizes panel name Roman → Arabic at parse time (`Panel I` → `Panel 1`) (Phase 13, validated 2026-05-12 — 31 normalize tests)
+- [x] **SMK3-10**: Importer enumerates panels from sheet names; master `Table` tab ignored (Phase 13, validated 2026-05-12 — allPanelsFixture T-1)
+- [x] **SMK3-11**: Re-upload of (Platform, Species, Panel) **wholesale-replaces** existing panel (Phase 13, validated 2026-05-12 — importer.test.ts T-2/T-4/T-5/T-6 + FK SET NULL on runs.panel_id + run_single_analytes.analyte_id)
+- [x] **SMK3-DIL-01**: Diluent column free-text, stored verbatim, no enum/normalization (Phase 13, validated 2026-05-12 — 11 importer integration tests + diluentResolver coverage)
 
 ### Active
 
-(None carried from v1.0 — v1.0 code-complete pending Windows smoke test HUMAN-UAT-04.1-05-01; see Current Milestone below for v2.0 scope)
+(Phase 13 validated SMK3-08..11 + SMK3-DIL-01; remaining Smoke 3 work lives in Phases 14, 15, 16 — see Current Milestone below.)
 
 ## Current Milestone: v2.0 Panel XLSX Upload + Master-Panel Data Model
 
@@ -113,4 +118,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-23 — v2.0 milestone opened (Panel XLSX Upload + Master-Panel Data Model); v1.0 code-complete pending HUMAN-UAT-04.1-05-01*
+*Last updated: 2026-05-12 — Phase 13 complete (Smoke 3 Panel XLSX Parser v3; SMK3-08..11 + SMK3-DIL-01 validated; per-reagent schema live; 216/216 tests). Visual UI confirmation for ImportButton banner deferred to Phase 16 UAT (Windows-only). Next: Phase 14 (Plate Page Input Expansion + UI Cleanup).*
