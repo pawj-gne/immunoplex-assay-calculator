@@ -3,6 +3,7 @@ import { useCalculator } from '../hooks/useCalculator'
 import { SampleCountInput } from './SampleCountInput'
 import { OldReagentCapModal } from '../../plate/components/OldReagentCapModal'
 import { DEAD_VOLUME_PER_SETUP_UL } from '../../../../../shared/constants/calculator'
+import { evaluateOldReagentCommit } from '../lib/oldReagentCommit'
 
 /**
  * Calculator Inputs panel — 7 controls in the D-01 PRD order:
@@ -123,31 +124,47 @@ export function CalculatorForm() {
   // value; floor-rounding happens inside calculatorStore.getOutputs(),
   // not here. Just validate non-negative finite and pass through; if it
   // exceeds the live cap, open the override modal.
+  //
+  // WR-01: the decision logic is extracted to `evaluateOldReagentCommit`
+  // so the override / value-changed / open-modal logic is testable AND
+  // does not depend on reading the React-state override flag AFTER its
+  // setter has been called in the same callback (which captured a stale
+  // value and broke the D-10 "re-prompts when value changes" contract on
+  // the second over-cap retype).
   const commitOldBeads = (raw: string) => {
-    const n = parseFloat(raw)
-    if (!Number.isFinite(n) || n < 0) {
+    const decision = evaluateOldReagentCommit({
+      raw,
+      currentValue: oldBeads,
+      capML,
+      previouslyAccepted: beadsOverrideAccepted
+    })
+    if (decision.kind === 'reject') {
       setOldBeadsDisplay(oldBeads === 0 ? '0' : String(oldBeads))
       return
     }
-    // Reset override flag when value changes (re-prompt next time it exceeds).
-    if (n !== oldBeads) setBeadsOverrideAccepted(false)
-    setOldBeads(n)
-    if (capML > 0 && n > capML && !beadsOverrideAccepted) {
-      setPendingTypedValue(n)
+    if (decision.resetOverride) setBeadsOverrideAccepted(false)
+    setOldBeads(decision.parsedValue)
+    if (decision.openModal) {
+      setPendingTypedValue(decision.parsedValue)
       setActiveModal('beads')
     }
   }
 
   const commitOldAntibodies = (raw: string) => {
-    const n = parseFloat(raw)
-    if (!Number.isFinite(n) || n < 0) {
+    const decision = evaluateOldReagentCommit({
+      raw,
+      currentValue: oldAntibodies,
+      capML,
+      previouslyAccepted: antibodiesOverrideAccepted
+    })
+    if (decision.kind === 'reject') {
       setOldAntibodiesDisplay(oldAntibodies === 0 ? '0' : String(oldAntibodies))
       return
     }
-    if (n !== oldAntibodies) setAntibodiesOverrideAccepted(false)
-    setOldAntibodies(n)
-    if (capML > 0 && n > capML && !antibodiesOverrideAccepted) {
-      setPendingTypedValue(n)
+    if (decision.resetOverride) setAntibodiesOverrideAccepted(false)
+    setOldAntibodies(decision.parsedValue)
+    if (decision.openModal) {
+      setPendingTypedValue(decision.parsedValue)
       setActiveModal('antibodies')
     }
   }
