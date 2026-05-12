@@ -48,17 +48,6 @@ export function ceilToTenthML(volumeUL: Decimal): Decimal {
 }
 
 /**
- * Round volume up to nearest mL (for reagent prep)
- *
- * @deprecated Use ceilToTenthML for Smoke 3 0.1-mL precision. Removed after Task 2.
- */
-export function roundUpToNearestML(volumeUL: Decimal): Decimal {
-  const mL = volumeUL.dividedBy(1000)
-  const roundedML = mL.ceil()
-  return roundedML.times(1000)
-}
-
-/**
  * Concentration operations
  */
 export function createConcentration(value: number | string): Decimal {

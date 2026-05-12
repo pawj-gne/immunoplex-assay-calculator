@@ -1,6 +1,7 @@
 import { Decimal } from 'decimal.js'
 import {
   STANDARD_WELLS,
+  DEAD_VOLUME_PER_SETUP_UL,
   getUnknownWellsPerPlate,
   getMaxSingles,
   type ReplicateMode,
@@ -15,7 +16,7 @@ import type {
 } from '../../../shared/types/calculator'
 import type { Analyte } from '../../../shared/types/analyte'
 import type { PanelWithAnalytes } from '../../../shared/types/panel'
-import { createVolume, roundUpToNearestML } from './decimal'
+import { createVolume, ceilToTenthML } from './decimal'
 
 /**
  * Calculate total wells needed for a given number of samples
@@ -66,12 +67,13 @@ export function calculateRawVolume(
 }
 
 /**
- * Calculate final volume (rounded up to nearest mL)
+ * Calculate final volume (rounded UP to nearest 0.1 mL per Smoke 3 SMK3-06)
  *
- * Uses the roundUpToNearestML utility from decimal.ts
+ * Uses the ceilToTenthML utility from decimal.ts. Supersedes the prior
+ * "round up to nearest mL" rule (CALC-06 / STATE decision 02-01).
  */
 export function calculateFinalVolume(rawVolumeUL: Decimal): Decimal {
-  return roundUpToNearestML(rawVolumeUL)
+  return ceilToTenthML(rawVolumeUL)
 }
 
 /**
@@ -128,19 +130,42 @@ export function validateSampleCount(
 }
 
 /**
- * Create calculator inputs with default volumes
+ * Create calculator inputs with default volumes.
+ *
+ * Per Smoke 3 SMK3-05, dead volume is no longer a free-form caller-provided
+ * number — it is derived from `numberOfSetups × DEAD_VOLUME_PER_SETUP_UL`.
+ * Default `numberOfSetups = 1` keeps the legacy 2 mL dead volume.
+ *
+ * BREAKING (for direct callers): the 5th positional arg WAS `deadVolumeUL`
+ * (a µL number defaulting to 500). It is NOW `numberOfSetups` (an integer
+ * setup count defaulting to 1). Plan 12-03 will fix calculatorStore to pass
+ * `numberOfSetups` instead of the runtime `deadVolume` value. Until then,
+ * the defensive sanity cap below catches a legacy caller passing 2000 (the
+ * legacy 2000 µL dead-volume default) as the 5th arg.
  */
 export function createCalculatorInputs(
   sampleCount: number,
   replicateMode: ReplicateMode,
   plateCount: number,
   volumePerWellUL: number = 25,
-  deadVolumeUL: number = 500
+  numberOfSetups: number = 1
 ): CalculatorInputs {
+  if (!Number.isInteger(numberOfSetups) || numberOfSetups < 1) {
+    throw new Error(
+      `createCalculatorInputs: numberOfSetups must be an integer >= 1 (got ${numberOfSetups})`
+    )
+  }
+  if (numberOfSetups > 1000) {
+    throw new Error(
+      `createCalculatorInputs: numberOfSetups ${numberOfSetups} exceeds sanity cap of 1000 — caller likely passing deadVolume from a pre-Smoke-3 callsite`
+    )
+  }
+  const deadVolumeUL = numberOfSetups * DEAD_VOLUME_PER_SETUP_UL
   return {
     sampleCount,
     replicateMode,
     plateCount,
+    numberOfSetups,
     volumePerWell: createVolume(volumePerWellUL, 'uL'),
     deadVolume: createVolume(deadVolumeUL, 'uL')
   }

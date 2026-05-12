@@ -10,7 +10,13 @@ import {
 } from '../lib/calculator'
 import {
   DEFAULT_VOLUME_PER_WELL,
-  DEFAULT_DEAD_VOLUME,
+  // Plan 12-01 renamed the legacy dead-volume constant to DEAD_VOLUME_PER_SETUP_UL (Smoke 3 SMK3-05).
+  // This store still uses it as a raw default for the legacy `deadVolume` runtime field;
+  // Plan 12-03 will replace this entirely with a `numberOfSetups` field. Until then, this
+  // store's `getOutputs()` will throw at runtime because it passes deadVolume=2000 as the
+  // 5th `numberOfSetups` arg, which exceeds the sanity cap. That is the intended forcing
+  // function — see Plan 12-01 SUMMARY for rationale.
+  DEAD_VOLUME_PER_SETUP_UL,
   type ReplicateMode,
   type RequestType
 } from '../../../shared/constants/calculator'
@@ -61,7 +67,7 @@ const initialState = {
   replicateMode: 'singles' as ReplicateMode,
   requestType: 'premix' as RequestType,
   volumePerWell: DEFAULT_VOLUME_PER_WELL,
-  deadVolume: DEFAULT_DEAD_VOLUME,
+  deadVolume: DEAD_VOLUME_PER_SETUP_UL,
   singles: [] as SingleAnalyte[],
   validationError: null as string | null
 }

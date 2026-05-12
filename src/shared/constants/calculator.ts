@@ -19,7 +19,7 @@ export const UNKNOWN_WELLS_DUPLICATES = 36
  * These can be made configurable in future versions
  */
 export const DEFAULT_VOLUME_PER_WELL = 25 // µL
-export const DEFAULT_DEAD_VOLUME = 2000 // µL (2 mL)
+export const DEAD_VOLUME_PER_SETUP_UL = 2000 // µL contributed per setup (Smoke 3 SMK3-05: total dead volume = numberOfSetups × this constant)
 
 /**
  * Single analyte limits

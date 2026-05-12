@@ -11,9 +11,11 @@ export interface CalculatorInputs {
   replicateMode: ReplicateMode
   /** Number of plates to prepare */
   plateCount: number
+  /** Number of plate setups; dead volume = numberOfSetups × DEAD_VOLUME_PER_SETUP_UL. Default 1. Must be integer ≥ 1. */
+  numberOfSetups: number
   /** Volume of reagent per well in µL */
   volumePerWell: Decimal
-  /** Dead volume to add for pipetting loss in µL */
+  /** Dead volume to add for pipetting loss in µL (computed = numberOfSetups × DEAD_VOLUME_PER_SETUP_UL) */
   deadVolume: Decimal
 }
 
@@ -77,6 +79,8 @@ export interface CalculatorState {
   sampleCount: number
   replicateMode: ReplicateMode
   plateCount: number
+  /** Number of plate setups; drives dead volume in calculator (Smoke 3 SMK3-05). Default 1. */
+  numberOfSetups: number
   requestType: RequestType
   volumePerWell: number // Will be converted to Decimal for calculations
   deadVolume: number // Will be converted to Decimal for calculations
