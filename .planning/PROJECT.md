@@ -118,4 +118,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-12 — Phase 13 complete (Smoke 3 Panel XLSX Parser v3; SMK3-08..11 + SMK3-DIL-01 validated; per-reagent schema live; 216/216 tests). Visual UI confirmation for ImportButton banner deferred to Phase 16 UAT (Windows-only). Next: Phase 14 (Plate Page Input Expansion + UI Cleanup).*
+*Last updated: 2026-05-12 — Phase 14 complete (Smoke 3 Plate Page Input Expansion + UI Cleanup; SMK3-01, SMK3-02, SMK3-03, SMK3-04, SMK3-13, SMK3-14, SMK3-RPL-01, SMK3-RPL-02 validated programmatically; 381/381 tests; 8 plans + DB persistence fixup + 3 code-review warnings fixed). 7 visual/E2E items routed to Phase 16 Windows UAT (vitest Node-only). Next: Phase 15 (PE volume formula + SAPE Name display + run-document audit trail).*
