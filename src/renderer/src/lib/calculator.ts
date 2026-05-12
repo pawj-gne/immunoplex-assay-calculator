@@ -105,6 +105,33 @@ export function calculateVolumes(inputs: CalculatorInputs): CalculatorOutputs {
 }
 
 /**
+ * Apply old-reagent subtraction per Smoke 3 PRD §Calculation → Old Reagents.
+ *
+ * - new reagent volume = max(0, raw - old) — D-11 floor-clamp to zero so the
+ *   operator never gets a negative new-reagent suggestion.
+ * - total reagent = old + new (dead volume is already inside rawVolumeUL).
+ *
+ * Caller is responsible for:
+ *   1. Floor-rounding `oldReagentUL` to 0.1 mL precision BEFORE passing in
+ *      (per D-08, the floor-round happens at consumption time — typically
+ *      via floorToTenthML in lib/decimal.ts converting from mL to µL).
+ *   2. Applying ceilToTenthML to the returned values for display (the
+ *      output-rounding asymmetry per D-07).
+ *
+ * This function is per-reagent (call once for beads, once for antibodies).
+ * It does NOT mutate inputs.
+ */
+export function applyOldReagentSubtraction(
+  rawVolumeUL: Decimal,
+  oldReagentUL: Decimal
+): { newReagentUL: Decimal; totalReagentUL: Decimal } {
+  const diff = rawVolumeUL.minus(oldReagentUL)
+  const newReagentUL = diff.isNegative() ? new Decimal(0) : diff
+  const totalReagentUL = oldReagentUL.plus(newReagentUL)
+  return { newReagentUL, totalReagentUL }
+}
+
+/**
  * Validate sample count against plate capacity
  */
 export function validateSampleCount(
