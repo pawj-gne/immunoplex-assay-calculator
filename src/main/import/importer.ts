@@ -127,9 +127,17 @@ function wholesaleReplace(
   let wasUpdate: boolean
 
   if (existing) {
-    // D-12 wholesale-delete children
-    analyteRepository.deleteByMasterPanelId(existing.id)
+    // D-12 wholesale-delete children. ORDER MATTERS: premix_panels rows have
+    // panel_analytes junction rows that reference analytes.id with a NOT NULL
+    // FK (no onDelete cascade declared in Phase 5 schema). If we delete the
+    // analytes first, the dangling junction rows trigger FK violation. So:
+    //   1. panelRepository.deleteByMasterPanelId — cleans junction rows AND
+    //      drops premix_panels rows (runs.panel_id → NULL via FK SET NULL D-15)
+    //   2. analyteRepository.deleteByMasterPanelId — now safe to delete
+    //      (run_single_analytes.analyte_id → NULL via FK SET NULL D-17)
+    //   3. masterPanelReagentRepository.deleteByMasterPanelId — drops reagent rows
     panelRepository.deleteByMasterPanelId(existing.id)
+    analyteRepository.deleteByMasterPanelId(existing.id)
     masterPanelReagentRepository.deleteByMasterPanelId(existing.id)
     masterPanelRepository.updateMetadata(existing.id, {
       name: r.panelNameNormalized,
