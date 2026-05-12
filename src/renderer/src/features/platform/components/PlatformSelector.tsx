@@ -53,12 +53,6 @@ export function PlatformSelector() {
           <h3 className="font-medium text-green-800 mb-2">
             Platform Selected: {selectedPlatform.name}
           </h3>
-          <p className="text-sm text-green-700">
-            Stock concentration: <strong>{selectedPlatform.stockConcentration}x</strong>
-          </p>
-          <p className="text-sm text-green-600 mt-2">
-            Ready to proceed with reagent calculations.
-          </p>
         </div>
       )}
     </div>

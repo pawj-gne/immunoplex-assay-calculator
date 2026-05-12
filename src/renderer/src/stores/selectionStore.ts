@@ -170,33 +170,48 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
   },
 
   selectPanel: async (panelId: string | null) => {
-    // Per D-4.1-04: switching between premix selections (including to "No Premix")
-    // must clear stale singles so analytes scoped to the prior premix do not
-    // survive the switch. Clear optimistically; re-applied even on fetch error.
+    // Smoke 3 SMK3-13 D-18: deselecting a premix (panelId === null) PRESERVES
+    // previously-picked singles. Member analytes of the deselected premix
+    // automatically return to the singles pool as selectable via the existing
+    // getAvailableSingles() — no auto-add to selectedSingleIds (D-19). This
+    // narrows D-4.1-04's "clear stale singles" rule: the original was to
+    // avoid stale singles surviving a switch into a panel where they would
+    // overlap with members; the new rule only enforces pruning in the
+    // switch-to-new-premix case (see below).
     if (panelId === null) {
       set({
         selectedPanelId: null,
-        selectedPanel: null,
-        selectedSingleIds: []
+        selectedPanel: null
+        // selectedSingleIds: INTENTIONALLY NOT CLEARED (D-18 — see comment above)
       })
       return
     }
 
-    set({
-      panelLoading: true,
-      panelError: null,
-      selectedSingleIds: []
-    })
+    // Smoke 3 SMK3-13 D-20: switching to a NEW premix B prunes selectedSingleIds
+    // entries that are members of panel B. Members of B become panel-members,
+    // not singles; non-member singles survive the switch. This is the only
+    // case where D-4.1-04's stale-singles risk applies; we resolve it
+    // precisely (prune by membership), not bluntly (clear all).
+    set({ panelLoading: true, panelError: null })
 
     try {
       const panelWithAnalytes = await window.electronAPI.panel.getWithAnalytes(panelId)
+      const { selectedSingleIds } = get()
+      // Compute pruned list: drop any single ID that is a member of the new panel.
+      const newPanelMemberIds = new Set(
+        panelWithAnalytes?.analytes?.map((a) => a.id) ?? []
+      )
+      const prunedSingles = selectedSingleIds.filter((id) => !newPanelMemberIds.has(id))
       set({
         selectedPanelId: panelId,
         selectedPanel: panelWithAnalytes,
+        selectedSingleIds: prunedSingles,
         panelLoading: false
       })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load panel details'
+      // Per D-20: on fetch error, do NOT mutate selectedSingleIds (we don't
+      // know which members would have been pruned). Operator state preserved.
       set({ panelError: message, panelLoading: false })
       console.error('Failed to load panel details:', err)
     }
