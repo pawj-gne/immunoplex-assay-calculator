@@ -91,11 +91,11 @@ Recent decisions affecting current work:
 - **01-03:** Feature folder structure (features/platform/) for scalability
 - **01-03:** Migration path fix: __dirname in bundled code is out/main/, use ../../
 - **02-01:** Pure functions for all calculations (testable, reusable)
-- **02-01:** Final volume always rounds UP to nearest mL
+- **02-01:** ~~Final volume always rounds UP to nearest mL~~ — **SUPERSEDED 2026-05-11 by Phase 12-03 + SMK3-06: final volumes round UP to nearest 0.1 mL (ceiling at 0.1 mL precision). See .planning/phases/12-smoke-3-calculator-rules/12-01-PLAN.md and 12-03-PLAN.md.**
 - **02-02:** Zod for runtime validation of calculator inputs
 - **02-02:** Single addition = master_mix_volume / stock_concentration
 - **02-03:** Zustand store for calculator with derived outputs
-- **02-03:** Default dead volume changed to 2000 uL (2 mL)
+- **02-03:** ~~Default dead volume changed to 2000 uL (2 mL)~~ — **EXTENDED 2026-05-11 by Phase 12 + SMK3-05: dead volume now `numberOfSetups × 2 mL`; constant renamed DEFAULT_DEAD_VOLUME → DEAD_VOLUME_PER_SETUP_UL (still 2000 µL). Default setups = 1 so v1.0 callsites are backwards-compatible.**
 - **03-01:** Standards occupy columns 1-3 (24 wells per plate)
 - **03-01:** Column 12 uses vertical pairs in duplicates mode (A/E, B/F, C/G, D/H)
 - **03-01:** Sample numbering continues across plates
