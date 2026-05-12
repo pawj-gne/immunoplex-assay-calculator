@@ -21,13 +21,13 @@ describe('analyteRepository.upsertByNameInMaster (SC #5 — Pitfall-1 critical a
     platformId = ids.platformId
     speciesId = ids.speciesId
 
+    // Phase 13 D-10: the three vol fields were removed from MasterPanelUpsertInput
+    // (replaced by master_panel_reagents rows). Phase 5 upsert path here only
+    // needs the (platform, species, name) triple + vendorSinglesTerm.
     const mp = masterPanelRepository.upsertByPlatformAndSpecies({
       name: 'TestPanel',
       platformId,
       speciesId,
-      beadsVolumePerWell: 25,
-      abVolumePerWell: 25,
-      sapeVolumePerWell: 25,
       vendorSinglesTerm: null
     })
     masterPanelId = mp.id

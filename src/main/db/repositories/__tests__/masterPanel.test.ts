@@ -30,9 +30,6 @@ describe('masterPanelRepository.upsertByPlatformAndSpecies (SC #5 master-panel u
       name: 'MillipexCytokinesMouse',
       platformId,
       speciesId,
-      beadsVolumePerWell: 25,
-      abVolumePerWell: 25,
-      sapeVolumePerWell: 25,
       vendorSinglesTerm: 'Mapmates'
     })
     expect(result.action).toBe('created')
@@ -44,18 +41,12 @@ describe('masterPanelRepository.upsertByPlatformAndSpecies (SC #5 master-panel u
       name: 'Original',
       platformId,
       speciesId,
-      beadsVolumePerWell: 10,
-      abVolumePerWell: 10,
-      sapeVolumePerWell: 10,
       vendorSinglesTerm: null
     })
     const second = masterPanelRepository.upsertByPlatformAndSpecies({
       name: 'UpdatedName',
       platformId,
       speciesId,
-      beadsVolumePerWell: 50,
-      abVolumePerWell: 50,
-      sapeVolumePerWell: 50,
       vendorSinglesTerm: 'Mapmates'
     })
 
@@ -65,9 +56,10 @@ describe('masterPanelRepository.upsertByPlatformAndSpecies (SC #5 master-panel u
     const row = masterPanelRepository.getById(first.id)
     expect(row).not.toBeNull()
     expect(row?.name).toBe('UpdatedName')
-    expect(row?.beadsVolumePerWell).toBe(50)
-    expect(row?.abVolumePerWell).toBe(50)
-    expect(row?.sapeVolumePerWell).toBe(50)
+    // Phase 13 D-10: the three vol fields are gone; back-compat upsert leaves
+    // sapeName + description as NULL when the input didn't supply them.
+    expect(row?.sapeName).toBeNull()
+    expect(row?.description).toBeNull()
     expect(row?.vendorSinglesTerm).toBe('Mapmates')
     // created_at stays original; updated_at advances
     expect(row?.createdAt).toBeDefined()
@@ -75,7 +67,7 @@ describe('masterPanelRepository.upsertByPlatformAndSpecies (SC #5 master-panel u
   })
 })
 
-describe('master_panels composite UNIQUE INDEX enforcement (SC #3)', () => {
+describe('master_panels composite UNIQUE INDEX enforcement (Phase 13 D-14 — supersedes Phase 5 SC #3)', () => {
   let sqlite: ReturnType<typeof createTestDb>['sqlite']
   let platformId: string
   let speciesId: string
@@ -94,25 +86,43 @@ describe('master_panels composite UNIQUE INDEX enforcement (SC #3)', () => {
     sqlite.close()
   })
 
-  it('rejects a direct INSERT of a second row with identical (platform_id, species_id)', () => {
+  // Phase 13 D-14: UNIQUE swapped to (platform_id, species_id, name); the old
+  // (platform_id, species_id) UNIQUE no longer exists post-migration. The two
+  // tests below replace Phase 5 SC #3.
+  it.skip('Phase 13 D-14: composite UNIQUE on (platform_id, species_id, name) — same name + same plat/spec rejected // Unskipped after Plan 13-03 migration lands', () => {
     const now = new Date().toISOString()
     sqlite
       .prepare(
-        `INSERT INTO master_panels
-         (id, name, platform_id, species_id, beads_volume_per_well, ab_volume_per_well, sape_volume_per_well, vendor_singles_term, created_at, updated_at)
-         VALUES (?, 'First', ?, ?, 25, 25, 25, NULL, ?, ?)`
+        `INSERT INTO master_panels (id, name, platform_id, species_id, sape_name, description, vendor_singles_term, created_at, updated_at)
+         VALUES (?, 'Panel 1', ?, ?, NULL, NULL, NULL, ?, ?)`
       )
       .run(crypto.randomUUID(), platformId, speciesId, now, now)
-
     expect(() =>
       sqlite
         .prepare(
-          `INSERT INTO master_panels
-           (id, name, platform_id, species_id, beads_volume_per_well, ab_volume_per_well, sape_volume_per_well, vendor_singles_term, created_at, updated_at)
-           VALUES (?, 'Duplicate', ?, ?, 25, 25, 25, NULL, ?, ?)`
+          `INSERT INTO master_panels (id, name, platform_id, species_id, sape_name, description, vendor_singles_term, created_at, updated_at)
+           VALUES (?, 'Panel 1', ?, ?, NULL, NULL, NULL, ?, ?)`
         )
         .run(crypto.randomUUID(), platformId, speciesId, now, now)
     ).toThrow(/UNIQUE constraint failed/)
+  })
+
+  it.skip('Phase 13 D-14: different name in same (platform_id, species_id) succeeds // Unskipped after Plan 13-03 migration lands', () => {
+    const now = new Date().toISOString()
+    sqlite
+      .prepare(
+        `INSERT INTO master_panels (id, name, platform_id, species_id, sape_name, description, vendor_singles_term, created_at, updated_at)
+         VALUES (?, 'Panel 1', ?, ?, NULL, NULL, NULL, ?, ?)`
+      )
+      .run(crypto.randomUUID(), platformId, speciesId, now, now)
+    expect(() =>
+      sqlite
+        .prepare(
+          `INSERT INTO master_panels (id, name, platform_id, species_id, sape_name, description, vendor_singles_term, created_at, updated_at)
+           VALUES (?, 'Panel 2', ?, ?, NULL, NULL, NULL, ?, ?)`
+        )
+        .run(crypto.randomUUID(), platformId, speciesId, now, now)
+    ).not.toThrow()
   })
 
   it('upsertByPlatformAndSpecies is idempotent — second call with same (platform, species) updates rather than throws', () => {
@@ -120,9 +130,6 @@ describe('master_panels composite UNIQUE INDEX enforcement (SC #3)', () => {
       name: 'First',
       platformId,
       speciesId,
-      beadsVolumePerWell: 25,
-      abVolumePerWell: 25,
-      sapeVolumePerWell: 25,
       vendorSinglesTerm: null
     })
     // Second call MUST NOT throw — it's the idempotent update path
@@ -131,9 +138,6 @@ describe('master_panels composite UNIQUE INDEX enforcement (SC #3)', () => {
         name: 'Second',
         platformId,
         speciesId,
-        beadsVolumePerWell: 50,
-        abVolumePerWell: 50,
-        sapeVolumePerWell: 50,
         vendorSinglesTerm: 'Mapmates'
       })
     ).not.toThrow()
