@@ -114,10 +114,10 @@ Net-new requirements derived from [SMOKE-3-PRD.md](./SMOKE-3-PRD.md) (lab-owner-
 
 ### Panel XLSX Parser v3
 
-- [ ] **SMK3-08**: Importer accepts Smoke 3 sectioned xlsx format (`Criteria` / `Values` / `Category` blocks per sheet; per-reagent rows in Values; Premix matrix in Category with Premix Concentration row + Count column + Analyte columns). Supersedes PANEL-UPLOAD-V2-SPEC.md, v0.7.0 parser, MPAN-01 single-volume model, CALV-01 single-volume resolution.
-- [ ] **SMK3-09**: Importer normalizes panel name Roman → Arabic at parse time. `Panel I` → `Panel 1`, `Panel II` → `Panel 2`, etc. Lab can author either form; calculator displays + queries against normalized Arabic form.
-- [ ] **SMK3-10**: Importer enumerates panels from sheet names. The master `Table` tab is ignored by the parser (decorative only; range strings like "1 through 7" not consumed).
-- [ ] **SMK3-11**: Re-upload of a (Platform, Species, Panel) triple **wholesale replaces** the existing panel (analytes + premixes + metadata). Supersedes MPAN-05 upsert-with-orphans.
+- [x] **SMK3-08**: Importer accepts Smoke 3 sectioned xlsx format (`Criteria` / `Values` / `Category` blocks per sheet; per-reagent rows in Values; Premix matrix in Category with Premix Concentration row + Count column + Analyte columns). Supersedes PANEL-UPLOAD-V2-SPEC.md, v0.7.0 parser, MPAN-01 single-volume model, CALV-01 single-volume resolution.
+- [x] **SMK3-09**: Importer normalizes panel name Roman → Arabic at parse time. `Panel I` → `Panel 1`, `Panel II` → `Panel 2`, etc. Lab can author either form; calculator displays + queries against normalized Arabic form.
+- [x] **SMK3-10**: Importer enumerates panels from sheet names. The master `Table` tab is ignored by the parser (decorative only; range strings like "1 through 7" not consumed).
+- [x] **SMK3-11**: Re-upload of a (Platform, Species, Panel) triple **wholesale replaces** the existing panel (analytes + premixes + metadata). Supersedes MPAN-05 upsert-with-orphans.
 
 ### Run Document & Persistence
 

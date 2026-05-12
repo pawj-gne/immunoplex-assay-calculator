@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] ~~**Phase 10: Vendor Term & Calculator Reagent-Volume Wiring**~~ - **SUPERSEDED 2026-05-11 by Phases 12 + 14** (calculator wiring + UI work absorbed into Smoke 3 calculator-rule migration and plate-page UI expansion; vendor singles term no longer applies — Smoke 3 PRD does not use it)
 - [ ] ~~**Phase 11: Windows UAT & v2.0 Release**~~ - **SUPERSEDED 2026-05-11 by Phase 16** (v2.0 scope shifted to Smoke 3 PRD; UAT gate moved to the end of the new phases)
 - [x] **Phase 12: Smoke 3 — Calculator Rules Migration** - INSERTED 2026-05-11 - Rounding (0.1 mL ceiling), diluent rule (concentration-keyed), dead volume (× setups), CALC-05 retention confirmation (SMK3-05, SMK3-06, SMK3-07) — **Complete 2026-05-12** (4 plans shipped: 3 original + 1 gap closure; 11/11 must-haves verified; 105 tests; integration tests lock in PRD worked example end-to-end through runStore.loadRun cascade)
-- [ ] **Phase 13: Smoke 3 — Panel XLSX Parser v3** - INSERTED 2026-05-11 - Rewrite parser.ts for Criteria/Values/Category sectioned format, per-reagent schema growth, Roman→Arabic panel normalization, wholesale-replace re-upload, delete legacy CSVs (SMK3-08, SMK3-09, SMK3-10, SMK3-11)
+- [x] **Phase 13: Smoke 3 — Panel XLSX Parser v3** - INSERTED 2026-05-11 - Rewrite parser.ts for Criteria/Values/Category sectioned format, per-reagent schema growth, Roman→Arabic panel normalization, wholesale-replace re-upload, delete legacy CSVs (SMK3-08, SMK3-09, SMK3-10, SMK3-11) (completed 2026-05-12)
 - [ ] **Phase 14: Smoke 3 — Plate Page Input Expansion + UI Cleanup** - INSERTED 2026-05-11 - Old Beads / Old Antibodies / Number of Setups inputs, premix deselection UX, bead region flat-list, stock-concentration label removal (SMK3-01, SMK3-02, SMK3-03, SMK3-04, SMK3-13, SMK3-14)
 - [ ] **Phase 15: Smoke 3 — Run Document Audit Trail** - INSERTED 2026-05-11 - Full inputs+intermediates+outputs+diluent-decision breakdown, SAPE Name display, snapshot-frozen historical runs (SMK3-12, SMK3-15, SMK3-16, SMK3-17)
 - [ ] **Phase 16: Windows UAT & Release** - INSERTED 2026-05-11 - PLACEHOLDER - After Phases 12-15 ship, build .exe, install on Windows workstation, walk through Smoke 3 features end-to-end, tag release (version TBD: v0.8.0 vs v2.0.0 decided at gate)
@@ -356,12 +356,12 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 13-01-PLAN.md — Schema delta + repository layer: schema.ts extensions (masterPanelReagents table + master_panels delta + FK SET NULL on runs.panelId + run_single_analytes.analyteId), masterPanelReagent repo + types, extended Phase 5 repos, repository-layer unit tests (Wave 1)
-- [ ] 13-02-PLAN.md — Fixture build pipeline: scripts/build-panels-fixture.ts + tsx devDep + npm run fixtures:panels + generated templates/panels/all-panels.xlsx (17 panels + Table sheet) (Wave 1, parallel with 13-01)
-- [ ] 13-03-PLAN.md — Drizzle migration 0007: db:generate + migration test (schema artifacts + post-migration FK SET NULL constraint behavior) + un-skip Plan 01 tests + [BLOCKING] db:push checkpoint (Wave 2)
-- [ ] 13-04-PLAN.md — Parser/validator/normalize rewrite: normalize.ts (Roman→Arabic + canonReagentKind), parser.ts (multi-sheet block parser; Pattern A + Pattern B), validator.ts (multi-sheet aggregation + D-21 collision); 71+ unit tests (Wave 2, parallel with 13-03)
-- [ ] 13-05-PLAN.md — Importer rewrite + integration tests (wholesale-replace transaction over master_panel_reagents, FK SET NULL verification, MANDATORY rollback test, MANDATORY Phase 12 SMK3-16 cross-phase regression) + SC #6 17/17 fixture gate via all-panels.xlsx (Wave 3)
-- [ ] 13-06-PLAN.md — UI surface + cleanup + phase audit: IPC + preload + ImportButton banner update for new ImportResult shape, legacy CSV deletion (SC #5), full test suite green + Phase 12 runStore regression check, phase ready for /gsd-verify-work (Wave 4)
+- [x] 13-01-PLAN.md — Schema delta + repository layer: schema.ts extensions (masterPanelReagents table + master_panels delta + FK SET NULL on runs.panelId + run_single_analytes.analyteId), masterPanelReagent repo + types, extended Phase 5 repos, repository-layer unit tests (Wave 1)
+- [x] 13-02-PLAN.md — Fixture build pipeline: scripts/build-panels-fixture.ts + tsx devDep + npm run fixtures:panels + generated templates/panels/all-panels.xlsx (17 panels + Table sheet) (Wave 1, parallel with 13-01)
+- [x] 13-03-PLAN.md — Drizzle migration 0007: db:generate + migration test (schema artifacts + post-migration FK SET NULL constraint behavior) + un-skip Plan 01 tests + [BLOCKING] db:push checkpoint (Wave 2)
+- [x] 13-04-PLAN.md — Parser/validator/normalize rewrite: normalize.ts (Roman→Arabic + canonReagentKind), parser.ts (multi-sheet block parser; Pattern A + Pattern B), validator.ts (multi-sheet aggregation + D-21 collision); 71+ unit tests (Wave 2, parallel with 13-03)
+- [x] 13-05-PLAN.md — Importer rewrite + integration tests (wholesale-replace transaction over master_panel_reagents, FK SET NULL verification, MANDATORY rollback test, MANDATORY Phase 12 SMK3-16 cross-phase regression) + SC #6 17/17 fixture gate via all-panels.xlsx (Wave 3)
+- [x] 13-06-PLAN.md — UI surface + cleanup + phase audit: IPC + preload + ImportButton banner update for new ImportResult shape, legacy CSV deletion (SC #5), full test suite green + Phase 12 runStore regression check, phase ready for /gsd-verify-work (Wave 4)
 
 ### Phase 14: Smoke 3 — Plate Page Input Expansion + UI Cleanup (INSERTED 2026-05-11)
 **Goal**: The Plate page exposes `Old Beads` / `Old Antibodies` / `Number of Setups` inputs feeding the new calculator rules. Premix deselection re-enables members as singles without auto-adding. Bead region display becomes a flat list. Stock-concentration labels on platform-selection screens are removed.
@@ -422,7 +422,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 | 10. Vendor Term & Calculator Reagent-Volume Wiring | — | **SUPERSEDED by Phases 12+14 (2026-05-11)** | - |
 | 11. Windows UAT & v2.0 Release | — | **SUPERSEDED by Phase 16 (2026-05-11)** | - |
 | 12. Smoke 3 — Calculator Rules Migration | 4/4 | Complete    | 2026-05-12 |
-| 13. Smoke 3 — Panel XLSX Parser v3 | 0/6 | Not started | - |
+| 13. Smoke 3 — Panel XLSX Parser v3 | 6/6 | Complete    | 2026-05-12 |
 | 14. Smoke 3 — Plate Page Inputs + UI Cleanup | 0/TBD | Not started | - |
 | 15. Smoke 3 — Run Document Audit Trail | 0/TBD | Not started | - |
 | 16. Windows UAT & Release (Smoke 3) | 0/TBD | Not started (placeholder; version TBD) | - |
@@ -439,7 +439,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 **Goal:** Use Electron's built-in autoUpdater (via electron-updater from electron-builder) to detect and silently apply new releases without requiring the user to manually download and run the installer. Eliminates the current manual upgrade path that requires cleaning up old installs on domain-joined PCs.
 
 **Requirements:** TBD
-**Plans:** 0 plans
+**Plans:** 6/6 plans complete
 
 Plans:
 - [ ] TBD (promote with /gsd-review-backlog when ready)
