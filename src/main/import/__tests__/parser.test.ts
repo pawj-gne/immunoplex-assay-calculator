@@ -372,9 +372,9 @@ describe('parseSheet — Category block (Pattern A and Pattern B)', () => {
     expect(parsed.premixes).toHaveLength(1)
     expect(parsed.premixes[0].name).toBe('Premix Panel I 5-plex')
     expect(parsed.premixes[0].premixConc).toBe(1)
-    // Pattern B fixture has the premix member column populated with order numbers (1,2,3), not analyte names,
-    // so memberNames is treated as the verbatim cell text. Validator will catch any mismatch.
-    expect(parsed.premixes[0].memberNames).toEqual(['1', '2', '3'])
+    // Pattern B fixture has no premix-member cells populated (analyte rows only fill cols A-C),
+    // so memberNames is the empty list. Validator will surface this as an empty membership.
+    expect(parsed.premixes[0].memberNames).toEqual([])
   })
 
   it('T-23: walk analyte rows downward; blank col A stops the walk (Pitfall 8)', () => {
