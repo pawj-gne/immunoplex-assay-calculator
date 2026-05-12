@@ -101,16 +101,16 @@ Net-new requirements derived from [SMOKE-3-PRD.md](./SMOKE-3-PRD.md) (lab-owner-
 
 ### Plate Page Input Expansion
 
-- [ ] **SMK3-02**: Plate page exposes **Old Beads** numeric input (mL, ≥ 0, default 0). Subtracted from new-bead volume calc; added to total bead volume.
-- [ ] **SMK3-03**: Plate page exposes **Old Antibodies** numeric input (mL, ≥ 0, default 0). Subtracted from new-antibody volume calc; added to total antibody volume.
+- [x] **SMK3-02**: Plate page exposes **Old Beads** numeric input (mL, ≥ 0, default 0). Subtracted from new-bead volume calc; added to total bead volume.
+- [x] **SMK3-03**: Plate page exposes **Old Antibodies** numeric input (mL, ≥ 0, default 0). Subtracted from new-antibody volume calc; added to total antibody volume.
 - [x] **SMK3-04**: Plate page exposes **Number of Setups** numeric input (default 1, min 1, no max). Drives dead-volume multiplier in SMK3-05
 .
 
 ### UI Behavior
 
-- [ ] **SMK3-01**: Calculator UI removes "Stock concentration: Xx" labels from platform selection screens ([PlatformCard.tsx:44-47](../src/renderer/src/features/platform/components/PlatformCard.tsx#L44-L47), [PlatformSelector.tsx:57,60](../src/renderer/src/features/platform/components/PlatformSelector.tsx#L57-L60)). "Platform Selected: {name}" header retained.
-- [ ] **SMK3-13**: When user deselects a premix, its member analytes return to the singles pool as selectable but are NOT auto-selected. Honors CALC-05 max-5 cap.
-- [ ] **SMK3-14**: Bead region display = flat list of every analyte (TA — Total Analytes, including premix members + standalone singles), sorted by bead region.
+- [x] **SMK3-01**: Calculator UI removes "Stock concentration: Xx" labels from platform selection screens ([PlatformCard.tsx:44-47](../src/renderer/src/features/platform/components/PlatformCard.tsx#L44-L47), [PlatformSelector.tsx:57,60](../src/renderer/src/features/platform/components/PlatformSelector.tsx#L57-L60)). "Platform Selected: {name}" header retained.
+- [x] **SMK3-13**: When user deselects a premix, its member analytes return to the singles pool as selectable but are NOT auto-selected. Honors CALC-05 max-5 cap.
+- [x] **SMK3-14**: Bead region display = flat list of every analyte (TA — Total Analytes, including premix members + standalone singles), sorted by bead region.
 
 ### Panel XLSX Parser v3
 
@@ -132,7 +132,7 @@ Net-new requirements derived from [SMOKE-3-PRD.md](./SMOKE-3-PRD.md) (lab-owner-
 
 ### Replicate Mode
 
-- [ ] **SMK3-RPL-01**: Replicate Mode set = `Single` + `Duplicate` only. Triplicate / custom replicate counts are out of scope (PRD-confirmed during ingest).
+- [x] **SMK3-RPL-01**: Replicate Mode set = `Single` + `Duplicate` only. Triplicate / custom replicate counts are out of scope (PRD-confirmed during ingest).
 - [ ] **SMK3-RPL-02**: Duplicate plate layout = adjacent rows in the same column. Samples 1–4 occupy col 4 as `(A4,B4) (C4,D4) (E4,F4) (G4,H4)`, then col 5, …, through col 12 (9 cols × 4 samples = 36 = the CALC-01 cap).
 
 ## v3+ / Deferred

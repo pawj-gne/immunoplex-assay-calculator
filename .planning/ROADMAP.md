@@ -32,7 +32,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] ~~**Phase 11: Windows UAT & v2.0 Release**~~ - **SUPERSEDED 2026-05-11 by Phase 16** (v2.0 scope shifted to Smoke 3 PRD; UAT gate moved to the end of the new phases)
 - [x] **Phase 12: Smoke 3 — Calculator Rules Migration** - INSERTED 2026-05-11 - Rounding (0.1 mL ceiling), diluent rule (concentration-keyed), dead volume (× setups), CALC-05 retention confirmation (SMK3-05, SMK3-06, SMK3-07) — **Complete 2026-05-12** (4 plans shipped: 3 original + 1 gap closure; 11/11 must-haves verified; 105 tests; integration tests lock in PRD worked example end-to-end through runStore.loadRun cascade)
 - [x] **Phase 13: Smoke 3 — Panel XLSX Parser v3** - INSERTED 2026-05-11 - Rewrite parser.ts for Criteria/Values/Category sectioned format, per-reagent schema growth, Roman→Arabic panel normalization, wholesale-replace re-upload, delete legacy CSVs (SMK3-08, SMK3-09, SMK3-10, SMK3-11) (completed 2026-05-12)
-- [ ] **Phase 14: Smoke 3 — Plate Page Input Expansion + UI Cleanup** - INSERTED 2026-05-11 - Old Beads / Old Antibodies / Number of Setups inputs, premix deselection UX, bead region flat-list, stock-concentration label removal (SMK3-01, SMK3-02, SMK3-03, SMK3-04, SMK3-13, SMK3-14)
+- [x] **Phase 14: Smoke 3 — Plate Page Input Expansion + UI Cleanup** - INSERTED 2026-05-11 - Old Beads / Old Antibodies / Number of Setups inputs, premix deselection UX, bead region flat-list, stock-concentration label removal (SMK3-01, SMK3-02, SMK3-03, SMK3-04, SMK3-13, SMK3-14) (completed 2026-05-12)
 - [ ] **Phase 15: Smoke 3 — Run Document Audit Trail** - INSERTED 2026-05-11 - Full inputs+intermediates+outputs+diluent-decision breakdown, SAPE Name display, snapshot-frozen historical runs (SMK3-12, SMK3-15, SMK3-16, SMK3-17)
 - [ ] **Phase 16: Windows UAT & Release** - INSERTED 2026-05-11 - PLACEHOLDER - After Phases 12-15 ship, build .exe, install on Windows workstation, walk through Smoke 3 features end-to-end, tag release (version TBD: v0.8.0 vs v2.0.0 decided at gate)
 
@@ -377,13 +377,13 @@ Plans:
 **Plans**: 7 plans
 
 Plans:
-- [ ] 14-01-PLAN.md — Pure math foundation: lib/decimal.ts floorToTenthML + lib/calculator.ts applyOldReagentSubtraction + CalculatorOutputs type extension + 13 vitest cases (Wave 1)
-- [ ] 14-02-PLAN.md — Plate geometry rewrite: getDuplicatePair vertical-pair-within-column geometry + DUPLICATE_HORIZONTAL_PAIRS/DUPLICATE_VERTICAL_COL retirement + usePlateLayout + plateStore.autoFill duplicate branch + 86+ vitest cases (Wave 1, parallel with 14-01)
-- [ ] 14-03-PLAN.md — Stock-concentration UI label cleanup: PlatformCard footer strip + PlatformSelector green-box trim (Wave 1, parallel with 14-01 + 14-02)
-- [ ] 14-04-PLAN.md — Store extensions + snapshot fidelity: calculatorStore oldBeads/oldAntibodies fields + setters + extended getOutputs; plateStore.setPlateCount bidirectional action; RunRecord/RunCreate type extension; useRunSnapshot + runStore.loadRun cascade for SMK3-16; Groups H/I/J tests (Wave 2, depends_on 01)
-- [ ] 14-05-PLAN.md — Selection feature refinement: selectionStore.selectPanel preserve-on-null + prune-on-switch (SMK3-13 / D-18 D-20); SelectedAnalytesList flat bead-region-sorted list (SMK3-14 / D-14-D-17) + AnalyteSelectionPanel caller update (Wave 2)
-- [ ] 14-06-PLAN.md — CalculatorForm restructure + OldReagentCapModal: useCalculator hook extension + 7-input form in D-01 order + 20%-cap soft-block + confirm-once override modal (Wave 3, depends_on 01 + 04)
-- [ ] 14-07-PLAN.md — Integration test extension: Group K (PRD-fixture Old-reagent math E2E) + Group L (selectPanel preserve/prune E2E) — 7 new test cases locking the cross-store contracts (Wave 4, depends_on 01 + 02 + 04 + 05)
+- [x] 14-01-PLAN.md — Pure math foundation: lib/decimal.ts floorToTenthML + lib/calculator.ts applyOldReagentSubtraction + CalculatorOutputs type extension + 13 vitest cases (Wave 1)
+- [x] 14-02-PLAN.md — Plate geometry rewrite: getDuplicatePair vertical-pair-within-column geometry + DUPLICATE_HORIZONTAL_PAIRS/DUPLICATE_VERTICAL_COL retirement + usePlateLayout + plateStore.autoFill duplicate branch + 86+ vitest cases (Wave 1, parallel with 14-01)
+- [x] 14-03-PLAN.md — Stock-concentration UI label cleanup: PlatformCard footer strip + PlatformSelector green-box trim (Wave 1, parallel with 14-01 + 14-02)
+- [x] 14-04-PLAN.md — Store extensions + snapshot fidelity: calculatorStore oldBeads/oldAntibodies fields + setters + extended getOutputs; plateStore.setPlateCount bidirectional action; RunRecord/RunCreate type extension; useRunSnapshot + runStore.loadRun cascade for SMK3-16; Groups H/I/J tests (Wave 2, depends_on 01)
+- [x] 14-05-PLAN.md — Selection feature refinement: selectionStore.selectPanel preserve-on-null + prune-on-switch (SMK3-13 / D-18 D-20); SelectedAnalytesList flat bead-region-sorted list (SMK3-14 / D-14-D-17) + AnalyteSelectionPanel caller update (Wave 2)
+- [x] 14-06-PLAN.md — CalculatorForm restructure + OldReagentCapModal: useCalculator hook extension + 7-input form in D-01 order + 20%-cap soft-block + confirm-once override modal (Wave 3, depends_on 01 + 04)
+- [x] 14-07-PLAN.md — Integration test extension: Group K (PRD-fixture Old-reagent math E2E) + Group L (selectPanel preserve/prune E2E) — 7 new test cases locking the cross-store contracts (Wave 4, depends_on 01 + 02 + 04 + 05)
 
 ### Phase 15: Smoke 3 — Run Document Audit Trail (INSERTED 2026-05-11)
 **Goal**: The finalized run document shows the full calculation work — inputs, intermediates, outputs, diluent decision — and surfaces SAPE Name for traceability. Historical runs saved under v1/v2 rules are snapshot-frozen: reopening shows persisted values, never recomputes.
@@ -432,7 +432,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 | 11. Windows UAT & v2.0 Release | — | **SUPERSEDED by Phase 16 (2026-05-11)** | - |
 | 12. Smoke 3 — Calculator Rules Migration | 4/4 | Complete    | 2026-05-12 |
 | 13. Smoke 3 — Panel XLSX Parser v3 | 6/6 | Complete    | 2026-05-12 |
-| 14. Smoke 3 — Plate Page Inputs + UI Cleanup | 0/7 | Planned | - |
+| 14. Smoke 3 — Plate Page Inputs + UI Cleanup | 8/8 | Complete    | 2026-05-12 |
 | 15. Smoke 3 — Run Document Audit Trail | 0/TBD | Not started | - |
 | 16. Windows UAT & Release (Smoke 3) | 0/TBD | Not started (placeholder; version TBD) | - |
 
@@ -448,7 +448,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 **Goal:** Use Electron's built-in autoUpdater (via electron-updater from electron-builder) to detect and silently apply new releases without requiring the user to manually download and run the installer. Eliminates the current manual upgrade path that requires cleaning up old installs on domain-joined PCs.
 
 **Requirements:** TBD
-**Plans:** 6/6 plans complete
+**Plans:** 8/8 plans complete
 
 Plans:
 - [ ] TBD (promote with /gsd-review-backlog when ready)
