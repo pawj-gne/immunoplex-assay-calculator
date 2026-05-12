@@ -2,9 +2,40 @@ import type { Platform, PlatformCreate, PlatformUpdate } from '../shared/types/p
 import type { Species } from '../shared/types/species'
 import type { PremixPanel, PremixPanelUpdate, PanelWithAnalytes } from '../shared/types/panel'
 import type { Analyte, AnalyteUpdate } from '../shared/types/analyte'
-import type { ImportResult } from '../main/import/importer'
 import type { RunRecord, RunCreate, RunUpdate } from '../shared/types/run'
 import type { Operator, OperatorCreate, OperatorUpdate } from '../shared/types/operator'
+
+/**
+ * Phase 13 (Plan 13-06): ImportResult contract duplicated here for the
+ * renderer-side surface. The canonical source-of-truth lives in
+ * src/main/import/importer.ts, but the preload bridge runs in the renderer
+ * (browser) context and cannot reach main-process files. Type drift between
+ * main and renderer is caught at compile-time by `tsc --noEmit` over both
+ * tsconfig.node.json (main) and tsconfig.web.json (renderer).
+ */
+export interface PanelSummary {
+  sheetName: string
+  normalizedName: string
+  platform: string
+  species: string
+  analyteCount: number
+  premixCount: number
+  sapeName: string | null
+  sapeConc: number
+  wasUpdate: boolean
+}
+
+export interface ImportSheetError {
+  sheetName: string // empty string for file-level (D-21) errors
+  issues: string[]
+}
+
+export interface ImportResult {
+  success: boolean
+  canceled?: boolean
+  summaries: PanelSummary[]
+  errors: ImportSheetError[]
+}
 
 export interface ElectronAPI {
   platform: {
