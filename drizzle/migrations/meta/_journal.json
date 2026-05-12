@@ -50,6 +50,13 @@
       "when": 1777079030488,
       "tag": "0006_outstanding_miss_america",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1778607657211,
+      "tag": "0007_deep_scarlet_spider",
+      "breakpoints": true
     }
   ]
 }

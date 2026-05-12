@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import Database from 'better-sqlite3'
 import fs from 'fs'
 import path from 'path'
-import { createTestDb } from './testDb'
+import { createTestDb, seedPlatformAndSpecies } from './testDb'
 
 const MIGRATIONS_DIR = path.join(__dirname, '../../../../drizzle/migrations')
 
@@ -215,5 +215,153 @@ describe('migration 0005 — offline_queue + runs machine provenance (NET-01)', 
       .get(runId) as { machine_name: string | null; is_offline_save: number }
     expect(row.machine_name).toBeNull()
     expect(row.is_offline_save).toBe(0) // DEFAULT false → 0
+  })
+})
+
+describe('migration 0007 — Phase 13 master_panel_reagents + schema delta', () => {
+  let sqlite: Database.Database
+
+  beforeEach(() => {
+    const testDb = createTestDb() // applies ALL migrations 0000→0007
+    sqlite = testDb.sqlite
+  })
+
+  afterEach(() => {
+    sqlite.close()
+  })
+
+  it('master_panel_reagents table exists with expected columns', () => {
+    const tableInfo = sqlite
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='master_panel_reagents'"
+      )
+      .get()
+    expect(tableInfo).toBeDefined()
+
+    const cols = sqlite
+      .prepare("PRAGMA table_info('master_panel_reagents')")
+      .all() as Array<{ name: string; type: string; notnull: number }>
+    const colNames = cols.map((c) => c.name)
+    expect(colNames).toEqual(
+      expect.arrayContaining([
+        'id',
+        'master_panel_id',
+        'reagent_kind',
+        'concentration',
+        'diluent',
+        'volume_per_well',
+        'created_at',
+        'updated_at'
+      ])
+    )
+    // concentration + diluent are nullable; volume_per_well is NOT NULL
+    const concentration = cols.find((c) => c.name === 'concentration')
+    const diluent = cols.find((c) => c.name === 'diluent')
+    const vpw = cols.find((c) => c.name === 'volume_per_well')
+    expect(concentration?.notnull).toBe(0)
+    expect(diluent?.notnull).toBe(0)
+    expect(vpw?.notnull).toBe(1)
+  })
+
+  it('master_panel_reagents has composite UNIQUE index on (master_panel_id, reagent_kind)', () => {
+    const indexes = sqlite
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='index' AND name='master_panel_reagents_master_kind_uniq'"
+      )
+      .all()
+    expect(indexes.length).toBe(1)
+  })
+
+  it('master_panels: 3 vol columns dropped + sape_name + description added', () => {
+    const cols = sqlite.prepare("PRAGMA table_info('master_panels')").all() as Array<{
+      name: string
+    }>
+    const colNames = cols.map((c) => c.name)
+    expect(colNames).not.toContain('beads_volume_per_well')
+    expect(colNames).not.toContain('ab_volume_per_well')
+    expect(colNames).not.toContain('sape_volume_per_well')
+    expect(colNames).toContain('sape_name')
+    expect(colNames).toContain('description')
+    expect(colNames).toContain('vendor_singles_term') // D-11: preserved
+  })
+
+  it('master_panels UNIQUE swapped to include name (D-14)', () => {
+    const oldIdx = sqlite
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='index' AND name='master_panels_platform_species_uniq'"
+      )
+      .all()
+    expect(oldIdx.length).toBe(0) // old removed
+
+    const newIdx = sqlite
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='index' AND name='master_panels_platform_species_name_uniq'"
+      )
+      .all()
+    expect(newIdx.length).toBe(1) // new exists
+  })
+
+  it('runs.panel_id FK has ON DELETE SET NULL (D-15, Pitfall E)', () => {
+    const sql = (
+      sqlite
+        .prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='runs'")
+        .get() as { sql: string }
+    ).sql
+    // panel_id reference should now have SET NULL
+    expect(sql).toMatch(/panel_id[\s\S]*REFERENCES[\s\S]*premix_panels[\s\S]*ON DELETE set null/i)
+  })
+
+  it('run_single_analytes.analyte_id is nullable AND FK SET NULL (D-17, Pitfall E)', () => {
+    const cols = sqlite
+      .prepare("PRAGMA table_info('run_single_analytes')")
+      .all() as Array<{ name: string; notnull: number }>
+    const analyteIdCol = cols.find((c) => c.name === 'analyte_id')
+    expect(analyteIdCol).toBeDefined()
+    expect(analyteIdCol!.notnull).toBe(0) // nullable post-migration
+
+    const sql = (
+      sqlite
+        .prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='run_single_analytes'")
+        .get() as { sql: string }
+    ).sql
+    expect(sql).toMatch(/analyte_id[\s\S]*REFERENCES[\s\S]*analytes[\s\S]*ON DELETE set null/i)
+  })
+
+  it('Post-migration FK SET NULL constraint behavior: wholesale-delete of referenced premix nulls runs.panel_id (D-15 verified at SQL layer; true Pitfall F row-count preservation verified manually via the [BLOCKING] db:push step in Task 4 against the populated dev DB)', () => {
+    // createTestDb has already applied all migrations 0000..0007. This test
+    // verifies the post-migration FK SET NULL CONSTRAINT behavior (D-15) — NOT
+    // the row-count preservation through the recreate-dance itself (which is
+    // verified manually by Task 4's [BLOCKING] db:push against the populated
+    // dev DB). Insert a run + premix; wholesale-DELETE the premix; assert
+    // runs.panel_id IS NULL (not an FK-restrict violation).
+    const { platformId, speciesId } = seedPlatformAndSpecies(sqlite)
+    const now = new Date().toISOString()
+    const operatorId = crypto.randomUUID()
+    sqlite
+      .prepare(
+        `INSERT INTO operators (id, name, active, created_at, updated_at) VALUES (?, 'Op', 1, ?, ?)`
+      )
+      .run(operatorId, now, now)
+    const premixId = crypto.randomUUID()
+    sqlite
+      .prepare(
+        `INSERT INTO premix_panels (id, name, platform_id, species_id, sub_panel_conc, created_at, updated_at)
+         VALUES (?, 'PremixA', ?, ?, 1, ?, ?)`
+      )
+      .run(premixId, platformId, speciesId, now, now)
+    const runId = crypto.randomUUID()
+    sqlite
+      .prepare(
+        `INSERT INTO runs (id, request_override_ad_hoc, user_name, operator_id, run_date, sample_type, dilution_factor, sample_count, replicate_mode, request_type, platform_id, species_id, panel_id, volume_per_well, dead_volume, hamilton, run_plate_position, standard_position, trough_position, plex, plate_count, plates_json, is_offline_save, created_at, updated_at)
+         VALUES (?, 0, 'tester', ?, '2026-05-12', 'Serum', 1, 24, 'singles', 'premix', ?, ?, ?, 25, 2000, 1, 1, 1, 1, 5, 1, '{}', 0, ?, ?)`
+      )
+      .run(runId, operatorId, platformId, speciesId, premixId, now, now)
+
+    // Delete the referenced premix; runs.panel_id should become NULL (NOT throw FK violation)
+    sqlite.prepare('DELETE FROM premix_panels WHERE id = ?').run(premixId)
+    const runRow = sqlite
+      .prepare('SELECT panel_id FROM runs WHERE id = ?')
+      .get(runId) as { panel_id: string | null }
+    expect(runRow.panel_id).toBeNull()
   })
 })
