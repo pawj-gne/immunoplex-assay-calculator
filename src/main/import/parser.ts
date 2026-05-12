@@ -20,7 +20,12 @@ export interface ParsedPanel {
   sub_panels: ParsedSubPanel[]
 }
 
-export class ParseError extends Error {}
+export class ParseError extends Error {
+  constructor(message: string, public sheetName?: string) {
+    super(sheetName ? `[${sheetName}] ${message}` : message)
+    this.name = 'ParseError'
+  }
+}
 
 export function parseImportFile(filePath: string): ParsedPanel {
   const workbook = XLSX.readFile(filePath)
