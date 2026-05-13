@@ -78,6 +78,7 @@ Progress: [█████████▓] 99%
 
 - Phase 4.1 inserted after Phase 4: Smoke test bug fixes (BUG-01/02/03 + UI-01) — URGENT, blocks v1.0 release. Source: 04-SMOKE-TEST-RESULTS.md (2026-04-23)
 - Phases 5-9 appended 2026-04-23: v2.0 milestone roadmap (5 phases, 21 requirements mapped). Derived from research SUMMARY.md §Roadmap Implications; critical gates embedded — Pitfall 1 adoption-upsert in Phase 7, Pitfall 4 provenance-display in Phase 8. Open decisions OD-1/2/3/7 gate Phase 5 planning; OD-4/5/6/8 ride the same discuss-phase session.
+- Phase 15.1 inserted after Phase 15 (2026-05-12): code-review gap closure — WR-01 loadRun override-flag restoration, WR-02 audit-trail integrity on null IPC, WR-06 derive 6 em-dashed audit-trail rows. URGENT — hard precondition for Phase 16 build per 16-CONTEXT.md D-16-16/17.
 
 ### Decisions
 
