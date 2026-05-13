@@ -38,19 +38,24 @@ Accurate reagent calculations with clear prep recipes — operators must be able
 
 (Phase 15 validated SMK3-12, SMK3-15, SMK3-16, SMK3-17 programmatically; Windows-runtime UAT for all 4 visual items routed to Phase 16. Remaining Smoke 3 work lives in Phase 16 — see Current Milestone below.)
 
-## Current Milestone: v2.0 Panel XLSX Upload + Master-Panel Data Model
+## Current Milestone: v1.0 Release — Smoke 3 calculator on Windows lab PC
 
-**Goal:** Replace the flat-CSV panel importer with a vendor-native multi-tab xlsx format, introduce a `master_panels` concept to anchor reagent volumes and vendor-specific terminology per (platform, species), and wire the calculator to read reagent volumes from the master panel when available.
+**Goal:** Ship the Smoke 3 PRD-compliant desktop calculator on the operator's Windows workstation. Tag v1.0.0 after a clean Windows UAT pass.
 
-**Target features:**
-- **Panel XLSX upload** — multi-tab xlsx ingest replacing or coexisting with v1's flat CSV. Per-tab pipeline with metadata (B1–B4 + optional A6 vendor singles term), master analyte list (cols A/B/C), premix columns (E+), blank-stop rules, case-insensitive platform/species resolution, validation-before-write, upsert-on-re-import. Full spec in `.planning/PANEL-UPLOAD-V2-SPEC.md`.
-- **Vendor-specific singles term in UI** — once `vendor_singles_term` lands on master panels, replace the generic "Analytes" label in `AnalyteGrid` with the vendor term ("Singleplex", "Simplex", etc.) when available. Closes D-4.1-05.
-- **Calculator reagent-volume wiring** — calculator reads `reagent_volume_per_well` from the run's master panel first, falls back to platform default for full-custom and v1-imported panels. Documented behavior change.
+**Status:** In UAT — Phase 16 (Windows UAT & Release). Phases 12-15.1 are merged and code-complete on `dev/v1-01` (439/439 tests; typecheck exit 0; 0 critical/warning code-review findings).
 
-**Key context:**
-- Schema delta: new `master_panels` table; `master_panel_id` FK on `panels` and `analytes` (nullable for v1-imported rows).
-- v1 out-of-scope items (tablet support, barcode scanning, photo annotation, lab usage tracking) stay out of v2.0. If any are pulled forward after stakeholder feedback, they land as v2.1+.
-- 6 open decisions from `.planning/PANEL-UPLOAD-V2-SPEC.md` §Open decisions (replace-vs-coexist, calculator strictness, vendor-term UI placement, premix-drop semantics, validation strictness, file-level schema versioning) will be locked during `/gsd-discuss-phase` before planning the first phase.
+**Pending v1.0.0 deliverables:**
+- `npm run build:win` produces `dist/immunoplex-assay-calculator-1.0.0-x64-setup.exe`
+- Operator runs `16-SMOKE-TEST-GUIDE.md` Section A/B/C on the Windows lab PC against `templates/panels/all-panels.xlsx`; outcome `## Overall: PASS`
+- `git tag -a v1.0.0` + `gh release create v1.0.0` with CHANGELOG.md §[1.0.0] as the release body
+
+## Next Milestone: v1.1 — Network Layer & Central Server (Phase 6)
+
+**Trigger:** Lab-confirmed v1.0 real-world use (suggestion ≥1-2 weeks of actual assay work). NOT immediate after v1.0.
+
+**Goal preview:** One designated lab PC runs an HTTP server owning the central SQLite DB; other PCs route DB ops via HTTP; offline fallback via local SQLite + sync-back queue.
+
+v1.2 (Phase 7 — central audit trail) follows v1.1 with a hard dependency on the v1.1 server layer. v2.0 is reserved for a future major version with scope TBD (not Phase 6/7 territory per D-16-20).
 
 ### Out of Scope
 

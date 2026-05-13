@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
+milestone: v1.0
 milestone_name: Release
-status: ready_to_execute
-stopped_at: Phase 15.1 complete (3/3 plans, code-verified; HUMAN-UAT-15.1 carried into Phase 16 Section B); Phase 16 plan ready (3 plans, 1 plan-checker pass)
-last_updated: "2026-05-13T20:00:00.000Z"
-last_activity: 2026-05-13 -- Phase 16 plan complete (3 plans, 9 tasks, plan-checker PASS after 1 revision)
+status: in_progress
+stopped_at: Phase 16 Wave 1 reconciliation in progress (Plan 16-01)
+last_updated: "2026-05-13T05:30:00.000Z"
+last_activity: 2026-05-13 -- Phase 16 Wave 1 reconciliation sweep
 progress:
   total_phases: 22
   completed_phases: 14
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 
 ## Current Position
 
-Milestone: v2.0 (Panel XLSX Upload + Master-Panel Data Model) — **scope shifted 2026-05-11 by Smoke 3 PRD adoption; pending reconciliation to v1.0 in Phase 16 Plan 16-01 Task 1 per D-16-20**
+Milestone: v1.0 (Smoke 3 Release) — reconciled 2026-05-13 from stale v2.0 label per D-16-20
 Phase: 16
-Plan: 16-01-PLAN.md (Wave 1) — ready to execute
-Status: Ready to execute
+Plan: 16-01 (Wave 1)
+Status: Wave 1 in progress (reconciliation + UAT script + CHANGELOG)
 Last activity: 2026-05-13
 
 Progress: [█████████▓] 99%
@@ -58,9 +58,11 @@ Progress: [█████████▓] 99%
 | 08-vendor-term-calculator-wiring | 0/TBD | Not started | - |
 | 09-windows-uat-v2-release | 0/TBD | Not started | - |
 | 12-smoke-3-calculator-rules | 4/4 | Complete | - |
-| 13-smoke-3-panel-xlsx-parser | -/- | Complete (per Phase 14 transition note) | - |
+| 13-smoke-3-panel-xlsx-parser | 6/6 | Complete | 2026-05-12 |
 | 14-smoke-3-plate-page-input-expansion-ui-cleanup | 8/8 | Complete | - |
-| 15-smoke-3-run-document-audit-trail | 5/5 | Complete | 2026-05-12 |
+| 15-smoke-3-run-document-audit-trail | 5/5 | Complete | 2026-05-13 |
+| 15.1-phase-15-code-review-gap-closure | 3/3 | Complete | 2026-05-13 |
+| 16-windows-uat-release | 0/3 | Wave 1 in progress | - |
 
 **Doc debt:** None — all SUMMARY files present. 03-03, 03.3-05, 03.3-06 were backfilled from git history on 2026-04-22; each carries a backfill banner noting that exact execution timing and live deviation notes are not available.
 | Phase 04-run-documentation-persistence-deployment P01 | 7m 17s | 5 tasks | 17 files |

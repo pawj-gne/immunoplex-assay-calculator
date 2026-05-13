@@ -44,6 +44,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ## v2.0 Requirements — Panel XLSX Upload + Master-Panel Data Model
 
+> **Re-scoped 2026-05-12 (Phase 16 reconciliation, per D-16-20):** The "v2.0" label here is a historical planning artifact. The Smoke 3 PRD adoption (SMK3-* requirements in §v2.1 below) is the **v1.0.0 release** content. Phase 6 (Network Layer & Central Server) and Phase 7 (Audit Trail) are **v1.1.0** and **v1.2.0** minor releases respectively — NOT v2.0. v2.0 is reserved for a future major version with scope TBD.
+
 Active. Mapped to v2.0 roadmap phases.
 
 ### Panel XLSX Import (PIMP) — SUPERSEDED 2026-05-11
@@ -229,4 +231,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-22*
-*Last updated: 2026-04-23 — v2.0 traceability added (21 requirements mapped to Phases 5-8; Phase 9 = Windows UAT gate)*
+*Last updated: 2026-05-13 — Phase 16 reconciliation: §v2.0 header annotated with v1.x re-scope note per D-16-20 (v2.0 label is historical artifact; SMK3-* requirements are v1.0.0 release content; Phase 6/7 are v1.1.0/v1.2.0 minor releases)*
