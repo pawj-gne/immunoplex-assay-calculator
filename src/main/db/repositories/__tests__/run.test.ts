@@ -172,4 +172,99 @@ describe('runRepository — numberOfSetups + oldBeads + oldAntibodies persistenc
     expect(byRequest.get(2002)?.oldBeads).toBe(1.2)
     expect(byRequest.get(2002)?.oldAntibodies).toBe(1.6)
   })
+
+  describe('Phase 15 audit-trail snapshot persistence (SMK3-12/15/16/17)', () => {
+    it('T-7: create() persists sapeName when provided', () => {
+      const created = runRepository.create(basePayload({ sapeName: 'SAPE-A' }))
+      expect(created.sapeName).toBe('SAPE-A')
+      expect(runRepository.getById(created.id)!.sapeName).toBe('SAPE-A')
+    })
+
+    it('T-8: create() persists sapeConcentration when provided', () => {
+      const created = runRepository.create(basePayload({ sapeConcentration: 1.0 }))
+      expect(runRepository.getById(created.id)!.sapeConcentration).toBe(1.0)
+    })
+
+    it('T-9: create() persists beadsDiluent verbatim (SMK3-DIL-01)', () => {
+      const created = runRepository.create(basePayload({ beadsDiluent: 'L-AB' }))
+      expect(runRepository.getById(created.id)!.beadsDiluent).toBe('L-AB')
+    })
+
+    it('T-10: create() persists antibodiesDiluent verbatim (SMK3-DIL-01)', () => {
+      const created = runRepository.create(basePayload({ antibodiesDiluent: 'L-AB' }))
+      expect(runRepository.getById(created.id)!.antibodiesDiluent).toBe('L-AB')
+    })
+
+    it('T-11: create() persists beadsVolumePerWell when provided', () => {
+      const created = runRepository.create(basePayload({ beadsVolumePerWell: 0.05 }))
+      expect(runRepository.getById(created.id)!.beadsVolumePerWell).toBe(0.05)
+    })
+
+    it('T-12: create() persists antibodiesVolumePerWell when provided', () => {
+      const created = runRepository.create(basePayload({ antibodiesVolumePerWell: 0.025 }))
+      expect(runRepository.getById(created.id)!.antibodiesVolumePerWell).toBe(0.025)
+    })
+
+    it('T-13: create() persists premixConcentration when provided', () => {
+      const created = runRepository.create(basePayload({ premixConcentration: 1.0 }))
+      expect(runRepository.getById(created.id)!.premixConcentration).toBe(1.0)
+    })
+
+    it('T-14: create() persists oldBeadsOverride=true when provided', () => {
+      const created = runRepository.create(basePayload({ oldBeadsOverride: true }))
+      expect(runRepository.getById(created.id)!.oldBeadsOverride).toBe(true)
+    })
+
+    it('T-15: create() persists oldAntibodiesOverride=true when provided', () => {
+      const created = runRepository.create(basePayload({ oldAntibodiesOverride: true }))
+      expect(runRepository.getById(created.id)!.oldAntibodiesOverride).toBe(true)
+    })
+
+    it('T-16: create() persists calculationRulesVersion when provided', () => {
+      const created = runRepository.create(basePayload({ calculationRulesVersion: 'smoke3' }))
+      expect(runRepository.getById(created.id)!.calculationRulesVersion).toBe('smoke3')
+    })
+
+    it('T-17: create() with all 10 audit-trail fields supplied round-trips', () => {
+      const payload = basePayload({
+        sapeName: 'SAPE-A',
+        sapeConcentration: 1.0,
+        beadsDiluent: 'L-AB',
+        antibodiesDiluent: 'L-AB',
+        beadsVolumePerWell: 0.05,
+        antibodiesVolumePerWell: 0.025,
+        premixConcentration: 1.0,
+        oldBeadsOverride: true,
+        oldAntibodiesOverride: false,
+        calculationRulesVersion: 'smoke3'
+      })
+      const created = runRepository.create(payload)
+      const fetched = runRepository.getById(created.id)!
+      expect(fetched.sapeName).toBe('SAPE-A')
+      expect(fetched.sapeConcentration).toBe(1.0)
+      expect(fetched.beadsDiluent).toBe('L-AB')
+      expect(fetched.antibodiesDiluent).toBe('L-AB')
+      expect(fetched.beadsVolumePerWell).toBe(0.05)
+      expect(fetched.antibodiesVolumePerWell).toBe(0.025)
+      expect(fetched.premixConcentration).toBe(1.0)
+      expect(fetched.oldBeadsOverride).toBe(true)
+      expect(fetched.oldAntibodiesOverride).toBe(false)
+      expect(fetched.calculationRulesVersion).toBe('smoke3')
+    })
+
+    it('T-18: create() with audit-trail fields omitted defaults to NULL (8) / false (2) on read', () => {
+      const created = runRepository.create(basePayload())
+      const fetched = runRepository.getById(created.id)!
+      expect(fetched.sapeName).toBeNull()
+      expect(fetched.sapeConcentration).toBeNull()
+      expect(fetched.beadsDiluent).toBeNull()
+      expect(fetched.antibodiesDiluent).toBeNull()
+      expect(fetched.beadsVolumePerWell).toBeNull()
+      expect(fetched.antibodiesVolumePerWell).toBeNull()
+      expect(fetched.premixConcentration).toBeNull()
+      expect(fetched.calculationRulesVersion).toBeNull()
+      expect(fetched.oldBeadsOverride).toBe(false)
+      expect(fetched.oldAntibodiesOverride).toBe(false)
+    })
+  })
 })

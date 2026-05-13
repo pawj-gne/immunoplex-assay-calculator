@@ -85,6 +85,20 @@ export const runRepository = {
       if (data.numberOfSetups !== undefined) insertValues.numberOfSetups = data.numberOfSetups
       if (data.oldBeads !== undefined) insertValues.oldBeads = data.oldBeads
       if (data.oldAntibodies !== undefined) insertValues.oldAntibodies = data.oldAntibodies
+      // Phase 15 SMK3-12/15/16/17 — write the 10 audit-trail snapshot fields
+      // only when the caller supplied them; absent → DB DEFAULT (NULL for the
+      // master-panel-derived fields, false for overrides) preserves pre-Phase-15
+      // payload round-trip.
+      if (data.sapeName !== undefined) insertValues.sapeName = data.sapeName
+      if (data.sapeConcentration !== undefined) insertValues.sapeConcentration = data.sapeConcentration
+      if (data.beadsDiluent !== undefined) insertValues.beadsDiluent = data.beadsDiluent
+      if (data.antibodiesDiluent !== undefined) insertValues.antibodiesDiluent = data.antibodiesDiluent
+      if (data.beadsVolumePerWell !== undefined) insertValues.beadsVolumePerWell = data.beadsVolumePerWell
+      if (data.antibodiesVolumePerWell !== undefined) insertValues.antibodiesVolumePerWell = data.antibodiesVolumePerWell
+      if (data.premixConcentration !== undefined) insertValues.premixConcentration = data.premixConcentration
+      if (data.oldBeadsOverride !== undefined) insertValues.oldBeadsOverride = data.oldBeadsOverride
+      if (data.oldAntibodiesOverride !== undefined) insertValues.oldAntibodiesOverride = data.oldAntibodiesOverride
+      if (data.calculationRulesVersion !== undefined) insertValues.calculationRulesVersion = data.calculationRulesVersion
       db.insert(runs).values(insertValues).run()
       for (const analyteId of data.singleAnalyteIds) {
         db.insert(runSingleAnalytes)
@@ -154,6 +168,17 @@ export const runRepository = {
         numberOfSetups?: number
         oldBeads?: number
         oldAntibodies?: number
+        // Phase 15 audit-trail snapshot fields
+        sapeName?: string | null
+        sapeConcentration?: number | null
+        beadsDiluent?: string | null
+        antibodiesDiluent?: string | null
+        beadsVolumePerWell?: number | null
+        antibodiesVolumePerWell?: number | null
+        premixConcentration?: number | null
+        oldBeadsOverride?: boolean
+        oldAntibodiesOverride?: boolean
+        calculationRulesVersion?: string | null
       } = { ...baseSet }
       if (data.machineName !== undefined) setWithProvenance.machineName = data.machineName
       if (data.isOfflineSave !== undefined) setWithProvenance.isOfflineSave = data.isOfflineSave
@@ -162,6 +187,17 @@ export const runRepository = {
       if (data.numberOfSetups !== undefined) setWithProvenance.numberOfSetups = data.numberOfSetups
       if (data.oldBeads !== undefined) setWithProvenance.oldBeads = data.oldBeads
       if (data.oldAntibodies !== undefined) setWithProvenance.oldAntibodies = data.oldAntibodies
+      // Phase 15 SMK3-12/15/16/17 — same conditional-write idiom in update()
+      if (data.sapeName !== undefined) setWithProvenance.sapeName = data.sapeName
+      if (data.sapeConcentration !== undefined) setWithProvenance.sapeConcentration = data.sapeConcentration
+      if (data.beadsDiluent !== undefined) setWithProvenance.beadsDiluent = data.beadsDiluent
+      if (data.antibodiesDiluent !== undefined) setWithProvenance.antibodiesDiluent = data.antibodiesDiluent
+      if (data.beadsVolumePerWell !== undefined) setWithProvenance.beadsVolumePerWell = data.beadsVolumePerWell
+      if (data.antibodiesVolumePerWell !== undefined) setWithProvenance.antibodiesVolumePerWell = data.antibodiesVolumePerWell
+      if (data.premixConcentration !== undefined) setWithProvenance.premixConcentration = data.premixConcentration
+      if (data.oldBeadsOverride !== undefined) setWithProvenance.oldBeadsOverride = data.oldBeadsOverride
+      if (data.oldAntibodiesOverride !== undefined) setWithProvenance.oldAntibodiesOverride = data.oldAntibodiesOverride
+      if (data.calculationRulesVersion !== undefined) setWithProvenance.calculationRulesVersion = data.calculationRulesVersion
       db.update(runs).set(setWithProvenance).where(eq(runs.id, id)).run()
       // Replace singles in the join table
       db.delete(runSingleAnalytes).where(eq(runSingleAnalytes.runId, id)).run()

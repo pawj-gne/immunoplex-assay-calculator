@@ -45,6 +45,21 @@ export interface RunRecord {
    * SMK3-16 contract (optional + `?? 0` default on reload).
    */
   oldAntibodies?: number
+  // Phase 15 — SMK3-12/15/16/17 audit-trail snapshot fields. All 8 master-panel-
+  // derived fields are nullable so pre-Phase-15 saved runs tolerate the migration
+  // without backfill (D-15-04); the 2 override booleans mirror Phase 6 isOfflineSave
+  // shape; calculationRulesVersion is the marker that drives the historical-run
+  // banner ('smoke3' for Phase-15-and-later saves, NULL for pre-Phase-15 rows).
+  sapeName?: string | null
+  sapeConcentration?: number | null
+  beadsDiluent?: string | null
+  antibodiesDiluent?: string | null
+  beadsVolumePerWell?: number | null
+  antibodiesVolumePerWell?: number | null
+  premixConcentration?: number | null
+  oldBeadsOverride?: boolean
+  oldAntibodiesOverride?: boolean
+  calculationRulesVersion?: string | null
   hamilton: number // 1-5
   runPlatePosition: number // 1-4
   standardPosition: number // 1-2
@@ -92,6 +107,21 @@ export interface RunCreate {
    */
   oldBeads?: number
   oldAntibodies?: number
+  // Phase 15 — SMK3-12/15/16/17 audit-trail snapshot fields. All 8 master-panel-
+  // derived fields are nullable so pre-Phase-15 saved runs tolerate the migration
+  // without backfill (D-15-04); the 2 override booleans mirror Phase 6 isOfflineSave
+  // shape; calculationRulesVersion is the marker that drives the historical-run
+  // banner ('smoke3' for Phase-15-and-later saves, NULL for pre-Phase-15 rows).
+  sapeName?: string | null
+  sapeConcentration?: number | null
+  beadsDiluent?: string | null
+  antibodiesDiluent?: string | null
+  beadsVolumePerWell?: number | null
+  antibodiesVolumePerWell?: number | null
+  premixConcentration?: number | null
+  oldBeadsOverride?: boolean
+  oldAntibodiesOverride?: boolean
+  calculationRulesVersion?: string | null
   hamilton: number
   runPlatePosition: number
   standardPosition: number
