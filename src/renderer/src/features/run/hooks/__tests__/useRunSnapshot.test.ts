@@ -220,7 +220,8 @@ describe('Phase 15 — buildRunSnapshot async + 10 new audit-trail fields', () =
     expect(result.calculationRulesVersion).toBe('smoke3')
   })
 
-  it('IPC failure: returns { error } when the master panel IPC fetch throws', async () => {
+  it('WR-02 IPC throw: silent-skip the smoke3 marker + 10 audit fields (no error returned)', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const getWithReagentsMock = vi.fn().mockRejectedValue(new Error('IPC blew up'))
     vi.stubGlobal('window', {
       electronAPI: { masterPanel: { getWithReagents: getWithReagentsMock } }
@@ -228,10 +229,53 @@ describe('Phase 15 — buildRunSnapshot async + 10 new audit-trail fields', () =
     seedStoresWithPremixPanel()
 
     const result = await buildRunSnapshot(validMetadata)
-    expect('error' in result).toBe(true)
-    if ('error' in result) {
-      expect(result.error).toBe('Failed to snapshot master panel: IPC blew up')
-    }
+    // NO error result — the save proceeds.
+    expect('error' in result).toBe(false)
+    if ('error' in result) return // type narrow
+
+    // Marker absent — run will render as legacy (historical banner shows).
+    expect(result.calculationRulesVersion).toBeUndefined()
+    // 6 master-panel fields absent (conditional-spread omitted them).
+    expect(result.sapeName).toBeUndefined()
+    expect(result.sapeConcentration).toBeUndefined()
+    expect(result.beadsDiluent).toBeUndefined()
+    expect(result.antibodiesDiluent).toBeUndefined()
+    expect(result.beadsVolumePerWell).toBeUndefined()
+    expect(result.antibodiesVolumePerWell).toBeUndefined()
+    // premixConcentration + 2 override flags also absent (whole 10-field block omitted).
+    expect(result.premixConcentration).toBeUndefined()
+    expect(result.oldBeadsOverride).toBeUndefined()
+    expect(result.oldAntibodiesOverride).toBeUndefined()
+
+    // Always-emitted fields still present.
+    expect(result.sampleCount).toBeDefined()
+
+    // Diagnostic console.warn fired exactly once with the IPC error message.
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+    expect(warnSpy.mock.calls[0][0]).toContain('IPC blew up')
+
+    warnSpy.mockRestore()
+  })
+
+  it('WR-02 IPC null result: silent-skip the smoke3 marker + 10 audit fields', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const getWithReagentsMock = vi.fn().mockResolvedValue(null) // resolves null, does not throw
+    vi.stubGlobal('window', {
+      electronAPI: { masterPanel: { getWithReagents: getWithReagentsMock } }
+    })
+    seedStoresWithPremixPanel() // premix IS selected — masterPanelId is non-null, so IPC IS called
+
+    const result = await buildRunSnapshot(validMetadata)
+    expect('error' in result).toBe(false)
+    if ('error' in result) return
+
+    expect(getWithReagentsMock).toHaveBeenCalledTimes(1) // distinguishes from custom-assay path
+    expect(result.calculationRulesVersion).toBeUndefined()
+    expect(result.sapeName).toBeUndefined()
+
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+
+    warnSpy.mockRestore()
   })
 
   it('override packing: oldBeadsOverride=true / oldAntibodiesOverride=true flow from calculatorStore onto RunCreate (D-15-08)', async () => {
