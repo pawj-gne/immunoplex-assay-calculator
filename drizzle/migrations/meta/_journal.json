@@ -64,6 +64,13 @@
       "when": 1778619667622,
       "tag": "0008_runs_setups_and_old_reagents",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1778631374363,
+      "tag": "0009_chemical_prism",
+      "breakpoints": true
     }
   ]
 }
