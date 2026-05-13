@@ -26,6 +26,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     removeAnalyte: (panelId: string, analyteId: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.PANEL_REMOVE_ANALYTE, panelId, analyteId)
   },
+  masterPanel: {
+    // Phase 15 SMK3-15/16: save-time snapshot fetch
+    getWithReagents: (masterPanelId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.MASTER_PANEL_GET_WITH_REAGENTS, masterPanelId)
+  },
   analyte: {
     getByPlatformAndSpecies: (platformId: string, speciesId: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.ANALYTE_GET_BY_PLATFORM_SPECIES, platformId, speciesId),

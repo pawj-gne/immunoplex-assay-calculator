@@ -2,6 +2,7 @@ import { ipcMain } from 'electron'
 import { z } from 'zod'
 import { IPC_CHANNELS } from '../../shared/constants/channels'
 import { panelRepository } from '../db/repositories/panel'
+import { masterPanelRepository } from '../db/repositories/masterPanel'
 
 const panelUpdateSchema = z.object({
   id: z.string(),
@@ -58,4 +59,14 @@ export function registerPanelHandlers(): void {
       panelRepository.removeAnalyteFromPanel(panelId, analyteId)
     }
   )
+
+  // Phase 15 SMK3-15/16: save-time snapshot fetch — returns master_panels row +
+  // master_panel_reagents children for the renderer to denormalize onto the
+  // runs row at save time. Read-only; no write path.
+  ipcMain.handle(IPC_CHANNELS.MASTER_PANEL_GET_WITH_REAGENTS, async (_, masterPanelId: unknown) => {
+    if (typeof masterPanelId !== 'string') {
+      throw new Error('Invalid master panel ID')
+    }
+    return masterPanelRepository.getByIdWithReagents(masterPanelId)
+  })
 }

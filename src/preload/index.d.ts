@@ -4,6 +4,8 @@ import type { PremixPanel, PremixPanelUpdate, PanelWithAnalytes } from '../share
 import type { Analyte, AnalyteUpdate } from '../shared/types/analyte'
 import type { RunRecord, RunCreate, RunUpdate } from '../shared/types/run'
 import type { Operator, OperatorCreate, OperatorUpdate } from '../shared/types/operator'
+import type { MasterPanel } from '../shared/types/masterPanel'
+import type { MasterPanelReagent } from '../shared/types/masterPanelReagent'
 
 /**
  * Phase 13 (Plan 13-06): ImportResult contract duplicated here for the
@@ -54,6 +56,18 @@ export interface ElectronAPI {
     delete: (id: string) => Promise<void>
     addAnalyte: (panelId: string, analyteId: string) => Promise<void>
     removeAnalyte: (panelId: string, analyteId: string) => Promise<void>
+  }
+  masterPanel: {
+    /**
+     * Phase 15 SMK3-15/16: composed read for the audit-trail snapshot.
+     * Returns the master_panels row + its 0..3 master_panel_reagents children
+     * keyed off the masterPanelId already in the renderer's selectionStore
+     * (selectedPanel.masterPanelId post-selectPanel). Returns null when the
+     * id is unknown.
+     */
+    getWithReagents: (
+      masterPanelId: string
+    ) => Promise<{ masterPanel: MasterPanel; reagents: MasterPanelReagent[] } | null>
   }
   analyte: {
     getByPlatformAndSpecies: (platformId: string, speciesId: string) => Promise<Analyte[]>
