@@ -5,6 +5,7 @@ import { OldReagentCapModal } from '../../plate/components/OldReagentCapModal'
 import { DEAD_VOLUME_PER_SETUP_UL } from '../../../../../shared/constants/calculator'
 import { floorToTenthML } from '../../../lib/decimal'
 import { evaluateOldReagentCommit } from '../lib/oldReagentCommit'
+import { useCalculatorStore } from '../../../stores/calculatorStore'
 
 /**
  * Calculator Inputs panel — 7 controls in the D-01 PRD order:
@@ -143,7 +144,14 @@ export function CalculatorForm() {
       setOldBeadsDisplay(oldBeads === 0 ? '0' : String(oldBeads))
       return
     }
-    if (decision.resetOverride) setBeadsOverrideAccepted(false)
+    if (decision.resetOverride) {
+      // Phase 15 D-15-08 — dual-write: clear local UI guard AND the store
+      // mirror so buildRunSnapshot sees `false` on a save right after a
+      // value change. The store flag is re-set to `true` if the operator
+      // re-confirms via handleOverride below.
+      setBeadsOverrideAccepted(false)
+      useCalculatorStore.getState().setOldBeadsOverride(false)
+    }
     setOldBeads(decision.parsedValue)
     if (decision.openModal) {
       setPendingTypedValue(decision.parsedValue)
@@ -162,7 +170,12 @@ export function CalculatorForm() {
       setOldAntibodiesDisplay(oldAntibodies === 0 ? '0' : String(oldAntibodies))
       return
     }
-    if (decision.resetOverride) setAntibodiesOverrideAccepted(false)
+    if (decision.resetOverride) {
+      // Phase 15 D-15-08 — dual-write: clear local UI guard AND the store
+      // mirror (see commitOldBeads for rationale).
+      setAntibodiesOverrideAccepted(false)
+      useCalculatorStore.getState().setOldAntibodiesOverride(false)
+    }
     setOldAntibodies(decision.parsedValue)
     if (decision.openModal) {
       setPendingTypedValue(decision.parsedValue)
@@ -172,8 +185,16 @@ export function CalculatorForm() {
 
   // Modal handlers
   const handleOverride = () => {
-    if (activeModal === 'beads') setBeadsOverrideAccepted(true)
-    else if (activeModal === 'antibodies') setAntibodiesOverrideAccepted(true)
+    if (activeModal === 'beads') {
+      // Phase 15 D-15-08 — dual-write: local React state still drives the
+      // existing UI guards (red border + 'overridden' badge); store flag
+      // additionally surfaces to buildRunSnapshot at save time.
+      setBeadsOverrideAccepted(true)
+      useCalculatorStore.getState().setOldBeadsOverride(true)
+    } else if (activeModal === 'antibodies') {
+      setAntibodiesOverrideAccepted(true)
+      useCalculatorStore.getState().setOldAntibodiesOverride(true)
+    }
     setActiveModal(null)
   }
 
