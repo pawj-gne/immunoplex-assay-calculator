@@ -16,6 +16,9 @@ export const IPC_CHANNELS = {
   PANEL_ADD_ANALYTE: 'panel:add-analyte',
   PANEL_REMOVE_ANALYTE: 'panel:remove-analyte',
 
+  // Master Panel (Phase 15 — save-time snapshot fetch for audit trail)
+  MASTER_PANEL_GET_WITH_REAGENTS: 'master-panel:get-with-reagents',
+
   // Analyte
   ANALYTE_GET_BY_PLATFORM_SPECIES: 'analyte:get-by-platform-species',
   ANALYTE_GET_BY_PANEL: 'analyte:get-by-panel',

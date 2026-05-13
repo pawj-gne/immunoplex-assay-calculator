@@ -6,6 +6,8 @@ import type {
   MasterPanelUpsertInput,
   UpsertResult
 } from '../../../shared/types/masterPanel'
+import { masterPanelReagentRepository } from './masterPanelReagent'
+import type { MasterPanelReagent } from '../../../shared/types/masterPanelReagent'
 
 export const masterPanelRepository = {
   /**
@@ -161,5 +163,24 @@ export const masterPanelRepository = {
     const db = getDatabase()
     const result = db.select().from(masterPanels).where(eq(masterPanels.id, id)).get()
     return (result as MasterPanel | undefined) ?? null
+  },
+
+  /**
+   * Phase 15 SMK3-15/16: composed read for the audit-trail snapshot.
+   * Returns the master_panels row plus its master_panel_reagents children
+   * (0..3 rows: beads, antibodies, sape) in a single call so the renderer's
+   * buildRunSnapshot can pack the 6 master-panel-derived fields onto the
+   * runs row at save time. Returns null when the master_panel id is unknown
+   * (defensive — should not happen in normal flow because selectionStore
+   * carries a valid masterPanelId post-selectPanel).
+   */
+  getByIdWithReagents(id: string): {
+    masterPanel: MasterPanel
+    reagents: MasterPanelReagent[]
+  } | null {
+    const masterPanel = masterPanelRepository.getById(id)
+    if (!masterPanel) return null
+    const reagents = masterPanelReagentRepository.findByMasterPanelId(id)
+    return { masterPanel, reagents }
   }
 }
