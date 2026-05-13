@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Release
 status: executing
-stopped_at: Phase 15 context gathered
-last_updated: "2026-05-13T00:09:27.708Z"
-last_activity: 2026-05-13 -- Phase 15 execution started
+stopped_at: Phase 15 complete (pending /gsd-verify-work)
+last_updated: "2026-05-13T00:38:00.000Z"
+last_activity: 2026-05-13 -- Phase 15 execution finished (Plan 15-05 closed)
 progress:
   total_phases: 21
-  completed_phases: 11
+  completed_phases: 12
   total_plans: 61
-  completed_plans: 55
-  percent: 90
+  completed_plans: 60
+  percent: 99
 ---
 
 # Project State
@@ -26,12 +26,12 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Milestone: v2.0 (Panel XLSX Upload + Master-Panel Data Model) — **scope shifted 2026-05-11 by Smoke 3 PRD adoption**
-Phase: 15 (smoke-3-run-document-audit-trail-inserted-2026-05-11) — EXECUTING
-Plan: 1 of 5
-Status: Executing Phase 15
-Last activity: 2026-05-13 -- Phase 15 execution started
+Phase: 15 (smoke-3-run-document-audit-trail-inserted-2026-05-11) — COMPLETE (pending `/gsd-verify-work`)
+Plan: 5 of 5
+Status: Complete (pending /gsd-verify-work). Next phase = 16 Windows UAT.
+Last activity: 2026-05-13 -- Phase 15 execution finished (Plan 15-05 closed; Group M integration test green; full suite 421/421; typecheck 0; build 0)
 
-Progress: [█████████▓] 98%
+Progress: [█████████▓] 99%
 
 ## Performance Metrics
 
@@ -57,6 +57,10 @@ Progress: [█████████▓] 98%
 | 07-master-panel-importer-ipc-ui | 0/TBD | Not started | - |
 | 08-vendor-term-calculator-wiring | 0/TBD | Not started | - |
 | 09-windows-uat-v2-release | 0/TBD | Not started | - |
+| 12-smoke-3-calculator-rules | 4/4 | Complete | - |
+| 13-smoke-3-panel-xlsx-parser | -/- | Complete (per Phase 14 transition note) | - |
+| 14-smoke-3-plate-page-input-expansion-ui-cleanup | 8/8 | Complete | - |
+| 15-smoke-3-run-document-audit-trail | 5/5 | Complete | 2026-05-12 |
 
 **Doc debt:** None — all SUMMARY files present. 03-03, 03.3-05, 03.3-06 were backfilled from git history on 2026-04-22; each carries a backfill banner noting that exact execution timing and live deviation notes are not available.
 | Phase 04-run-documentation-persistence-deployment P01 | 7m 17s | 5 tasks | 17 files |
@@ -169,6 +173,11 @@ Recent decisions affecting current work:
 - 12-03: useCalculator.ts hook destructured the renamed `deadVolume` store field; Rule-3 deviation swapped destructure + return shape to `numberOfSetups`. No external consumer of useCalculator() reads .deadVolume — safe rename, dead-surface preservation. Phase 14 may rework input surface when Plate page exposes the field
 - 12-03: Diluent resolver from Plan 12-02 NOT yet wired into calculatorStore — deferred to Phase 13/14/15 once per-reagent panel data (SMK3-08) and selectionStore's premix-concentration surface land. Resolver is consumable as-is via `import { resolveDiluent } from '../lib/diluentResolver'`
 - 12-03: Integration test file `src/renderer/src/lib/__tests__/calculator.integration.test.ts` locks in PRD worked example end-to-end through the Zustand store (9.4 mL setups=1; 13.4 mL setups=3) + boundary rounding + CALC-05 cap regression at both lib AND store layers (canAddSingle + addSingle action) — canonical reference for any future calculator refactor
+- 15-01: Schema delta + migration 0009 — 10 new columns on `runs` (8 nullable text/real for snapshot fields + 2 boolean overrides + 1 nullable text marker `calculation_rules_version`). All defaults preserve pre-Phase-15 round-trip per D-15-04 (no backfill).
+- 15-02: New IPC channel `MASTER_PANEL_GET_WITH_REAGENTS` returning `{ masterPanel, reagents }` keyed off `masterPanelId` (selectionStore already has it post-selectPanel — no need to key on platform/species/name). Read-only; no write surface.
+- 15-03: `buildRunSnapshot` is now async; sync gates extracted into `validateSnapshotPreconditions` so `useRunSnapshot.useMemo` stays sync (no IPC at every keystroke). IPC fires only on Save click. Override flags (`oldBeadsOverride` / `oldAntibodiesOverride`) lifted from CalculatorForm local React state into calculatorStore so save-time reads see them. `calculationRulesVersion: 'smoke3'` literal stamped on every Phase-15-saved RunCreate. snapshot-at-save (D-15-01) is the durable architectural decision: the audit trail reads from RunRecord (NEVER calculatorStore) so reopening a historical run shows its persisted values verbatim per R-HIST / SMK3-16.
+- 15-04: Pure helpers `computePeVolumeML` (D-15-14 silent 1× fallback for null/undefined/0 SAPE conc) + `deriveDiluentBranchLabel` (D-15-09 3-case branch label) live in `src/renderer/src/features/run/lib/auditTrail.ts` — Group M (7 PE math cases) + Group N (3 branch label cases) lock the math at the unit level. AuditTrailSection composes 4 labeled blocks reading exclusively from RunRecord per D-15-01 (audit-trail-from-RunRecord — never from calculatorStore — would silently recompute pre-Phase-15 historical runs and break SMK3-16 fidelity). HistoricalRunBanner toggles on `calculationRulesVersion !== 'smoke3'` (the format-version marker). All visual confirmation routes to Phase 16 UAT (vitest is Node-only — no jsdom).
+- 15-05: PE volume integration check — Group M T-M-INT in calculator.integration.test.ts proves `computePeVolumeML(outputs.finalVolumeML, 1.0)` composes with the canonical Group A 9.4 mL fixture. PE volume formula = `finalVolumeML ÷ sapeConcentration` (ceiling-rounded to 0.1 mL; silent 1× fallback for null/undefined/0) per SMK3-17. Full suite (421/421) + typecheck + electron-vite build all green at end of Phase 15. Phase 16 Windows UAT now unblocked — has all 4 SMK3-12/15/16/17 surfaces in the renderer + the persistence layer to verify against.
 
 #### 2026-05-11 — Smoke 3 PRD Ingest (orchestrator rule: PRD wins every blocker)
 
@@ -211,10 +220,10 @@ Full audit trail in [.planning/INGEST-RESOLUTIONS.md](./INGEST-RESOLUTIONS.md). 
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 15 context gathered
+Last session: 2026-05-13T00:38:00Z
+Stopped at: Phase 15 complete (Plan 15-05 closed; pending /gsd-verify-work)
 Resume file: --resume-file
-Resume intent: Phase 12 is complete (4/4 plans; 12-04 closed WR-01/WR-03/WR-04 from the prior 9/11 verification). Next options: (a) **Phase 13 — Panel XLSX Parser v3** (the longest single phase remaining; rewrites parser.ts for the sectioned Criteria/Values/Category format and grows master_panels per-reagent rows — start via `/gsd-discuss-phase 13`), or (b) close out v1.0 by completing HUMAN-UAT-04.1-05-01 on Windows and tagging v0.6.0 before Smoke 3 work continues. The diluent resolver from Plan 12-02 is consumable as `import { resolveDiluent } from 'src/renderer/src/lib/diluentResolver'` but is NOT yet wired into any store — Phase 13/14/15 picks that up.
+Resume intent: Phase 15 (Smoke 3 — Run Document Audit Trail) is complete. All 5 plans landed (15-01 schema delta + migration 0009, 15-02 IPC channel, 15-03 async snapshot rewrite, 15-04 audit-trail UI + pure helpers, 15-05 PE volume integration). Full vitest suite 421/421, typecheck 0, build 0. SMK3-12, SMK3-15, SMK3-16, SMK3-17 wired through persistence + renderer. Next: (a) run `/gsd-verify-work` to formalize Phase 15 completion in ROADMAP.md, then (b) `/gsd-discuss-phase 16` to plan Windows UAT release (build:win → install on Windows workstation → run PRD-derived smoke script verifying SAPE name display + audit trail blocks + historical-run banner + override badge). The diluent resolver from Plan 12-02 is wired through `resolveDiluent` + the new `deriveDiluentBranchLabel` helper in `features/run/lib/auditTrail.ts`.
 
 ## Releases
 
