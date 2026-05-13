@@ -29,10 +29,14 @@ Accurate reagent calculations with clear prep recipes — operators must be able
 - [x] **SMK3-10**: Importer enumerates panels from sheet names; master `Table` tab ignored (Phase 13, validated 2026-05-12 — allPanelsFixture T-1)
 - [x] **SMK3-11**: Re-upload of (Platform, Species, Panel) **wholesale-replaces** existing panel (Phase 13, validated 2026-05-12 — importer.test.ts T-2/T-4/T-5/T-6 + FK SET NULL on runs.panel_id + run_single_analytes.analyte_id)
 - [x] **SMK3-DIL-01**: Diluent column free-text, stored verbatim, no enum/normalization (Phase 13, validated 2026-05-12 — 11 importer integration tests + diluentResolver coverage)
+- [x] **SMK3-12**: SAPE Name display in run document metadata header for traceability (Phase 15, validated 2026-05-12 — programmatic; visual render deferred to Phase 16 UAT)
+- [x] **SMK3-15**: Audit Trail section on finalized run document — 4-block layout (Inputs / Intermediates / Outputs / Diluent decision) with per-reagent breakdown (Phase 15, validated 2026-05-12 — programmatic; visual render deferred to Phase 16 UAT)
+- [x] **SMK3-16**: Snapshot-frozen historical runs — pre-Phase-15 runs render persisted values with amber advisory banner, never recompute (Phase 15, validated 2026-05-12 — 10 new snapshot columns + `calculationRulesVersion` marker + HistoricalRunBanner conditional; visual render deferred to Phase 16 UAT)
+- [x] **SMK3-17**: PE volume formula = `Total Volume of the Assay ÷ SAPE concentration`, derived from Values-block SAPE row (Phase 15, validated 2026-05-12 — Group M 7 unit tests + T-M-INT integration test against canonical 9.4 mL fixture; visual cell render deferred to Phase 16 UAT)
 
 ### Active
 
-(Phase 13 validated SMK3-08..11 + SMK3-DIL-01; remaining Smoke 3 work lives in Phases 14, 15, 16 — see Current Milestone below.)
+(Phase 15 validated SMK3-12, SMK3-15, SMK3-16, SMK3-17 programmatically; Windows-runtime UAT for all 4 visual items routed to Phase 16. Remaining Smoke 3 work lives in Phase 16 — see Current Milestone below.)
 
 ## Current Milestone: v2.0 Panel XLSX Upload + Master-Panel Data Model
 
@@ -118,4 +122,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-12 — Phase 14 complete (Smoke 3 Plate Page Input Expansion + UI Cleanup; SMK3-01, SMK3-02, SMK3-03, SMK3-04, SMK3-13, SMK3-14, SMK3-RPL-01, SMK3-RPL-02 validated programmatically; 381/381 tests; 8 plans + DB persistence fixup + 3 code-review warnings fixed). 7 visual/E2E items routed to Phase 16 Windows UAT (vitest Node-only). Next: Phase 15 (PE volume formula + SAPE Name display + run-document audit trail).*
+*Last updated: 2026-05-12 — Phase 15 complete (Smoke 3 Run Document Audit Trail; SMK3-12, SMK3-15, SMK3-16, SMK3-17 validated programmatically; 421/421 tests; 5 plans + drizzle migration 0009 with 10 new snapshot columns + async buildRunSnapshot + audit-trail UI helpers; 11/11 verifier must-haves; 0 critical code-review findings). 4 visual items added to Phase 16 Windows UAT bundle (now 11 total). Next: Phase 16 (Windows UAT & Release — build .exe, install on Windows, walk through Smoke 3 features end-to-end, tag release).*
