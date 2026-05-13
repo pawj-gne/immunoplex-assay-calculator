@@ -4,7 +4,7 @@
 
 This roadmap delivers a desktop application for lab operators to calculate reagent volumes and generate prep recipes for Luminex/Immunoplex assays. The journey progresses from foundation (data models, platform configuration) through the core calculation engine, to recipe generation with plate visualization, and finally run documentation with persistence. Each phase builds on the previous, following natural dependencies identified during research.
 
-v2.0 extends the platform with a vendor-native multi-tab xlsx panel importer, a new `master_panels` data model that anchors reagent volumes and vendor-specific terminology per (platform, species), and calculator wiring that reads reagent volumes from the master panel when available. v2.0 phases (5-11) continue numbering from v1.0 without reset. Phases 6-7 (INSERTED 2026-04-24) add central-server networking and an immutable audit trail before the XLSX import work begins.
+v1.0 ships the Smoke 3 calculator on Windows lab PC (Phases 12-15.1 + Phase 16 release gate). v1.1 (Phase 6 — hosting/multi-machine) ships after lab-confirmed v1.0 real-world use; v1.2 (Phase 7 — central audit) depends on v1.1. v2.0 is reserved for a future major-version scope, not Phase 6/7 territory.
 
 **2026-05-11 Smoke 3 PRD adoption:** Phases 8-11 are SUPERSEDED — the lab-owner-authored [SMOKE-3-PRD.md](./SMOKE-3-PRD.md) replaces [PANEL-UPLOAD-V2-SPEC.md](./PANEL-UPLOAD-V2-SPEC.md) as the canonical panel-xlsx contract. New Phases 12-16 cover Smoke 3 adoption: calculator rule migration, panel parser v3 rewrite, plate-page UI expansion, run-doc audit trail, Windows UAT + release. See [INGEST-RESOLUTIONS.md](./INGEST-RESOLUTIONS.md) for the full decision trail.
 
@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 13: Smoke 3 — Panel XLSX Parser v3** - INSERTED 2026-05-11 - Rewrite parser.ts for Criteria/Values/Category sectioned format, per-reagent schema growth, Roman→Arabic panel normalization, wholesale-replace re-upload, delete legacy CSVs (SMK3-08, SMK3-09, SMK3-10, SMK3-11) (completed 2026-05-12)
 - [x] **Phase 14: Smoke 3 — Plate Page Input Expansion + UI Cleanup** - INSERTED 2026-05-11 - Old Beads / Old Antibodies / Number of Setups inputs, premix deselection UX, bead region flat-list, stock-concentration label removal (SMK3-01, SMK3-02, SMK3-03, SMK3-04, SMK3-13, SMK3-14) (completed 2026-05-12)
 - [x] **Phase 15: Smoke 3 — Run Document Audit Trail** - INSERTED 2026-05-11 - Full inputs+intermediates+outputs+diluent-decision breakdown, SAPE Name display, snapshot-frozen historical runs (SMK3-12, SMK3-15, SMK3-16, SMK3-17) (completed 2026-05-13)
-- [ ] **Phase 16: Windows UAT & Release** - INSERTED 2026-05-11 - PLACEHOLDER - After Phases 12-15 ship, build .exe, install on Windows workstation, walk through Smoke 3 features end-to-end, tag release (version TBD: v0.8.0 vs v2.0.0 decided at gate)
+- [ ] **Phase 16: Windows UAT & Release** - INSERTED 2026-05-11 - After Phases 12-15.1 ship, build .exe, install on Windows workstation, walk through Smoke 3 features end-to-end against real panel data, tag **v1.0.0**
 
 ## Phase Details
 
@@ -240,7 +240,8 @@ Plans:
 
 OD-1, OD-2, OD-3, OD-7 are release-gating for Phases 7 and 8 and must be locked before Phase 5 planning exits `/gsd-discuss-phase`. OD-4, OD-5, OD-6, OD-8 can ride the same session but are lower blast radius.
 
-### Phase 6: Network Layer & Central Server
+### Phase 6: Network Layer & Central Server (v1.1)
+**Release target:** v1.1.0 (trigger: lab-confirmed v1.0 real-world use, suggestion ≥1-2 weeks; NOT immediate after v1.0)
 **Goal**: One designated lab PC runs a lightweight Node/Express HTTP server that owns the central SQLite database. The other two machines switch their IPC handlers to route all DB operations through HTTP to that server. A JSON config file on each machine declares `serverUrl` and `isServer`. When the server is unreachable, client machines fall back to a local SQLite and an `offline_queue` table; on reconnect the queue is automatically flushed to the server.
 **Depends on**: Phase 4 (hard — runs/operators DB layer is being centralized)
 **Requirements**: NET-01, NET-02, NET-03, NET-04, NET-05
@@ -257,10 +258,11 @@ Plans:
 - [ ] 06-02-PLAN.md — Express HTTP server: all runs + operators CRUD REST routes, Zod validation, idempotency on POST /api/runs, 0.0.0.0 binding, integration tests
 - [ ] 06-03-PLAN.md — HTTP transport + offline queue: offlineQueueRepository, httpTransport (fetch + fallback + poller + flush + isFlushing mutex), IPC handler rewire to transport interface
 - [ ] 06-04-PLAN.md — Renderer: networkStore, OfflineBanner (D-04), RunList Source column (D-02), preload bridge connection.onStatusChange, App.tsx wiring
-- [ ] 06-05-PLAN.md — Windows build v0.7.0 + HUMAN-UAT: multi-machine verification of all NET-* requirements
+- [ ] 06-05-PLAN.md — Windows build v1.1.0 + HUMAN-UAT: multi-machine verification of all NET-* requirements
 **UI hint**: yes (offline indicator)
 
-### Phase 7: Audit Trail
+### Phase 7: Audit Trail (v1.2)
+**Release target:** v1.2.0 (depends on v1.1.0 / Phase 6)
 **Goal**: Every time a run is saved — whether a new create or a re-save after editing — an immutable row is appended to `audit_log` on the central database capturing the full run state at that moment: all inputs, all calculated outputs, all metadata, timestamp, and which machine triggered the save. A viewer in Manage mode shows the full log in reverse-chronological order with CSV export.
 **Depends on**: Phase 6 (hard — audit log lives in the central DB; server layer must exist first)
 **Requirements**: AUDIT-01, AUDIT-02, AUDIT-03, AUDIT-04
@@ -420,17 +422,17 @@ Plans:
 - [x] 15.1-02-PLAN.md — WR-02: three-branch gate in `buildRunSnapshot` + 2 WR-02 tests (rewritten throw + new null result) (Wave 1)
 - [x] 15.1-03-PLAN.md — WR-01: runStore cascade override-flag restore + CalculatorForm.tsx local-state mirror + Group L round-trip tests (Wave 1)
 
-### Phase 16: Windows UAT & Release (INSERTED 2026-05-11, PLACEHOLDER)
-**Goal**: After Phases 12-15 ship, build a Windows .exe, install on the lab workstation, walk through the Smoke 3 features against real panel data, tag a release.
-**Depends on**: Phase 15.
+### Phase 16: Windows UAT & Release (INSERTED 2026-05-11)
+**Goal**: After Phases 12-15.1 ship, build a Windows .exe, install on the lab workstation, walk through the Smoke 3 features against real panel data, tag **v1.0.0**.
+**Depends on**: Phase 15.1.
 **Requirements**: None new — verification gate for SMK3-* requirements above + carryover v1/v2 reqs.
 **Success Criteria** (what must be TRUE):
-  1. `npm run build:win` produces x64 + arm64 installers
+  1. `npm run build:win` produces an **x64** Windows installer at `dist/immunoplex-assay-calculator-1.0.0-x64-setup.exe` (arm64 deferred to backlog 999.x per D-16-03)
   2. Installer deploys cleanly on the Windows workstation
   3. Operator imports the `Immuno Table for Calculator.xlsx` (or its successor) via the new parser; all 17 panels load
   4. Operator walks through a full run: selects platform/species/panel → picks premixes + singles → enters samples + old reagents + setups → confirms calculator outputs match hand calculations → saves run document → reopens to verify snapshot-fidelity
-  5. Version tag chosen at gate (v0.8.0 for incremental, v2.0.0 for milestone — decision deferred from the 2026-05-11 ingest)
-**Plans**: TBD
+  5. **v1.0.0** is tagged and a GitHub Release is published after Windows UAT PASS, with CHANGELOG.md §[1.0.0] as the release body (D-16-01/02/10/13)
+**Plans**: 3 plans
 
 ## Progress
 
@@ -462,7 +464,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-05-12 — Phase 14 plan list expanded with 7 plans (Wave 1 foundations × 3 + Wave 2 stores + selection × 2 + Wave 3 UI form + Wave 4 integration tests)*
+*Last updated: 2026-05-13 — Phase 16 Wave 1 reconciliation — v2.0 label retired, v1.x release arc locked (Phase 6 = v1.1; Phase 7 = v1.2)*
 *Plan template: see .planning/PLAN_TEMPLATE.md*
 
 ## Backlog
