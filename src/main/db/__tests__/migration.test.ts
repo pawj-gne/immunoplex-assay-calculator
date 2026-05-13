@@ -415,3 +415,45 @@ describe('migration 14-08 — runs.numberOfSetups + oldBeads + oldAntibodies col
     expect(['0', 0]).toContain(col?.dflt_value as unknown as string | number)
   })
 })
+
+describe('migration 15-01 — runs audit-trail snapshot columns (SMK3-12/15/16/17)', () => {
+  // 8 nullable columns: assert .notnull === 0 (no NOT NULL), no default required
+  it.each([
+    ['sape_name'],
+    ['sape_concentration'],
+    ['beads_diluent'],
+    ['antibodies_diluent'],
+    ['beads_volume_per_well'],
+    ['antibodies_volume_per_well'],
+    ['premix_concentration'],
+    ['calculation_rules_version']
+  ])('runs.%s exists and is nullable', (colName) => {
+    const { sqlite } = createTestDb()
+    const cols = sqlite.prepare("PRAGMA table_info('runs')").all() as Array<{
+      name: string
+      notnull: number
+      dflt_value: string | null
+    }>
+    const col = cols.find((c) => c.name === colName)
+    expect(col).toBeDefined()
+    expect(col?.notnull).toBe(0)
+  })
+
+  // 2 boolean columns NOT NULL DEFAULT false (mirror is_offline_save shape)
+  it.each([['old_beads_override'], ['old_antibodies_override']])(
+    'runs.%s is NOT NULL boolean with default false',
+    (colName) => {
+      const { sqlite } = createTestDb()
+      const cols = sqlite.prepare("PRAGMA table_info('runs')").all() as Array<{
+        name: string
+        notnull: number
+        dflt_value: string | null
+      }>
+      const col = cols.find((c) => c.name === colName)
+      expect(col).toBeDefined()
+      expect(col?.notnull).toBe(1)
+      // drizzle-kit may emit `false` or `0` for boolean default; both are equivalent
+      expect(['false', '0']).toContain(col?.dflt_value)
+    }
+  )
+})
