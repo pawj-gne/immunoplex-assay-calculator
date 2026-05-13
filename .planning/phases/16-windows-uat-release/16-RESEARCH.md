@@ -589,42 +589,42 @@ appears on runs saved before Smoke 3 rules shipped.
 
 **If this table is empty:** Not the case — 12 assumptions logged. The planner and discuss-phase should walk these before Wave 1 starts. The two highest-risk items are **A3 (Node install on lab PC for seed script)** and **A12 (tag-branch policy)** — both deserve a sentence in the Plan 16-01 or 16-02 frontmatter.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Does the lab PC operator have admin rights to install Node.js for `seed-legacy-run.ts`?**
    - What we know: The operator successfully installed v0.5.0 (Phase 4 smoke test); admin rights worked then.
    - What's unclear: Whether corporate IT changed posture between then and now; whether Node specifically is allowed.
-   - Recommendation: Plan 16-01 frontmatter `<open-question>` to the user. If "no", D-16-15 (b) needs a fallback path (see A3 above).
+   - **RESOLVED 2026-05-13:** Moot per D-16-21 — `scripts/seed-legacy-run.ts` is dropped from Phase 16 scope. SMK3-16 (historical-run banner) is marked `N/A — code-verified (Phase 15 Group H); not user-observable without DB surgery` in `16-SMOKE-TEST-GUIDE.md` Section B. Deferred to a future maintenance phase.
 
 2. **Should `.claude/worktrees/` be added to `.gitignore` before tagging v1.0.0?**
    - What we know: 29 worktree-agent branches exist; `.claude/worktrees/` is currently untracked. The release SKILL.md Phase 1 step 1 deletes `tmpclaude-*` and `temp_*` but doesn't mention worktrees.
    - What's unclear: Whether worktrees are session-state (delete-safe) or whether they encode something operator-relevant.
-   - Recommendation: Plan 16-03 Task 1 pre-flight adds `.claude/worktrees/` to `.gitignore` and commits as `chore: ignore .claude/worktrees session state` before tagging.
+   - **RESOLVED 2026-05-13:** Yes per D-16-23 — `16-03-PLAN.md` Task 1 adds `.claude/worktrees/` to `.gitignore`, runs `git worktree prune`, and safe-deletes merged `worktree-agent-*` branches (unmerged ones listed only, never force-deleted).
 
 3. **Where does `seed-legacy-run.ts` ship? In the repo only, or as a release asset attached to v1.0.0?**
    - What we know: `scripts/` directory exists and is committed (build-panels-fixture.ts is in there).
    - What's unclear: Whether the operator should clone the repo to get the script or whether `gh release create v1.0.0 ... seed-legacy-run.ts` should attach it as an asset.
-   - Recommendation: Attach as release asset. Operators don't have git locally; releases page is the natural distribution channel. Plan 16-03 `gh release create` command takes both the .exe and the seed script as positional args.
+   - **RESOLVED 2026-05-13:** Moot per D-16-22 (superseded by D-16-21). If a future maintenance phase revisits the synthetic-run injection, ship as a GitHub Release asset.
 
 4. **Does the v1.0.0 GitHub Release title match the past pattern (`v0.7.0 — Sub-panel data model + lab CSV importer`)?**
    - What we know: Past releases follow `vX.Y.Z — <descriptive phrase>` exactly.
    - What's unclear: D-16-13 says "release body reuses the CHANGELOG section verbatim" but is silent on the title format.
-   - Recommendation: Plan 16-03 uses `--title "v1.0.0 — Smoke 3 calculator on Windows lab PC"`. Mirrors v0.7.0 shape.
+   - **RESOLVED 2026-05-13:** Yes — `16-03-PLAN.md` Task 2 uses `--title "v1.0.0 — Smoke 3 calculator on Windows lab PC"`. Mirrors v0.7.0 shape.
 
 5. **Should Phase 16 update `src/renderer/src/App.tsx` footer version string?**
    - What we know: Release SKILL.md Phase 3 Step 3 explicitly prescribes this. Phase 4.1-05 did not include this step (the plan text references it only obliquely).
    - What's unclear: Whether the App.tsx footer is the visible version source for the operator, or whether package.json + Electron's window title suffice.
-   - Recommendation: YES — Plan 16-02 includes the footer edit. The operator visually verifies "v1.0.0" in Section A Step 1 (first launch); the App.tsx footer is the easiest place for that.
+   - **RESOLVED 2026-05-13:** Yes — `16-02-PLAN.md` Task 1 step 4 conditionally syncs the App.tsx footer if a literal `0.7.0` exists. The operator visually verifies "v1.0.0" in Section A Step 1 (first launch).
 
 6. **Does Phase 16 commit the dist/ artifact or .gitignore it?**
    - What we know: `.gitignore` not read in this research; CONTEXT.md doesn't mention it.
    - What's unclear: Whether `dist/*.exe` is currently tracked.
-   - Recommendation: Plan 16-02 Task 1 acceptance criterion ensures `dist/` artifacts are NOT committed (only attached to GitHub release). Verify via `git status --porcelain dist/` returning empty before Wave 3 tag.
+   - **RESOLVED 2026-05-13:** `dist/` is already gitignored (`.gitignore` line 7). `16-02-PLAN.md` Task 2 acceptance criterion verifies `git status --porcelain dist/` returns empty before Wave 3 tag — installer only ever lives on disk + GitHub Release, never in git.
 
 7. **What's the recovery path if a Section B SMK3-XX row fails?**
    - What we know: CONTEXT.md D-16-08 says "A single Fail blocks the v1.0.0 tag and triggers a Phase 16.1 fix-loop (Phase 4.1 precedent)."
    - What's unclear: Whether the operator can mark Fail-with-justification-to-defer (e.g., "SMK3-17 PE volume shows ÷ by 1× → equals total assay volume, BUT the rendered cell has a 0.0001 mL float-rounding error — acceptable but documented")
-   - Recommendation: Section B accepts `PASS / FAIL / PASS-with-note / N/A`. The Overall: PASS is a function of `any FAIL → FAIL; else PASS`. PASS-with-note is logged but doesn't block. Plan 16-01 makes this scoring rubric explicit in `16-SMOKE-TEST-GUIDE.md` Section B preamble.
+   - **RESOLVED 2026-05-13:** Locked in `16-01-PLAN.md` Section B template — scoring rubric is `PASS / FAIL / N/A` with PASS-with-note captured in Section C free-text rather than a separate column. Overall: PASS = `(no FAIL rows in Section B) AND (all Section A steps PASS)`. A single FAIL routes to `/gsd-plan-phase 16 --gaps` per `16-02-PLAN.md` checkpoint:human-action gate.
 
 ## Environment Availability
 
