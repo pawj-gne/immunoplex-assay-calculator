@@ -5,6 +5,7 @@ import {
   resetDatabaseForTests
 } from '../../client'
 import { masterPanelRepository } from '../masterPanel'
+import { masterPanelReagentRepository } from '../masterPanelReagent'
 
 describe('masterPanelRepository.upsertByPlatformAndSpecies (SC #5 master-panel upsert)', () => {
   let sqlite: ReturnType<typeof createTestDb>['sqlite']
@@ -141,5 +142,83 @@ describe('master_panels composite UNIQUE INDEX enforcement (Phase 13 D-14 — su
         vendorSinglesTerm: 'Mapmates'
       })
     ).not.toThrow()
+  })
+})
+
+describe('Phase 15: getByIdWithReagents (SMK3-15/16 composed read)', () => {
+  let sqlite: ReturnType<typeof createTestDb>['sqlite']
+  let platformId: string
+  let speciesId: string
+
+  beforeEach(() => {
+    const testDb = createTestDb()
+    sqlite = testDb.sqlite
+    setDatabaseForTests(testDb.db)
+    const ids = seedPlatformAndSpecies(sqlite)
+    platformId = ids.platformId
+    speciesId = ids.speciesId
+  })
+
+  afterEach(() => {
+    resetDatabaseForTests()
+    sqlite.close()
+  })
+
+  it('returns null for unknown master_panel id', () => {
+    expect(masterPanelRepository.getByIdWithReagents('unknown-id-12345')).toBeNull()
+  })
+
+  it('returns { masterPanel, reagents: [] } when panel exists with no reagent rows', () => {
+    const created = masterPanelRepository.upsertByPlatformAndSpecies({
+      name: 'Phase 15 test panel — no reagents',
+      platformId,
+      speciesId,
+      vendorSinglesTerm: null
+    })
+    const result = masterPanelRepository.getByIdWithReagents(created.id)
+    expect(result).not.toBeNull()
+    expect(result!.masterPanel.id).toBe(created.id)
+    expect(result!.masterPanel.name).toBe('Phase 15 test panel — no reagents')
+    expect(result!.reagents).toEqual([])
+  })
+
+  it('returns all 3 reagents when present (beads, antibodies, sape)', () => {
+    const created = masterPanelRepository.upsertByPlatformAndSpecies({
+      name: 'Phase 15 test panel — 3 reagents',
+      platformId,
+      speciesId,
+      sapeName: 'SAPE-A',
+      vendorSinglesTerm: null
+    })
+    masterPanelReagentRepository.create({
+      masterPanelId: created.id,
+      reagentKind: 'beads',
+      concentration: null,
+      diluent: 'L-AB',
+      volumePerWell: 0.05
+    })
+    masterPanelReagentRepository.create({
+      masterPanelId: created.id,
+      reagentKind: 'antibodies',
+      concentration: null,
+      diluent: 'L-AB',
+      volumePerWell: 0.025
+    })
+    masterPanelReagentRepository.create({
+      masterPanelId: created.id,
+      reagentKind: 'sape',
+      concentration: 1.0,
+      diluent: null,
+      volumePerWell: 0.025
+    })
+
+    const result = masterPanelRepository.getByIdWithReagents(created.id)
+    expect(result).not.toBeNull()
+    expect(result!.reagents.length).toBe(3)
+    expect(result!.reagents.map((r) => r.reagentKind).sort()).toEqual([
+      'antibodies',
+      'beads',
+      'sape'
+    ])
   })
 })
