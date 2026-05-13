@@ -33,7 +33,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 12: Smoke 3 — Calculator Rules Migration** - INSERTED 2026-05-11 - Rounding (0.1 mL ceiling), diluent rule (concentration-keyed), dead volume (× setups), CALC-05 retention confirmation (SMK3-05, SMK3-06, SMK3-07) — **Complete 2026-05-12** (4 plans shipped: 3 original + 1 gap closure; 11/11 must-haves verified; 105 tests; integration tests lock in PRD worked example end-to-end through runStore.loadRun cascade)
 - [x] **Phase 13: Smoke 3 — Panel XLSX Parser v3** - INSERTED 2026-05-11 - Rewrite parser.ts for Criteria/Values/Category sectioned format, per-reagent schema growth, Roman→Arabic panel normalization, wholesale-replace re-upload, delete legacy CSVs (SMK3-08, SMK3-09, SMK3-10, SMK3-11) (completed 2026-05-12)
 - [x] **Phase 14: Smoke 3 — Plate Page Input Expansion + UI Cleanup** - INSERTED 2026-05-11 - Old Beads / Old Antibodies / Number of Setups inputs, premix deselection UX, bead region flat-list, stock-concentration label removal (SMK3-01, SMK3-02, SMK3-03, SMK3-04, SMK3-13, SMK3-14) (completed 2026-05-12)
-- [ ] **Phase 15: Smoke 3 — Run Document Audit Trail** - INSERTED 2026-05-11 - Full inputs+intermediates+outputs+diluent-decision breakdown, SAPE Name display, snapshot-frozen historical runs (SMK3-12, SMK3-15, SMK3-16, SMK3-17)
+- [x] **Phase 15: Smoke 3 — Run Document Audit Trail** - INSERTED 2026-05-11 - Full inputs+intermediates+outputs+diluent-decision breakdown, SAPE Name display, snapshot-frozen historical runs (SMK3-12, SMK3-15, SMK3-16, SMK3-17) (completed 2026-05-13)
 - [ ] **Phase 16: Windows UAT & Release** - INSERTED 2026-05-11 - PLACEHOLDER - After Phases 12-15 ship, build .exe, install on Windows workstation, walk through Smoke 3 features end-to-end, tag release (version TBD: v0.8.0 vs v2.0.0 decided at gate)
 
 ## Phase Details
@@ -397,11 +397,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 15-01-PLAN.md — Schema delta + migration 0009 + repository extension + types/zod (Wave 1)
-- [ ] 15-02-PLAN.md — IPC channel + master-panel-with-reagents read path (Wave 1, parallel with 15-01)
-- [ ] 15-03-PLAN.md — Lift override flags into store + async snapshot rewrite + IPC fetch + snapshot tests (Wave 2, depends_on 15-01 + 15-02)
-- [ ] 15-04-PLAN.md — Pure helpers (PE math + branch label) + audit trail UI + SAPE row + advisory banner + override badge (Wave 2, depends_on 15-01)
-- [ ] 15-05-PLAN.md — Group M integration test + cross-phase regression check + final phase verification (Wave 3, depends_on 15-01..15-04)
+- [x] 15-01-PLAN.md — Schema delta + migration 0009 + repository extension + types/zod (Wave 1)
+- [x] 15-02-PLAN.md — IPC channel + master-panel-with-reagents read path (Wave 1, parallel with 15-01)
+- [x] 15-03-PLAN.md — Lift override flags into store + async snapshot rewrite + IPC fetch + snapshot tests (Wave 2, depends_on 15-01 + 15-02)
+- [x] 15-04-PLAN.md — Pure helpers (PE math + branch label) + audit trail UI + SAPE row + advisory banner + override badge (Wave 2, depends_on 15-01)
+- [x] 15-05-PLAN.md — Group M integration test + cross-phase regression check + final phase verification (Wave 3, depends_on 15-01..15-04)
 
 ### Phase 16: Windows UAT & Release (INSERTED 2026-05-11, PLACEHOLDER)
 **Goal**: After Phases 12-15 ship, build a Windows .exe, install on the lab workstation, walk through the Smoke 3 features against real panel data, tag a release.
@@ -440,7 +440,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 | 12. Smoke 3 — Calculator Rules Migration | 4/4 | Complete    | 2026-05-12 |
 | 13. Smoke 3 — Panel XLSX Parser v3 | 6/6 | Complete    | 2026-05-12 |
 | 14. Smoke 3 — Plate Page Inputs + UI Cleanup | 8/8 | Complete    | 2026-05-12 |
-| 15. Smoke 3 — Run Document Audit Trail | 0/5 | Planned | - |
+| 15. Smoke 3 — Run Document Audit Trail | 5/5 | Complete    | 2026-05-13 |
 | 16. Windows UAT & Release (Smoke 3) | 0/TBD | Not started (placeholder; version TBD) | - |
 
 ---
@@ -455,7 +455,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 **Goal:** Use Electron's built-in autoUpdater (via electron-updater from electron-builder) to detect and silently apply new releases without requiring the user to manually download and run the installer. Eliminates the current manual upgrade path that requires cleaning up old installs on domain-joined PCs.
 
 **Requirements:** TBD
-**Plans:** 8/8 plans complete
+**Plans:** 5/5 plans complete
 
 Plans:
 - [ ] TBD (promote with /gsd-review-backlog when ready)

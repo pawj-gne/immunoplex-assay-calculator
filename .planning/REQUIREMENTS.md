@@ -121,9 +121,9 @@ Net-new requirements derived from [SMOKE-3-PRD.md](./SMOKE-3-PRD.md) (lab-owner-
 
 ### Run Document & Persistence
 
-- [ ] **SMK3-12**: SAPE Name (e.g., `SAPE-10`) is displayed in the run document for traceability. Stored as panel metadata. No calculation impact.
-- [ ] **SMK3-15**: Run document calculation breakdown shows full audit trail: inputs (plates, samples, replicate mode, selections, old reagents, setups) → intermediate steps (total wells, volume/well, total bead/antibody, dead volume) → final outputs (new reagents, total volumes, PE volume) → **diluent decision** (which premix won, or which Values-table diluent applied).
-- [ ] **SMK3-16**: Historical run records saved before Smoke 3 rules ship are **snapshot-frozen**. Reopening shows persisted values; new rules apply only to new runs. No retroactive recompute.
+- [x] **SMK3-12**: SAPE Name (e.g., `SAPE-10`) is displayed in the run document for traceability. Stored as panel metadata. No calculation impact.
+- [x] **SMK3-15**: Run document calculation breakdown shows full audit trail: inputs (plates, samples, replicate mode, selections, old reagents, setups) → intermediate steps (total wells, volume/well, total bead/antibody, dead volume) → final outputs (new reagents, total volumes, PE volume) → **diluent decision** (which premix won, or which Values-table diluent applied).
+- [x] **SMK3-16**: Historical run records saved before Smoke 3 rules ship are **snapshot-frozen**. Reopening shows persisted values; new rules apply only to new runs. No retroactive recompute.
 - [ ] **SMK3-17**: PE volume = `Total Volume of the Assay ÷ SAPE concentration` (read from the SAPE row in the panel's Values block, typically 1×).
 
 ### Diluent Data Model
