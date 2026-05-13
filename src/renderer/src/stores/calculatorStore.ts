@@ -72,6 +72,16 @@ interface CalculatorState {
    * input is lowered to within the cap.
    */
   capPaused: boolean
+  /**
+   * Phase 15 D-15-08 (deferred from Phase 14): operator accepted the 20%-cap
+   * override for the corresponding old-reagent input at modal-confirm time.
+   * Snapshotted by buildRunSnapshot onto the runs row so the audit trail can
+   * render the OVERRIDE chip on reopen. Lifted from CalculatorForm.tsx local
+   * useState into the store specifically because buildRunSnapshot needs to
+   * read it at save time.
+   */
+  oldBeadsOverride: boolean
+  oldAntibodiesOverride: boolean
 
   // Actions
   setSampleCount: (count: number) => void
@@ -83,6 +93,10 @@ interface CalculatorState {
   setOldAntibodies: (mL: number) => void
   /** Smoke 3 D-10: UI-driven cap-pause toggle. See capPaused field above. */
   setCapPaused: (paused: boolean) => void
+  /** Phase 15 D-15-08: persist 20%-cap override acceptance for Old Beads. */
+  setOldBeadsOverride: (overridden: boolean) => void
+  /** Phase 15 D-15-08: persist 20%-cap override acceptance for Old Antibodies. */
+  setOldAntibodiesOverride: (overridden: boolean) => void
   addSingle: (analyte: Omit<SingleAnalyte, 'id'>) => void
   removeSingle: (id: string) => void
   clearSingles: () => void
@@ -106,7 +120,10 @@ const initialState = {
   singles: [] as SingleAnalyte[],
   validationError: null as string | null,
   // D-10 — UI sets true when any over-cap old-reagent input is awaiting decision
-  capPaused: false
+  capPaused: false,
+  // Phase 15 D-15-08 — operator-confirmed override flags, snapshotted onto RunCreate
+  oldBeadsOverride: false,
+  oldAntibodiesOverride: false
 }
 
 export const useCalculatorStore = create<CalculatorState>((set, get) => ({
@@ -230,6 +247,17 @@ export const useCalculatorStore = create<CalculatorState>((set, get) => ({
   setCapPaused: (paused: boolean) => {
     set({ capPaused: paused })
   },
+
+  /**
+   * Phase 15 D-15-08: operator accepted the 20%-cap override for Old Beads.
+   * Mirrors CalculatorForm's local beadsOverrideAccepted state into the store
+   * so buildRunSnapshot can read it at save time. Cleared when the input
+   * value changes (the operator must re-confirm) — CalculatorForm dual-writes
+   * the local-state reset and this setter in the value-change branch.
+   */
+  setOldBeadsOverride: (overridden: boolean) => set({ oldBeadsOverride: overridden }),
+  /** Phase 15 D-15-08: mirror of setOldBeadsOverride for Old Antibodies. */
+  setOldAntibodiesOverride: (overridden: boolean) => set({ oldAntibodiesOverride: overridden }),
 
   addSingle: (analyte) => {
     const { requestType, singles } = get()

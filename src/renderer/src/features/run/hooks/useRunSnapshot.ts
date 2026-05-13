@@ -29,26 +29,23 @@ export interface MetadataFields {
 export interface SnapshotResult {
   canSave: boolean
   reason: string | null
-  build: (m: MetadataFields) => RunCreate | { error: string }
+  build: (m: MetadataFields) => Promise<RunCreate | { error: string }>
 }
 
 /**
- * Assemble a RunCreate payload by reading .getState() from the 4 upstream
- * stores (platform / selection / calculator / plate) plus the provided
- * form metadata. Returns { error } instead of throwing so callers can
- * surface the first-failing gate to the user.
+ * Phase 15: sync preconditions extracted out of buildRunSnapshot so the
+ * useRunSnapshot hook can drive `canSave` / `reason` synchronously without
+ * paying for an IPC call on every keystroke. Returns null when ALL gates
+ * pass (i.e. Save is enabled); returns { error } at the FIRST failing gate.
  *
- * plex is auto-derived as getAllSelectedAnalytes().length so panel
- * analytes are counted alongside singles. singleAnalyteIds only holds
- * singles (D-19: the join table stores singles; panel members stay
- * implicit via panelId).
+ * Identical gate set + ordering as the pre-Phase-15 buildRunSnapshot.
  */
-export function buildRunSnapshot(metadata: MetadataFields): RunCreate | { error: string } {
-  const platform = usePlatformStore.getState()
-  const selection = useSelectionStore.getState()
-  const calculator = useCalculatorStore.getState()
-  const plate = usePlateStore.getState()
-
+function validateSnapshotPreconditions(
+  metadata: MetadataFields,
+  platform: ReturnType<typeof usePlatformStore.getState>,
+  selection: ReturnType<typeof useSelectionStore.getState>,
+  calculator: ReturnType<typeof useCalculatorStore.getState>
+): { error: string } | null {
   if (!platform.selectedPlatformId) return { error: 'No platform selected' }
   if (!selection.selectedSpeciesId) return { error: 'No species selected' }
   const allAnalytes = selection.getAllSelectedAnalytes()
@@ -80,9 +77,83 @@ export function buildRunSnapshot(metadata: MetadataFields): RunCreate | { error:
   ) {
     return { error: 'Request number required (1-99999) unless ad-hoc' }
   }
+  return null
+}
 
+/**
+ * Phase 15: assemble a RunCreate payload by reading .getState() from the 4
+ * upstream stores (platform / selection / calculator / plate) plus the
+ * provided form metadata, then fetching master-panel data via IPC for the
+ * audit-trail snapshot fields. Async because of the IPC fetch — the sync
+ * gating logic was extracted into validateSnapshotPreconditions above so
+ * useRunSnapshot.useMemo can drive `canSave` without paying for IPC on
+ * every keystroke.
+ *
+ * Returns { error } instead of throwing so callers can surface gates + IPC
+ * failures uniformly.
+ *
+ * plex is auto-derived as getAllSelectedAnalytes().length so panel analytes
+ * are counted alongside singles. singleAnalyteIds only holds singles (D-19:
+ * the join table stores singles; panel members stay implicit via panelId).
+ */
+export async function buildRunSnapshot(
+  metadata: MetadataFields
+): Promise<RunCreate | { error: string }> {
+  const platform = usePlatformStore.getState()
+  const selection = useSelectionStore.getState()
+  const calculator = useCalculatorStore.getState()
+  const plate = usePlateStore.getState()
+
+  // Sync gates first — fail fast before any IPC.
+  const gateError = validateSnapshotPreconditions(metadata, platform, selection, calculator)
+  if (gateError) return gateError
+
+  // Type narrowing: the gate above guaranteed both ids are non-null, but TS
+  // cannot see through the extracted helper. Re-derive narrowed locals so the
+  // returned RunCreate satisfies its `platformId: string` / `speciesId: string`
+  // shape without runtime cost (this branch is unreachable post-gate).
+  if (!platform.selectedPlatformId) return { error: 'No platform selected' }
+  if (!selection.selectedSpeciesId) return { error: 'No species selected' }
+  const selectedPlatformId = platform.selectedPlatformId
+  const selectedSpeciesId = selection.selectedSpeciesId
+
+  const allAnalytes = selection.getAllSelectedAnalytes()
   // Panel members are NOT counted here — the join table stores only singles per D-19.
   const singleAnalyteIds = selection.selectedSingleIds
+
+  // Phase 15 SMK3-15/16: snapshot-at-save fetch of master-panel + reagents.
+  // Skipped when no premix selected (custom assay) — leaves all 6 master-panel
+  // fields null and the audit trail renders `—` (D-15-12). Premix concentration
+  // comes from selectionStore.selectedPanel.subPanelConc directly (no IPC needed
+  // — already in renderer state post-selectPanel; verified in RESEARCH §Q2).
+  const premixConcentration = selection.selectedPanel?.subPanelConc ?? null
+
+  let sapeName: string | null = null
+  let sapeConcentration: number | null = null
+  let beadsDiluent: string | null = null
+  let antibodiesDiluent: string | null = null
+  let beadsVolumePerWell: number | null = null
+  let antibodiesVolumePerWell: number | null = null
+
+  const masterPanelId = selection.selectedPanel?.masterPanelId ?? null
+  if (masterPanelId) {
+    try {
+      const result = await window.electronAPI.masterPanel.getWithReagents(masterPanelId)
+      if (result) {
+        sapeName = result.masterPanel.sapeName
+        const beads = result.reagents.find((r) => r.reagentKind === 'beads')
+        const ab = result.reagents.find((r) => r.reagentKind === 'antibodies')
+        const sape = result.reagents.find((r) => r.reagentKind === 'sape')
+        beadsDiluent = beads?.diluent ?? null
+        antibodiesDiluent = ab?.diluent ?? null
+        beadsVolumePerWell = beads?.volumePerWell ?? null
+        antibodiesVolumePerWell = ab?.volumePerWell ?? null
+        sapeConcentration = sape?.concentration ?? null
+      }
+    } catch (e) {
+      return { error: `Failed to snapshot master panel: ${(e as Error).message}` }
+    }
+  }
 
   return {
     requestNumber: metadata.requestOverrideAdHoc ? null : metadata.requestNumber,
@@ -95,8 +166,8 @@ export function buildRunSnapshot(metadata: MetadataFields): RunCreate | { error:
     sampleCount: calculator.sampleCount,
     replicateMode: calculator.replicateMode,
     requestType: calculator.requestType,
-    platformId: platform.selectedPlatformId,
-    speciesId: selection.selectedSpeciesId,
+    platformId: selectedPlatformId,
+    speciesId: selectedSpeciesId,
     panelId: selection.selectedPanelId,
     volumePerWell: calculator.volumePerWell,
     // SMK3-05: deadVolume is derived from numberOfSetups (computed at snapshot
@@ -124,38 +195,65 @@ export function buildRunSnapshot(metadata: MetadataFields): RunCreate | { error:
     plex: allAnalytes.length,
     plateCount: plate.getPlateCount(),
     plates: plate.getPlatesSnapshot(),
-    singleAnalyteIds
+    singleAnalyteIds,
+    // Phase 15 SMK3-12/15/16/17 audit-trail snapshot fields. 6 master-panel-derived
+    // fields populated from the IPC result above (all null on custom-assay path);
+    // premixConcentration from selectionStore.selectedPanel.subPanelConc; 2 override
+    // booleans from calculatorStore.oldBeadsOverride / oldAntibodiesOverride lifted
+    // by Plan 15-03 Task 1; calculationRulesVersion is the marker that drives the
+    // historical-run banner ('smoke3' for Phase-15-and-later saves).
+    sapeName,
+    sapeConcentration,
+    beadsDiluent,
+    antibodiesDiluent,
+    beadsVolumePerWell,
+    antibodiesVolumePerWell,
+    premixConcentration,
+    oldBeadsOverride: calculator.oldBeadsOverride,
+    oldAntibodiesOverride: calculator.oldAntibodiesOverride,
+    calculationRulesVersion: 'smoke3'
   }
 }
 
 /**
  * React hook that subscribes to the stores via selectors so the Save button
  * re-renders on any upstream change, and returns { canSave, reason, build }.
- * The `build` function is identical to `buildRunSnapshot` — exposing it on
- * the result lets the parent call build(metadata) on the Save click without
- * re-importing.
+ *
+ * Phase 15: the hook stays SYNC by calling validateSnapshotPreconditions on
+ * every dependency change (not the async buildRunSnapshot). This avoids
+ * paying for an IPC call on every keystroke; the IPC fetch happens only
+ * when the Save button is clicked and `build(metadata)` is awaited.
+ *
+ * The exposed `build` function is the async `buildRunSnapshot` directly —
+ * callers `await` it on Save.
  */
 export function useRunSnapshot(metadata: MetadataFields): SnapshotResult {
   // Selectors — subscribe to the state slices that gate canSave so React
   // re-renders this hook's consumer on any relevant upstream change. The
-  // returned values feed into a useMemo dependency list so the snapshot
-  // re-builds exactly when any subscribed slice changes.
+  // returned values feed into a useMemo dependency list so the gate result
+  // re-evaluates exactly when any subscribed slice changes.
   const platformId = usePlatformStore((s) => s.selectedPlatformId)
   const speciesId = useSelectionStore((s) => s.selectedSpeciesId)
   const sampleCount = useCalculatorStore((s) => s.sampleCount)
   const validationError = useCalculatorStore((s) => s.validationError)
   const selectedCount = useSelectionStore((s) => s.getAllSelectedAnalytes().length)
 
-  const result = useMemo(
-    () => buildRunSnapshot(metadata),
-    // metadata is captured inside buildRunSnapshot; these slice values are
-    // listed here to force re-evaluation when any upstream change occurs.
+  const gateResult = useMemo(
+    () => {
+      const platform = usePlatformStore.getState()
+      const selection = useSelectionStore.getState()
+      const calculator = useCalculatorStore.getState()
+      return validateSnapshotPreconditions(metadata, platform, selection, calculator)
+    },
+    // metadata is captured inside validateSnapshotPreconditions; these slice
+    // values are listed here to force re-evaluation when any upstream change
+    // occurs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [metadata, platformId, speciesId, sampleCount, validationError, selectedCount]
   )
 
-  const canSave = !('error' in result)
-  const reason = canSave ? null : (result as { error: string }).error
+  const canSave = gateResult === null
+  const reason = canSave ? null : gateResult.error
   return {
     canSave,
     reason,

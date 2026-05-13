@@ -53,7 +53,12 @@ export const useRunStore = create<RunState>((set, get) => ({
 
   saveCurrentRun: async (metadata) => {
     set({ saveStatus: 'saving', error: null })
-    const payload = buildRunSnapshot(metadata)
+    // Phase 15: buildRunSnapshot is now async — it fetches master-panel +
+    // reagents via IPC at save time to denormalize the 10 new audit-trail
+    // fields onto the runs row. The `'error' in payload` discriminant
+    // unchanged: it handles both sync gate failures and IPC-fetch failures
+    // (the latter surface as `{ error: 'Failed to snapshot master panel: …' }`).
+    const payload = await buildRunSnapshot(metadata)
     if ('error' in payload) {
       set({ saveStatus: 'error', error: payload.error })
       return null
