@@ -403,6 +403,23 @@ Plans:
 - [x] 15-04-PLAN.md — Pure helpers (PE math + branch label) + audit trail UI + SAPE row + advisory banner + override badge (Wave 2, depends_on 15-01)
 - [x] 15-05-PLAN.md — Group M integration test + cross-phase regression check + final phase verification (Wave 3, depends_on 15-01..15-04)
 
+### Phase 15.1: Phase 15 code-review gap closure — WR-01 loadRun override-flag restoration, WR-02 audit-trail integrity on null IPC, WR-06 derive 6 em-dashed audit-trail rows (INSERTED)
+
+**Goal:** Close three Phase 15 code-review warnings (WR-01 / WR-02 / WR-06) that affect audit-trail integrity and round-trip fidelity, so v1.0.0 ships with a complete and consistent audit trail. Tactical fix sweep — no new requirements, no schema delta, all three fixes ship behind the existing `smoke3` calculationRulesVersion marker.
+**Requirements**: None new — closes gaps against SMK3-15 (audit trail integrity) + SMK3-16 (snapshot round-trip fidelity).
+**Depends on:** Phase 15
+**Success Criteria** (what must be TRUE):
+  1. WR-02: `buildRunSnapshot` three-branch gate omits the `smoke3` marker + 10 audit-trail fields when `getWithReagents` returns null OR throws — degrades gracefully to a legacy custom-assay-style save. Custom-assay path (no premix selected) STILL writes the marker (regression test at `useRunSnapshot.test.ts:197-221` continues to pass).
+  2. WR-01: `runStore.loadRun` restores both `oldBeadsOverride` and `oldAntibodiesOverride` into `calculatorStore`; `CalculatorForm.tsx` mirrors the store flags into local React state via `useEffect` so the cap modal does NOT re-trigger on first interaction after reopen.
+  3. WR-06: 6 currently-em-dashed audit-trail rows (Raw bead/antibody volume, New beads/antibodies, Total bead/antibody volume) derive from snapshot data via 3 new pure helpers in `auditTrail.ts` — null inputs render em-dash, override-clamp renders 0.
+  4. Full vitest suite green (Group L + Group P + 2 rewritten WR-02 tests added; no regression to Phase 15's 421 tests). `npm run typecheck` exits 0. Phase 16 build is now unblocked (D-16-16/17/18 hard precondition closed).
+**Plans**: 3 plans
+
+Plans:
+- [ ] 15.1-01-PLAN.md — WR-06: 3 derivation helpers in `auditTrail.ts` + Group P tests + AuditTrailSection.tsx wire-up (Wave 1, TDD)
+- [ ] 15.1-02-PLAN.md — WR-02: three-branch gate in `buildRunSnapshot` + 2 WR-02 tests (rewritten throw + new null result) (Wave 1)
+- [ ] 15.1-03-PLAN.md — WR-01: runStore cascade override-flag restore + CalculatorForm.tsx local-state mirror + Group L round-trip tests (Wave 1)
+
 ### Phase 16: Windows UAT & Release (INSERTED 2026-05-11, PLACEHOLDER)
 **Goal**: After Phases 12-15 ship, build a Windows .exe, install on the lab workstation, walk through the Smoke 3 features against real panel data, tag a release.
 **Depends on**: Phase 15.
