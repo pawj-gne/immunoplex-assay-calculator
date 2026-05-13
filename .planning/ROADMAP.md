@@ -416,9 +416,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 15.1-01-PLAN.md — WR-06: 3 derivation helpers in `auditTrail.ts` + Group P tests + AuditTrailSection.tsx wire-up (Wave 1, TDD)
-- [ ] 15.1-02-PLAN.md — WR-02: three-branch gate in `buildRunSnapshot` + 2 WR-02 tests (rewritten throw + new null result) (Wave 1)
-- [ ] 15.1-03-PLAN.md — WR-01: runStore cascade override-flag restore + CalculatorForm.tsx local-state mirror + Group L round-trip tests (Wave 1)
+- [x] 15.1-01-PLAN.md — WR-06: 3 derivation helpers in `auditTrail.ts` + Group P tests + AuditTrailSection.tsx wire-up (Wave 1, TDD)
+- [x] 15.1-02-PLAN.md — WR-02: three-branch gate in `buildRunSnapshot` + 2 WR-02 tests (rewritten throw + new null result) (Wave 1)
+- [x] 15.1-03-PLAN.md — WR-01: runStore cascade override-flag restore + CalculatorForm.tsx local-state mirror + Group L round-trip tests (Wave 1)
 
 ### Phase 16: Windows UAT & Release (INSERTED 2026-05-11, PLACEHOLDER)
 **Goal**: After Phases 12-15 ship, build a Windows .exe, install on the lab workstation, walk through the Smoke 3 features against real panel data, tag a release.
@@ -472,7 +472,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 3.2 -> 3.3 -> 4 -> 4.1 ->
 **Goal:** Use Electron's built-in autoUpdater (via electron-updater from electron-builder) to detect and silently apply new releases without requiring the user to manually download and run the installer. Eliminates the current manual upgrade path that requires cleaning up old installs on domain-joined PCs.
 
 **Requirements:** TBD
-**Plans:** 5/5 plans complete
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] TBD (promote with /gsd-review-backlog when ready)

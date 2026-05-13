@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Release
-status: executing
+status: ready_to_plan
 stopped_at: Phase 15 complete (Plan 15-05 closed; pending /gsd-verify-work)
 last_updated: "2026-05-13T01:58:05.244Z"
 last_activity: 2026-05-13 -- Phase 15.1 execution started
 progress:
   total_phases: 22
-  completed_phases: 12
+  completed_phases: 13
   total_plans: 64
   completed_plans: 60
-  percent: 94
+  percent: 59
 ---
 
 # Project State
@@ -26,10 +26,10 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Milestone: v2.0 (Panel XLSX Upload + Master-Panel Data Model) — **scope shifted 2026-05-11 by Smoke 3 PRD adoption**
-Phase: 15.1 (phase-15-code-review-gap-closure-wr-01-loadrun-override-flag) — EXECUTING
-Plan: 1 of 3
-Status: Executing Phase 15.1
-Last activity: 2026-05-13 -- Phase 15.1 execution started
+Phase: 16
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-13
 
 Progress: [█████████▓] 99%
 
@@ -37,7 +37,7 @@ Progress: [█████████▓] 99%
 
 **Velocity:**
 
-- Total plans completed: 54 (23 planned + 1 ad-hoc 03.3-06); Phase 4 fully implemented; Windows physical smoke test pending HUMAN-UAT
+- Total plans completed: 57 (23 planned + 1 ad-hoc 03.3-06); Phase 4 fully implemented; Windows physical smoke test pending HUMAN-UAT
 - Released versions: v0.1.0, v0.2.0, v0.3.0, v0.4.0, v0.4.1, v0.4.2, v0.5.0
 
 **By Phase:**
