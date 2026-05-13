@@ -212,7 +212,28 @@ These are NOT decisions — they're stale-state issues the planner needs to reso
 
 ---
 
+## Plan-time clarifications (added 2026-05-13 after 16-RESEARCH.md)
+
+- **D-16-21:** **Skip `scripts/seed-legacy-run.ts` entirely.** Lab PC admin/Node-install rights uncertain → don't gate UAT on a setup we can't guarantee. Phase 15's Group H tests already verify `HistoricalRunBanner` rendering at code level. Section B SMK3-16 row → `N/A — historical-run banner is code-verified (Phase 15 Group H); not user-observable on the lab PC without DB surgery, deferred to a future maintenance phase`. Rolls back D-16-15(b). The other three fixture coverage items (a/c/d) remain in scope.
+
+- **D-16-22:** **`seed-legacy-run.ts` shipping route is moot** — superseded by D-16-21. If a future maintenance phase revisits the synthetic-run injection, ship it as a GitHub Release asset (operators don't have git locally).
+
+- **D-16-23:** **Pre-tag cleanup is in scope for Wave 3.** Before `git tag -a v1.0.0`:
+  - Add `.claude/worktrees/` to `.gitignore` (currently untracked dir of 29 stale `worktree-agent-*` branches from prior `gsd-executor` runs).
+  - Run `git worktree prune` to drop any locked-but-stale worktree refs.
+  - Bulk-delete `worktree-agent-*` branches that are merged into `dev/v1-01` (use `git branch --merged dev/v1-01 | grep worktree-agent-`). Skip any worktree-agent branch whose HEAD is not reachable from dev/v1-01 (flag to user, do not force-delete).
+  - **Decision:** v1.0.0 tag must be cut on a repo with no stale `worktree-agent-*` refs and `.claude/worktrees/` not tracked. This is a clean-room hygiene step, not a release-blocker if any branches resist deletion (user-flagged review).
+
+- **Updated electron-builder reconciliation (per RESEARCH.md Finding #2):** The current `electron-builder.yml` `nsis.artifactName` template is `${name}-${version}-setup.${ext}` (no `${arch}` token). To match D-16-02's expected filename `immunoplex-assay-calculator-1.0.0-x64-setup.exe`, Wave 2 adds `${arch}` to the template: `${name}-${version}-${arch}-setup.${ext}`. Single-line YAML edit.
+
+- **Updated version bump baseline (per RESEARCH.md Finding #1):** `package.json` is currently at `0.7.0` (v0.7.0 tagged 2026-04-25 for the now-superseded sub-panel CSV importer), NOT `0.6.0` as the upper part of this CONTEXT.md states. Wave 2 version bump is **0.7.0 → 1.0.0**. CHANGELOG.md `### Removed` section should mention "v0.7.0 sub-panel CSV importer (superseded by Smoke 3 per-reagent schema)" to explain the version gap.
+
+- **Phase 4.1 RETEST.md template:** `04.1-SMOKE-TEST-RETEST.md` was never written (Phase 4.1's HUMAN-UAT-04.1-05-01 is still Pending in STATE.md). Phase 16 defines its own `16-SMOKE-TEST-RETEST.md` shape, derived from `04.1-05-PLAN.md` lines 244-265. **Wave 3 closeout removes the stale `HUMAN-UAT-04.1-05-01` Pending Todo from STATE.md** (Phase 4.1 retest is subsumed by Phase 16).
+
+---
+
 *Phase: 16-windows-uat-release*
-*Context gathered: 2026-05-12 (initial) → 2026-05-12 (resumed after Phase 15 completion)*
-*Source: interactive `/gsd-discuss-phase 16` session — initial pass + resume pass*
+*Context gathered: 2026-05-12 (initial) → 2026-05-12 (resumed after Phase 15 completion) → 2026-05-13 (plan-time clarifications after RESEARCH.md)*
+*Source: interactive `/gsd-discuss-phase 16` session — initial pass + resume pass + plan-time pass*
 *Resume additions: D-16-14 (Section B decision rows), D-16-15 (fixture-coverage audit), D-16-16/17/18 (Phase 15.1 hard precondition + WR-01/02/06 fix scope), D-16-19/20 (v1.x release arc — Phase 6 → v1.1, Phase 7 → v1.2). Gap #1 (panel count) and Gap #6 (Phase 6/7 status) resolved; Gap #8 added (Phase 15.1 must be inserted in ROADMAP).*
+*Plan-time additions: D-16-21 (skip seed-legacy-run.ts; SMK3-16 N/A), D-16-22 (shipping route moot), D-16-23 (pre-tag cleanup of worktree-agent branches). Electron-builder `${arch}` discovery + 0.7.0 → 1.0.0 baseline + Phase 4.1 RETEST subsumed.*
