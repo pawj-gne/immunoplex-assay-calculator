@@ -2,7 +2,13 @@ import type { ReactNode } from 'react'
 import { Decimal } from 'decimal.js'
 import { useRunStore } from '../../../stores/runStore'
 import { useSelectionStore } from '../../../stores/selectionStore'
-import { computePeVolumeML, deriveDiluentBranchLabel } from '../lib/auditTrail'
+import {
+  computePeVolumeML,
+  deriveDiluentBranchLabel,
+  computeRawReagentVolumeML,
+  computeNewReagentVolumeML,
+  computeTotalReagentVolumeML
+} from '../lib/auditTrail'
 import { resolveDiluent } from '../../../lib/diluentResolver'
 import {
   calculateTotalWells,
@@ -100,6 +106,37 @@ export function AuditTrailSection(): JSX.Element | null {
     finalVolumeML !== null
       ? computePeVolumeML(finalVolumeML, r.sapeConcentration ?? null)
       : null
+
+  // ── Phase 15.1 WR-06 (D-15.1-05/06/07): derive the 6 previously
+  // em-dashed audit-trail rows from the snapshotted RunRecord fields.
+  // All inputs read EXCLUSIVELY from `r.*` (D-15-01 invariant — never
+  // from useCalculatorStore — so historical runs render their persisted
+  // values verbatim per SMK3-16). Helpers return null when any input is
+  // missing; render layer falls back to the em-dash placeholder.
+  const rawBeadML = computeRawReagentVolumeML(
+    r.sampleCount,
+    r.replicateMode,
+    r.plateCount,
+    r.beadsVolumePerWell,
+    r.deadVolume
+  )
+  const rawAntibodyML = computeRawReagentVolumeML(
+    r.sampleCount,
+    r.replicateMode,
+    r.plateCount,
+    r.antibodiesVolumePerWell,
+    r.deadVolume
+  )
+  const newBeadsML = computeNewReagentVolumeML(rawBeadML, r.oldBeads ?? null)
+  const newAntibodiesML = computeNewReagentVolumeML(
+    rawAntibodyML,
+    r.oldAntibodies ?? null
+  )
+  const totalBeadML = computeTotalReagentVolumeML(newBeadsML, r.oldBeads ?? null)
+  const totalAntibodyML = computeTotalReagentVolumeML(
+    newAntibodiesML,
+    r.oldAntibodies ?? null
+  )
 
   // ── Reusable row + chip helpers ────────────────────────────────────────
   const OverrideChip = (): JSX.Element => (
@@ -211,8 +248,14 @@ export function AuditTrailSection(): JSX.Element | null {
           <Row label="Beads vol/well" value={beadsVolPerWellText} />
           <Row label="Antibodies vol/well" value={antibodiesVolPerWellText} />
           <Row label="Dead volume" value={deadVolumeText} />
-          <Row label="Raw bead volume" value="—" />
-          <Row label="Raw antibody volume" value="—" />
+          <Row
+            label="Raw bead volume"
+            value={rawBeadML !== null ? `${rawBeadML.toFixed(1)} mL` : '—'}
+          />
+          <Row
+            label="Raw antibody volume"
+            value={rawAntibodyML !== null ? `${rawAntibodyML.toFixed(1)} mL` : '—'}
+          />
         </dl>
       </div>
 
@@ -222,10 +265,22 @@ export function AuditTrailSection(): JSX.Element | null {
           3. Outputs
         </h3>
         <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-          <Row label="New beads" value="—" />
-          <Row label="New antibodies" value="—" />
-          <Row label="Total bead volume" value="—" />
-          <Row label="Total antibody volume" value="—" />
+          <Row
+            label="New beads"
+            value={newBeadsML !== null ? `${newBeadsML.toFixed(1)} mL` : '—'}
+          />
+          <Row
+            label="New antibodies"
+            value={newAntibodiesML !== null ? `${newAntibodiesML.toFixed(1)} mL` : '—'}
+          />
+          <Row
+            label="Total bead volume"
+            value={totalBeadML !== null ? `${totalBeadML.toFixed(1)} mL` : '—'}
+          />
+          <Row
+            label="Total antibody volume"
+            value={totalAntibodyML !== null ? `${totalAntibodyML.toFixed(1)} mL` : '—'}
+          />
           <Row
             label="PE volume"
             value={peVolumeML !== null ? `${peVolumeML.toFixed(1)} mL` : '—'}
