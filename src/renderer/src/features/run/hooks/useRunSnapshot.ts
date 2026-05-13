@@ -135,6 +135,20 @@ export async function buildRunSnapshot(
   let beadsVolumePerWell: number | null = null
   let antibodiesVolumePerWell: number | null = null
 
+  // Phase 15.1 WR-02 (D-15.1-01/02): three-branch gate for the audit-trail
+  // snapshot. auditTrailCaptured = true means "write the smoke3 marker + 10
+  // audit fields"; false means "save as legacy custom-assay (no marker,
+  // 10 fields omitted via conditional spread)".
+  //
+  //   masterPanelId === null            → true  (custom assay, no IPC, 6 fields legit null)
+  //   masterPanelId set, result !== null → true  (happy path)
+  //   masterPanelId set, result === null → false (IPC succeeded but row missing)
+  //   masterPanelId set, IPC threw       → false (IPC failure)
+  //
+  // The custom-assay path (existing test at useRunSnapshot.test.ts:197-221)
+  // continues to write 'smoke3' because auditTrailCaptured stays true when
+  // the IPC was never attempted.
+  let auditTrailCaptured = true
   const masterPanelId = selection.selectedPanel?.masterPanelId ?? null
   if (masterPanelId) {
     try {
@@ -149,9 +163,17 @@ export async function buildRunSnapshot(
         beadsVolumePerWell = beads?.volumePerWell ?? null
         antibodiesVolumePerWell = ab?.volumePerWell ?? null
         sapeConcentration = sape?.concentration ?? null
+      } else {
+        auditTrailCaptured = false
+        console.warn(
+          `[buildRunSnapshot] Master panel ${masterPanelId} returned null from getWithReagents — saving without 'smoke3' marker (run will render as legacy).`
+        )
       }
     } catch (e) {
-      return { error: `Failed to snapshot master panel: ${(e as Error).message}` }
+      auditTrailCaptured = false
+      console.warn(
+        `[buildRunSnapshot] IPC failure fetching master panel ${masterPanelId} — saving without 'smoke3' marker: ${(e as Error).message}`
+      )
     }
   }
 
@@ -202,16 +224,24 @@ export async function buildRunSnapshot(
     // booleans from calculatorStore.oldBeadsOverride / oldAntibodiesOverride lifted
     // by Plan 15-03 Task 1; calculationRulesVersion is the marker that drives the
     // historical-run banner ('smoke3' for Phase-15-and-later saves).
-    sapeName,
-    sapeConcentration,
-    beadsDiluent,
-    antibodiesDiluent,
-    beadsVolumePerWell,
-    antibodiesVolumePerWell,
-    premixConcentration,
-    oldBeadsOverride: calculator.oldBeadsOverride,
-    oldAntibodiesOverride: calculator.oldAntibodiesOverride,
-    calculationRulesVersion: 'smoke3'
+    //
+    // Phase 15.1 WR-02: 10 audit-trail snapshot fields written only when capture
+    // succeeded. Conditional spread → omitted keys → NULL in SQLite via the
+    // repository's conditional-write idiom (run.ts:99-101, 198-200). A run
+    // without these fields renders as legacy (em-dash + HistoricalRunBanner)
+    // per SMK3-16, which is the desired degrade-to-legacy semantic.
+    ...(auditTrailCaptured && {
+      sapeName,
+      sapeConcentration,
+      beadsDiluent,
+      antibodiesDiluent,
+      beadsVolumePerWell,
+      antibodiesVolumePerWell,
+      premixConcentration,
+      oldBeadsOverride: calculator.oldBeadsOverride,
+      oldAntibodiesOverride: calculator.oldAntibodiesOverride,
+      calculationRulesVersion: 'smoke3'
+    })
   }
 }
 
