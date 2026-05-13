@@ -13,6 +13,7 @@ import { usePlateStore } from '../../stores/plateStore'
 import { useSelectionStore } from '../../stores/selectionStore'
 import type { RunRecord } from '../../../../shared/types/run'
 import type { PanelWithAnalytes } from '../../../../shared/types/panel'
+import { computePeVolumeML } from '../../features/run/lib/auditTrail'
 
 /**
  * Phase 12 Plan 03 integration tests — wire the new numberOfSetups input
@@ -1045,5 +1046,23 @@ describe('Phase 14-04 calculatorStore old-reagent extension', () => {
         'a3'
       ])
     })
+  })
+})
+
+// =============================================================================
+// PHASE 15-05 — PE volume composes with the canonical Group A fixture (SMK3-17)
+// =============================================================================
+
+describe('Group M: PE volume composes with canonical Group A fixture (SMK3-17)', () => {
+  it('T-M-INT: Group A canonical (148 wells, 9.4 mL final) → PE volume = 9.4 mL @ 1× SAPE', () => {
+    // Same fixture as Group A T-A1 — proves the PE volume helper composes
+    // with the existing calculator pipeline. The 7 unit-level edge cases
+    // (1×/0.5×/2×/null/0/undefined/ceiling-after-division) live in
+    // src/renderer/src/features/run/lib/__tests__/auditTrail.test.ts (Plan
+    // 15-04 Group M); this test locks the integration boundary.
+    const inputs = createCalculatorInputs(100, 'singles', 2, 50, 1)
+    const outputs = calculateVolumes(inputs)
+    expect(outputs.finalVolumeML).toBeCloseTo(9.4, 1)
+    expect(computePeVolumeML(outputs.finalVolumeML, 1.0)).toBeCloseTo(9.4, 1)
   })
 })
