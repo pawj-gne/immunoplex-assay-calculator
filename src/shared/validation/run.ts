@@ -34,6 +34,18 @@ export const runCreateSchema = z
     // (Plan 14-06 confirm-once modal).
     oldBeads: z.number().nonnegative().default(0),
     oldAntibodies: z.number().nonnegative().default(0),
+    // Phase 15 SMK3-12/15/16/17 — all optional + nullable; defaults preserve
+    // pre-Phase-15 round-trip semantics (no field present → null/false).
+    sapeName: z.string().nullable().optional(),
+    sapeConcentration: z.number().nullable().optional(),
+    beadsDiluent: z.string().nullable().optional(),
+    antibodiesDiluent: z.string().nullable().optional(),
+    beadsVolumePerWell: z.number().nullable().optional(),
+    antibodiesVolumePerWell: z.number().nullable().optional(),
+    premixConcentration: z.number().nullable().optional(),
+    oldBeadsOverride: z.boolean().optional().default(false),
+    oldAntibodiesOverride: z.boolean().optional().default(false),
+    calculationRulesVersion: z.string().nullable().optional(),
     hamilton: z.number().int().min(1).max(5),
     runPlatePosition: z.number().int().min(1).max(4),
     standardPosition: z.number().int().min(1).max(2),

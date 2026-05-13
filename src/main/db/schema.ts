@@ -204,7 +204,21 @@ export const runs = sqliteTable('runs', {
   //   - oldAntibodies (Phase 14 SMK3-03): non-negative mL, default 0
   numberOfSetups: real('number_of_setups').notNull().default(1),
   oldBeads: real('old_beads').notNull().default(0),
-  oldAntibodies: real('old_antibodies').notNull().default(0)
+  oldAntibodies: real('old_antibodies').notNull().default(0),
+  // Phase 15 — SMK3-12/15/16/17 audit-trail snapshot fields. All 8
+  // master-panel-derived fields are nullable so pre-Phase-15 rows tolerate
+  // the migration without backfill (D-15-04). The 2 override booleans
+  // mirror Phase 6 isOfflineSave shape with default false.
+  sapeName: text('sape_name'), // SMK3-12; from master_panels.sape_name
+  sapeConcentration: real('sape_concentration'), // SMK3-17; from master_panel_reagents where reagent_kind='sape'
+  beadsDiluent: text('beads_diluent'), // SMK3-DIL-01 verbatim; from master_panel_reagents
+  antibodiesDiluent: text('antibodies_diluent'), // SMK3-DIL-01 verbatim; from master_panel_reagents
+  beadsVolumePerWell: real('beads_volume_per_well'), // from master_panel_reagents
+  antibodiesVolumePerWell: real('antibodies_volume_per_well'), // from master_panel_reagents
+  premixConcentration: real('premix_concentration'), // selectionStore.selectedPanel.subPanelConc; null for custom assays
+  oldBeadsOverride: integer('old_beads_override', { mode: 'boolean' }).notNull().default(false),
+  oldAntibodiesOverride: integer('old_antibodies_override', { mode: 'boolean' }).notNull().default(false),
+  calculationRulesVersion: text('calculation_rules_version') // 'smoke3' for new saves; NULL for pre-Phase-15
 })
 
 // Phase 4: Single analytes selected for a given run (D-19)
