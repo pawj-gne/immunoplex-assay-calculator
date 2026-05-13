@@ -96,6 +96,10 @@ export function FinalizedRunHeader(): JSX.Element {
           <dd className="text-[var(--color-foreground)]">{panelName}</dd>
         </div>
         <div className="flex justify-between gap-4 border-b border-gray-100 py-1">
+          <dt className="font-medium text-[var(--color-muted)]">SAPE Name</dt>
+          <dd className="text-[var(--color-foreground)]">{record.sapeName ?? '—'}</dd>
+        </div>
+        <div className="flex justify-between gap-4 border-b border-gray-100 py-1">
           <dt className="font-medium text-[var(--color-muted)]">Sample Type</dt>
           <dd className="text-[var(--color-foreground)]">{record.sampleType}</dd>
         </div>
