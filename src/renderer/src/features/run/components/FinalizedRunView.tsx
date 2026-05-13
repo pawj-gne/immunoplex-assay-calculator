@@ -13,6 +13,8 @@ import { BeadRegionList } from '../../plate/components/BeadRegionList'
 import { PlateGrid } from '../../plate/components/PlateGrid'
 import { PrintButton } from '../../plate/components/PrintButton'
 import { FinalizedRunHeader } from './FinalizedRunHeader'
+import { HistoricalRunBanner } from './HistoricalRunBanner'
+import { AuditTrailSection } from './AuditTrailSection'
 
 /**
  * Build an 8x12 WellData grid for a single plate from its stored
@@ -171,6 +173,14 @@ export function FinalizedRunView({ onStartNewRun }: Props): JSX.Element {
     <div className="space-y-6">
       {/* Header — metadata summary */}
       <FinalizedRunHeader />
+
+      {/* Phase 15 SMK3-16: pre-Phase-15 advisory banner (renders conditionally) */}
+      <HistoricalRunBanner />
+
+      {/* Phase 15 SMK3-15: Calculation Audit Trail — Inputs / Intermediates /
+          Outputs / Diluent decision blocks. Reads exclusively from RunRecord
+          (D-15-01); pure render-from-record. */}
+      <AuditTrailSection />
 
       {/* Actions row — Print + Start New Run. Hidden on print. */}
       <div className="flex items-center gap-3 print:hidden">
