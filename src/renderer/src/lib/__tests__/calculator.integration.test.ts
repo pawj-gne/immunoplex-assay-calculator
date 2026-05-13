@@ -1066,3 +1066,153 @@ describe('Group M: PE volume composes with canonical Group A fixture (SMK3-17)',
     expect(computePeVolumeML(outputs.finalVolumeML, 1.0)).toBeCloseTo(9.4, 1)
   })
 })
+
+// =============================================================================
+// PHASE 15.1 — WR-01 round-trip — oldBeadsOverride / oldAntibodiesOverride
+// flags restored into calculatorStore on runStore.loadRun (D-15.1-03 / D-15.1-04)
+// =============================================================================
+
+describe('Group L: WR-01 round-trip — oldBeadsOverride / oldAntibodiesOverride flags (D-15.1-03)', () => {
+  // Local fixture + IPC mocks mirror Group J at lines 687-776 (verbatim shape).
+  // Duplicated rather than hoisted so the plan instruction "do not touch
+  // existing Group J / K / M-INT" is honored — Group J's helper is locally
+  // scoped to its describe block and not module-visible from here.
+  function makeMockRunForL(overrides: Partial<RunRecord> = {}): RunRecord {
+    return {
+      id: 'run-l-1',
+      requestNumber: 42101,
+      requestOverrideAdHoc: false,
+      userName: 'Phase 15.1 WR-01 Test',
+      operatorId: 'op-test',
+      runDate: '2026-05-12',
+      sampleType: 'Plasma',
+      dilutionFactor: 1,
+      sampleCount: 100,
+      replicateMode: 'duplicates',
+      requestType: 'premix',
+      platformId: 'platform-test',
+      speciesId: 'species-test',
+      panelId: null,
+      volumePerWell: 50,
+      deadVolume: 2000,
+      numberOfSetups: 1,
+      hamilton: 1,
+      runPlatePosition: 1,
+      standardPosition: 1,
+      troughPosition: 1,
+      comments: null,
+      plex: 10,
+      plateCount: 3,
+      plates: { 1: [], 2: [], 3: [] },
+      singleAnalyteIds: [],
+      createdAt: '2026-05-12T00:00:00Z',
+      updatedAt: '2026-05-12T00:00:00Z',
+      machineName: null,
+      isOfflineSave: false,
+      // oldBeadsOverride / oldAntibodiesOverride intentionally omitted from
+      // the literal — undefined by default, which is exactly the legacy
+      // ?? false fallback case (T-L2). Happy path (T-L1) supplies via overrides.
+      ...overrides
+    }
+  }
+
+  beforeEach(() => {
+    useCalculatorStore.getState().reset()
+
+    // Same 5-namespace stub as Group J's beforeEach (lines 729-775). Verbatim
+    // copy — runStore.loadRun cascades through platform/species/panel/run/analyte
+    // IPC channels; all must be stubbed so the cascade reaches the calculator
+    // step where the WR-01 flags are restored.
+    vi.stubGlobal('window', {
+      electronAPI: {
+        run: {
+          getAll: vi.fn().mockResolvedValue([]),
+          getById: vi.fn(),
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn()
+        },
+        platform: {
+          getAll: vi.fn().mockResolvedValue([
+            { id: 'platform-test', name: 'Test Platform', active: true }
+          ]),
+          getById: vi.fn().mockResolvedValue({
+            id: 'platform-test',
+            name: 'Test Platform',
+            active: true
+          }),
+          create: vi.fn(),
+          update: vi.fn()
+        },
+        species: {
+          getByPlatformId: vi.fn().mockResolvedValue([
+            {
+              id: 'species-test',
+              platformId: 'platform-test',
+              name: 'Test Species',
+              active: true
+            }
+          ])
+        },
+        panel: {
+          getByPlatformAndSpecies: vi.fn().mockResolvedValue([]),
+          getWithAnalytes: vi.fn().mockResolvedValue(null),
+          update: vi.fn(),
+          delete: vi.fn(),
+          addAnalyte: vi.fn(),
+          removeAnalyte: vi.fn()
+        },
+        analyte: {
+          getByPlatformAndSpecies: vi.fn().mockResolvedValue([]),
+          getByPanelId: vi.fn().mockResolvedValue([]),
+          update: vi.fn(),
+          delete: vi.fn()
+        }
+      }
+    })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('T-L1: loadRun restores oldBeadsOverride=true / oldAntibodiesOverride=true into calculatorStore', async () => {
+    const mockRun = makeMockRunForL({
+      oldBeads: 2.5,
+      oldAntibodies: 3.0,
+      oldBeadsOverride: true,
+      oldAntibodiesOverride: true
+    })
+    ;(window.electronAPI.run.getById as ReturnType<typeof vi.fn>).mockResolvedValue(mockRun)
+
+    // Pre-mutate to false to PROVE the restore is ACTIVE (not coincident
+    // with the initial-state default false from calculatorStore).
+    useCalculatorStore.getState().setOldBeadsOverride(false)
+    useCalculatorStore.getState().setOldAntibodiesOverride(false)
+
+    await useRunStore.getState().loadRun(mockRun.id)
+
+    expect(useCalculatorStore.getState().validationError).toBeNull()
+    expect(useCalculatorStore.getState().oldBeadsOverride).toBe(true)
+    expect(useCalculatorStore.getState().oldAntibodiesOverride).toBe(true)
+  })
+
+  it('T-L2: pre-Phase-15 run (override flags absent) defaults both flags to false via ?? false', async () => {
+    const legacyRun = makeMockRunForL({
+      oldBeadsOverride: undefined,
+      oldAntibodiesOverride: undefined
+    })
+    ;(window.electronAPI.run.getById as ReturnType<typeof vi.fn>).mockResolvedValue(legacyRun)
+
+    // Pre-mutate to true so the ?? false fall-back is ACTIVE (not just
+    // coincident with initial-state default). This locks the ?? false
+    // defaulting branch in runStore.loadRun explicitly.
+    useCalculatorStore.getState().setOldBeadsOverride(true)
+    useCalculatorStore.getState().setOldAntibodiesOverride(true)
+
+    await useRunStore.getState().loadRun(legacyRun.id)
+
+    expect(useCalculatorStore.getState().oldBeadsOverride).toBe(false)
+    expect(useCalculatorStore.getState().oldAntibodiesOverride).toBe(false)
+  })
+})

@@ -46,6 +46,18 @@ export function CalculatorForm() {
     setCapPaused
   } = useCalculator()
 
+  // Phase 15.1 WR-01 (form side): subscribe to store override flags. The
+  // store is the source of truth (set by runStore.loadRun after a save-
+  // with-override run is reopened); local React state below mirrors it via
+  // useEffect so the cap modal does NOT re-trigger on first interaction
+  // after reopen. Byte-symmetric with the handleOverride dual-write at
+  // lines 187-199 — store-then-local pattern is invariant across set + read
+  // paths. Per RESEARCH Open Question 2, the incremental useCalculatorStore
+  // selector pattern is preferred over extending useCalculator() for v1.0.0
+  // (smaller blast radius; folding into useCalculator is v1.0.1 polish).
+  const storeOldBeadsOverride = useCalculatorStore((s) => s.oldBeadsOverride)
+  const storeOldAntibodiesOverride = useCalculatorStore((s) => s.oldAntibodiesOverride)
+
   // Two-state pattern (Pattern S7 from 14-PATTERNS.md) — each numeric input
   // tracks a `displayValue` string locally so the operator's keystrokes
   // don't fight a NaN→0 coerce, then commits on blur / Enter.
@@ -75,6 +87,20 @@ export function CalculatorForm() {
   // "re-prompts on next focus" CONTEXT wording).
   const [beadsOverrideAccepted, setBeadsOverrideAccepted] = useState(false)
   const [antibodiesOverrideAccepted, setAntibodiesOverrideAccepted] = useState(false)
+
+  // Phase 15.1 WR-01 (form side): mirror store flags into local React state.
+  // Runs on mount + every store change. After runStore.loadRun completes,
+  // these effects fire once and sync the local accepted state to the run's
+  // persisted override flags — the cap modal stays closed on the next
+  // interaction because beadsOverrideAccepted / antibodiesOverrideAccepted
+  // already reflect the saved override decision. Read-path counterpart to
+  // the handleOverride dual-write at lines 187-199 (which is the set path).
+  useEffect(() => {
+    setBeadsOverrideAccepted(storeOldBeadsOverride)
+  }, [storeOldBeadsOverride])
+  useEffect(() => {
+    setAntibodiesOverrideAccepted(storeOldAntibodiesOverride)
+  }, [storeOldAntibodiesOverride])
 
   // Modal state — one modal can be open at a time (D-10 single confirm).
   // pendingTypedValue snapshots the typed value at modal-open time so the
