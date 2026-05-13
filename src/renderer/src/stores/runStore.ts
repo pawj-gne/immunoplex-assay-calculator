@@ -152,6 +152,17 @@ export const useRunStore = create<RunState>((set, get) => ({
       // → loadPlates (matches Pattern S2 in 14-PATTERNS.md).
       calculator.setOldBeads(run.oldBeads ?? 0)
       calculator.setOldAntibodies(run.oldAntibodies ?? 0)
+      // Phase 15.1 WR-01: restore override flags so the form-side override
+      // badge appears on reopen. Both fields are optional on RunRecord (pre-
+      // Phase-15 saves lack them); `?? false` defaulting matches the
+      // calculatorStore initial state and mirrors the `?? 0` defaulting
+      // applied to oldBeads / oldAntibodies above. Order: AFTER setOldAntibodies
+      // so the cascade sequence stays
+      //   volumePerWell → numberOfSetups → oldBeads → oldAntibodies → overrides
+      //   → loadPlates
+      // (extends Pattern S2 in 14-PATTERNS.md).
+      calculator.setOldBeadsOverride(run.oldBeadsOverride ?? false)
+      calculator.setOldAntibodiesOverride(run.oldAntibodiesOverride ?? false)
 
       // 7. Plate layout — AFTER setSampleCount so the auto-fill cascade
       //    does not clobber the restored per-plate layout (D-24). This
