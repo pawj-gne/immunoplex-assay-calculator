@@ -406,7 +406,12 @@ export function seedAll(): void {
   seedPlatforms()
   seedSpecies()
   seedAnalytes()
-  seedPanels()
-  seedPanelAnalytes()
+  // seedPanels() + seedPanelAnalytes() intentionally omitted post-Smoke-3 (Phase 13+):
+  // panel and panel-analyte data is now sourced from the xlsx importer
+  // (`templates/panels/all-panels.xlsx`), which writes both the legacy `premixPanels`
+  // index AND the new `master_panels`/`master_panel_reagents` per-reagent tables.
+  // Calling these seeders would inject pre-Smoke-3 fixture data into the picker on
+  // every fresh install, blocking SMK3-08/09/10/11 verification. The seed functions
+  // remain exported for any future maintenance/dev use.
   seedOperators()
 }
