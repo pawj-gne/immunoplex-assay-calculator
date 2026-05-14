@@ -24,6 +24,18 @@ bug report for a quick fix loop. Don't try to work around issues.
 
 ## Section A — End-to-end run flow
 
+### Step 0. Clear stale user data (CRITICAL — UAT precondition)
+
+If the Windows lab PC ever had a prior version of this app installed (v0.5.x / v0.6.x / v0.7.x), its SQLite database persists across uninstalls in `%APPDATA%` and will carry stale pre-Smoke-3 panel rows into v1.0.0. Smoke 3's per-reagent schema is additive — old rows are preserved, not migrated — which is correct for real-world v0.7.x → v1.0.0 upgrades but blocks the fresh-import verification required by SMK3-08/09/10/11. Skip this step ONLY if this Windows PC has never had the app installed.
+
+1. Press `Win + R`, type `%APPDATA%`, hit Enter.
+2. Locate the folder `immunoplex-assay-calculator` (note the hyphenated name — `Immunoplex_Assay_Calculator` is the title-bar form but the AppData folder uses the package name).
+3. Delete the entire folder (drag to Recycle Bin, or `Shift+Delete` for permanent delete).
+4. Verify: re-open `%APPDATA%` and confirm `immunoplex-assay-calculator` is gone.
+
+**✅ Pass:** Folder deleted; AppData no longer contains the app's data directory.
+**❌ Report if:** Folder won't delete (a previous app instance is still running — close it via Task Manager and retry), or if you cannot locate the folder (skip this step — likely a clean machine).
+
 ### Step 1. Install the app
 
 1. Uninstall any prior Immunoplex Assay Calculator version via Windows Settings → Apps.
