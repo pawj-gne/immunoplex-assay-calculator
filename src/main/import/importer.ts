@@ -11,7 +11,7 @@
  * D-15 + D-17: FK SET NULL on runs.panel_id + run_single_analytes.analyte_id preserves historical rows.
  * Pitfall 27: validate-first; single transaction wrapping all writes.
  */
-import { parseWorkbook, ParseError } from './parser'
+import { parseWorkbook, ParseError, type ParsedPanel } from './parser'
 import { validateAndResolve, type ResolvedPanel, type ValidationError } from './validator'
 import { getDatabase, getSqlite } from '../db/client'
 import { platforms, species } from '../db/schema'
@@ -19,6 +19,46 @@ import { analyteRepository } from '../db/repositories/analyte'
 import { panelRepository } from '../db/repositories/panel'
 import { masterPanelRepository } from '../db/repositories/masterPanel'
 import { masterPanelReagentRepository } from '../db/repositories/masterPanelReagent'
+import { platformRepository } from '../db/repositories/platform'
+import { speciesRepository } from '../db/repositories/species'
+
+// Phase 16 (v1.0): app launches empty. Importer creates platforms/species
+// from xlsx content on-the-fly. Per-platform stockConcentration is a legacy
+// pre-Smoke-3 column; Smoke 3 panels use per-reagent concentrations from the
+// Values block. 1.0 is a benign sentinel for the legacy column.
+const LEGACY_STOCK_CONCENTRATION_SENTINEL = 1
+
+function ensurePlatformsAndSpecies(parsed: ParsedPanel[]): void {
+  const db = getDatabase()
+  const existingPlatforms = db.select().from(platforms).all()
+  const existingSpecies = db.select().from(species).all()
+
+  for (const p of parsed) {
+    let platform = existingPlatforms.find(
+      (x) => x.name.toLowerCase() === p.platform.toLowerCase()
+    )
+    if (!platform) {
+      const created = platformRepository.create({
+        name: p.platform,
+        stockConcentration: LEGACY_STOCK_CONCENTRATION_SENTINEL
+      })
+      existingPlatforms.push(created)
+      platform = created
+    }
+
+    const matched = existingSpecies.find(
+      (s) =>
+        s.platformId === platform!.id && s.name.toLowerCase() === p.species.toLowerCase()
+    )
+    if (!matched) {
+      const createdSpecies = speciesRepository.create({
+        name: p.species,
+        platformId: platform.id
+      })
+      existingSpecies.push(createdSpecies)
+    }
+  }
+}
 
 export interface PanelSummary {
   sheetName: string
@@ -68,7 +108,11 @@ export function importPanelData(filePath: string): ImportResult {
     }
   }
 
-  // Step 2: load FK reference data + validate
+  // Step 2: upsert platforms/species from xlsx content so a fresh-install DB
+  // (Phase 16 / v1.0: app launches empty) can resolve FK references.
+  ensurePlatformsAndSpecies(parsed)
+
+  // Step 3: load FK reference data + validate
   const db = getDatabase()
   const allPlatforms = db
     .select()

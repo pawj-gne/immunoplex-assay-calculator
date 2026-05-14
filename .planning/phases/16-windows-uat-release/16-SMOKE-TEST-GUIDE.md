@@ -26,12 +26,18 @@ bug report for a quick fix loop. Don't try to work around issues.
 
 ### Step 0. Clear stale user data (CRITICAL — UAT precondition)
 
-If the Windows lab PC ever had a prior version of this app installed (v0.5.x / v0.6.x / v0.7.x), its SQLite database persists across uninstalls in `%APPDATA%` and will carry stale pre-Smoke-3 panel rows into v1.0.0. Smoke 3's per-reagent schema is additive — old rows are preserved, not migrated — which is correct for real-world v0.7.x → v1.0.0 upgrades but blocks the fresh-import verification required by SMK3-08/09/10/11. Skip this step ONLY if this Windows PC has never had the app installed.
+If the Windows lab PC ever had a prior version of this app installed (v0.5.x / v0.6.x / v0.7.x or any pre-rc4 v1.0.0 rc), its SQLite database persists across uninstalls in `%APPDATA%` and will carry stale pre-Smoke-3 panel rows into v1.0.0. v1.0.0 ships with an empty database by design (Phase 16: app launches empty; xlsx import is the only data source). Stale rows from a prior install block the fresh-import verification. Skip this step ONLY if this Windows PC has never had the app installed.
 
 1. Press `Win + R`, type `%APPDATA%`, hit Enter.
-2. Locate the folder **`Immunoplex Assay Calculator`** (title case, with spaces — this is the Electron `productName`).
+2. Locate the folder **`immunoplex-assay-calculator`** (lowercase, dashed — Electron derives userData from `package.json` `name`).
 3. Delete the entire folder (drag to Recycle Bin, or `Shift+Delete` for permanent delete).
-4. Verify: re-open `%APPDATA%` and confirm `Immunoplex Assay Calculator` is gone.
+4. Verify: re-open `%APPDATA%` and confirm `immunoplex-assay-calculator` is gone.
+
+> If a network drive / Folder Redirection is mapped to `%APPDATA%`, the folder may sit on the network share rather than the local PC. Either delete it on the network share, or run the all-in-one PowerShell cleanup below which targets both local and roaming AppData:
+>
+> ```powershell
+> Get-Process -Name "immunoplex*" -ErrorAction SilentlyContinue | Stop-Process -Force; Remove-Item -Recurse -Force "$env:APPDATA\immunoplex-assay-calculator" -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force "$env:LOCALAPPDATA\immunoplex-assay-calculator-updater" -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force "$env:LOCALAPPDATA\Programs\immunoplex-assay-calculator" -ErrorAction SilentlyContinue
+> ```
 
 **✅ Pass:** Folder deleted; AppData no longer contains the app's data directory.
 **❌ Report if:** Folder won't delete (a previous app instance is still running — close it via Task Manager and retry), or if you cannot locate the folder (skip this step — likely a clean machine).
@@ -48,24 +54,26 @@ If the Windows lab PC ever had a prior version of this app installed (v0.5.x / v
 **✅ Pass:** Installer finishes, shortcuts appear.
 **❌ Report if:** Installer errors out, hangs, or shortcuts don't appear.
 
-### Step 2. First launch — confirm v1.0.0
+### Step 2. First launch — confirm v1.0.0 + empty state
 
 1. Double-click the desktop shortcut.
 2. The app window appears within ~5 seconds.
 3. Confirm the title bar or app footer shows **v1.0.0** (NOT v0.7.0).
+4. Open **Manage** in the nav. The Platforms, Species, Panels, Analytes, and Operators sections should all be **empty** (no rows, no dropdown values). This is the Phase 16 / v1.0 "launches empty" behavior — all panel data comes from the xlsx import.
 
-**✅ Pass:** App opens, v1.0.0 visible.
-**❌ Report if:** Title shows wrong version, app crashes, UI is blank.
+**✅ Pass:** App opens, v1.0.0 visible, Manage sections are empty.
+**❌ Report if:** Title shows wrong version, app crashes, UI is blank, OR any Manage section already has rows (this means Step 0 cleanup didn't take — repeat it).
 
 ### Step 3. Import panel data
 
 1. Navigate to **Manage** → find the **Import Panel XLSX** button.
 2. Select `templates/panels/all-panels.xlsx`.
 3. After import, a banner reports how many panels were imported.
+4. Confirm the **Platforms** section now lists 3 platforms (Millipore, Bio-Rad, Thermofisher) and **Species** lists species per platform — these were created from the xlsx content during import (Phase 16 v1.0 upsert).
 
 **✅ Pass:** Banner reports **16 panels imported** (Table sheet is decorative and ignored).
-No error.
-**❌ Report if:** Banner reports a different count, any panel fails, or an error toast appears.
+Platforms + Species sections now populated. No error.
+**❌ Report if:** Banner reports a different count, any panel fails, Platforms/Species sections still empty, or an error toast appears.
 
 ### Step 4. Pick platform / species / panel (PRD worked example)
 
@@ -136,6 +144,12 @@ header for this panel (expected: `SA-PE`).
 
 ### Step 10. Document & Save — metadata form
 
+**First, add a test operator** (Phase 16 / v1.0: operators are no longer pre-seeded — the lab adds their own).
+
+1. Open **Manage** → **Operators** → click **Add Operator**.
+2. Enter `TestUser` → **Save**.
+3. Return to the Calculator wizard's metadata step.
+
 Fill the run metadata with these exact values:
 
 | Field | Value |
@@ -143,7 +157,7 @@ Fill the run metadata with these exact values:
 | Request Number | `16001` |
 | "Ad-hoc run (no request number)" | leave **unchecked** |
 | User | your name |
-| Operator | **Joven** |
+| Operator | **TestUser** (the operator you just added) |
 | Date | today |
 | Sample Type | **Supernatant** |
 | Dilution Factor | `5` |
@@ -155,7 +169,8 @@ Fill the run metadata with these exact values:
 
 Click **Save**.
 
-**✅ Pass:** No error; auto-navigates to Finalized Run View.
+**✅ Pass:** Operator created; metadata saves; auto-navigates to Finalized Run View.
+**❌ Report if:** Operator creation fails, Operator dropdown won't open, or Save errors.
 
 ### Step 11. Audit Trail rendering — 4 blocks, real mL values
 
@@ -206,7 +221,7 @@ any field reverts to default.
 1. Click **Print** → Windows print dialog opens → cancel it. (Just verify the button works.)
 2. Click **Start New Run**:
    - Wizard returns to Step 1, all selections cleared.
-   - **Operators** dropdown still populated; **Past Runs** list still shows Request 16001.
+   - **Operators** dropdown still shows `TestUser` (the operator you added in Step 10); **Past Runs** list still shows Request 16001.
 
 **✅ Pass:** Wizard clears; app-wide data survives.
 
@@ -271,7 +286,7 @@ Yes. The installer isn't code-signed yet (we'll sign before public release). Sam
 pipeline as v0.5–v0.7.
 
 **Q: Where does my data live?**
-`%APPDATA%\Immunoplex Assay Calculator\immunoplex.db` (SQLite). Survives uninstall — delete the `Immunoplex Assay Calculator` folder manually for a clean wipe.
+`%APPDATA%\immunoplex-assay-calculator\immunoplex.db` (SQLite). Survives uninstall — delete the `immunoplex-assay-calculator` folder manually for a clean wipe.
 
 **Q: Can I delete the test run afterward?**
 Yes — use the Delete button on Request 16001 in Past Runs. Honestly I'd rather leave

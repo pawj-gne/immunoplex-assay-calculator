@@ -334,9 +334,16 @@ describe('importPanelData (Phase 13 wholesale-replace transaction)', () => {
     expect(legacyAfter.master_panel_id).toBeNull()
   })
 
-  it('T-9: validation failure → zero DB writes', () => {
+  it('T-9: validation failure → zero panel DB writes', () => {
+    // Phase 16 (v1.0): unknown platform/species in xlsx is no longer a failure
+    // mode — the importer upserts platforms/species from xlsx content so
+    // empty-DB launches can populate FK targets on first import. Other
+    // validation failures (SAPE non-numeric, premix-member missing,
+    // cross-sheet duplicate normalize) still reject + roll back panel writes.
+    // This test uses SAPE-non-numeric to trigger validation failure and assert
+    // zero rows reach the master_panels table.
     const badRows: unknown[][] = VALID_PANEL_ROWS.map((r, i) =>
-      i === 1 ? ['Platform', 'UnknownPlatform'] : r
+      i === 10 ? ['SAPE', 'variable', 'n/a', 0.025] : r
     )
     const tmpPath = mkTmp([{ name: 'sheetA', rows: badRows }])
     const result = importPanelData(tmpPath)
@@ -345,6 +352,35 @@ describe('importPanelData (Phase 13 wholesale-replace transaction)', () => {
       sqlite.prepare('SELECT COUNT(*) AS c FROM master_panels').get() as { c: number }
     ).c
     expect(mpCount).toBe(0)
+  })
+
+  it('T-12: Phase 16 — xlsx-only platform/species upserted to empty DB', () => {
+    // App opens with no seeded platforms/species (Phase 16 / v1.0). xlsx import
+    // creates them on-the-fly so the operator can go from empty to fully
+    // populated in one import action.
+    sqlite.exec('DELETE FROM species; DELETE FROM platforms;')
+    const beforeP = (
+      sqlite.prepare('SELECT COUNT(*) AS c FROM platforms').get() as { c: number }
+    ).c
+    const beforeS = (
+      sqlite.prepare('SELECT COUNT(*) AS c FROM species').get() as { c: number }
+    ).c
+    expect(beforeP).toBe(0)
+    expect(beforeS).toBe(0)
+
+    const tmpPath = mkTmp([{ name: 'TestPlat Panel 1', rows: VALID_PANEL_ROWS }])
+    const result = importPanelData(tmpPath)
+    expect(result.success).toBe(true)
+
+    const platformRow = sqlite
+      .prepare('SELECT name FROM platforms WHERE name = ?')
+      .get('TestPlatform') as { name: string } | undefined
+    expect(platformRow?.name).toBe('TestPlatform')
+
+    const speciesRow = sqlite
+      .prepare('SELECT name FROM species WHERE name = ?')
+      .get('TestSpecies') as { name: string } | undefined
+    expect(speciesRow?.name).toBe('TestSpecies')
   })
 
   it('T-10: D-21 cross-sheet collision → zero DB writes + verbatim error', () => {
