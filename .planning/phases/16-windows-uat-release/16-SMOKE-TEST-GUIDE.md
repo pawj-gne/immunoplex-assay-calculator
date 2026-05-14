@@ -29,9 +29,9 @@ bug report for a quick fix loop. Don't try to work around issues.
 If the Windows lab PC ever had a prior version of this app installed (v0.5.x / v0.6.x / v0.7.x), its SQLite database persists across uninstalls in `%APPDATA%` and will carry stale pre-Smoke-3 panel rows into v1.0.0. Smoke 3's per-reagent schema is additive — old rows are preserved, not migrated — which is correct for real-world v0.7.x → v1.0.0 upgrades but blocks the fresh-import verification required by SMK3-08/09/10/11. Skip this step ONLY if this Windows PC has never had the app installed.
 
 1. Press `Win + R`, type `%APPDATA%`, hit Enter.
-2. Locate the folder `immunoplex-assay-calculator` (note the hyphenated name — `Immunoplex_Assay_Calculator` is the title-bar form but the AppData folder uses the package name).
+2. Locate the folder **`Immunoplex Assay Calculator`** (title case, with spaces — this is the Electron `productName`).
 3. Delete the entire folder (drag to Recycle Bin, or `Shift+Delete` for permanent delete).
-4. Verify: re-open `%APPDATA%` and confirm `immunoplex-assay-calculator` is gone.
+4. Verify: re-open `%APPDATA%` and confirm `Immunoplex Assay Calculator` is gone.
 
 **✅ Pass:** Folder deleted; AppData no longer contains the app's data directory.
 **❌ Report if:** Folder won't delete (a previous app instance is still running — close it via Task Manager and retry), or if you cannot locate the folder (skip this step — likely a clean machine).
@@ -271,7 +271,7 @@ Yes. The installer isn't code-signed yet (we'll sign before public release). Sam
 pipeline as v0.5–v0.7.
 
 **Q: Where does my data live?**
-`%APPDATA%\immunoplex-assay-calculator\immunoplex.db` (SQLite). Survives uninstall.
+`%APPDATA%\Immunoplex Assay Calculator\immunoplex.db` (SQLite). Survives uninstall — delete the `Immunoplex Assay Calculator` folder manually for a clean wipe.
 
 **Q: Can I delete the test run afterward?**
 Yes — use the Delete button on Request 16001 in Past Runs. Honestly I'd rather leave
