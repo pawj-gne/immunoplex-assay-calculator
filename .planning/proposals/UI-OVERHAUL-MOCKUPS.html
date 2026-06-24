@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Immunoplex Assay Calculator — Workflow UI Overhaul Mockups</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-soft: #dbeafe;
+    --success: #16a34a;
+    --success-soft: #dcfce7;
+    --warn: #f59e0b;
+    --warn-soft: #fef3c7;
+    --danger: #dc2626;
+    --bead-bg: #fef9c3;
+    --ab-bg: #dcfce7;
+    --pe-bg: #fce7f3;
+    --grey-50: #f9fafb;
+    --grey-100: #f3f4f6;
+    --grey-200: #e5e7eb;
+    --grey-300: #d1d5db;
+    --grey-400: #9ca3af;
+    --grey-500: #6b7280;
+    --grey-700: #374151;
+    --grey-900: #111827;
+    --bead-region: #7c2d12;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    background: var(--grey-100);
+    color: var(--grey-900);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .doc-header {
+    background: white;
+    border-bottom: 1px solid var(--grey-200);
+    padding: 16px 32px;
+  }
+  .doc-header h1 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .doc-header .subtitle {
+    font-size: 12px;
+    color: var(--grey-500);
+  }
+  .step-nav {
+    background: white;
+    border-bottom: 1px solid var(--grey-200);
+    padding: 12px 32px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .step-nav button {
+    background: var(--grey-100);
+    border: 1px solid var(--grey-200);
+    color: var(--grey-700);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .step-nav button:hover {
+    background: var(--grey-200);
+  }
+  .step-nav button.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  .step-page {
+    display: none;
+    max-width: 1200px;
+    margin: 24px auto;
+    padding: 0 32px;
+  }
+  .step-page.active {
+    display: block;
+  }
+  .step-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    padding: 32px;
+    margin-bottom: 16px;
+  }
+  .step-card h2 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--grey-700);
+    margin: 24px 0 8px 0;
+  }
+  .section-label:first-child { margin-top: 0; }
+  .field-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--grey-700);
+    margin-bottom: 6px;
+    display: block;
+  }
+  .input {
+    border: 1px solid var(--grey-300);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    width: 100%;
+    background: white;
+  }
+  .input:focus {
+    outline: 2px solid var(--primary-soft);
+    border-color: var(--primary);
+  }
+  .input.readonly {
+    background: var(--grey-50);
+    color: var(--grey-500);
+    cursor: not-allowed;
+  }
+  .input-small { width: 120px; }
+  .input-hint {
+    font-size: 12px;
+    color: var(--grey-500);
+    margin-top: 4px;
+  }
+  /* Cards (Platform) */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+  }
+  .platform-card {
+    border: 2px solid var(--grey-200);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    background: white;
+    position: relative;
+    transition: all 0.15s;
+  }
+  .platform-card:hover { border-color: var(--grey-300); }
+  .platform-card.selected {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+  }
+  .platform-card h3 {
+    margin: 0 0 4px 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .platform-card p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--grey-500);
+  }
+  .selected-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--primary);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  /* Pills (Species, Panel, Premix) */
+  .pill-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    border: 2px solid var(--grey-200);
+    background: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .pill:hover { border-color: var(--grey-300); }
+  .pill.selected {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: white;
+  }
+  /* Confirmation banners */
+  .confirm-banner {
+    background: var(--success-soft);
+    border-left: 3px solid var(--success);
+    padding: 10px 14px;
+    margin-top: 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #14532d;
+  }
+  .confirm-banner strong { font-weight: 600; }
+  /* Wizard footer */
+  .wizard-footer {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .wizard-footer .step-indicator {
+    font-size: 13px;
+    color: var(--grey-500);
+    font-weight: 500;
+  }
+  .btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .btn:hover { background: #1d4ed8; }
+  .btn-secondary {
+    background: white;
+    color: var(--grey-700);
+    border: 1px solid var(--grey-300);
+  }
+  .btn-secondary:hover { background: var(--grey-50); }
+  /* Step 2 — analyte grid */
+  .analyte-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+  }
+  .analyte-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .analyte-tile {
+    border: 1px solid var(--grey-200);
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .analyte-tile:hover { border-color: var(--grey-300); }
+  .analyte-tile.disabled {
+    background: var(--grey-50);
+    color: var(--grey-400);
+    border-color: var(--grey-200);
+    cursor: not-allowed;
+    border: 1.5px dashed var(--grey-300);
+  }
+  .analyte-tile .name {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .analyte-tile .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .bead-region {
+    background: var(--bead-region);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .analyte-tile.disabled .bead-region {
+    background: var(--grey-300);
+  }
+  .meta-x { font-size: 11px; color: var(--grey-500); }
+  .selected-panel {
+    background: var(--grey-50);
+    border: 1px solid var(--grey-200);
+    border-radius: 10px;
+    padding: 16px;
+    position: sticky;
+    top: 80px;
+    height: fit-content;
+  }
+  .selected-panel h3 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+  }
+  .selected-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .selected-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--grey-200);
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .selected-list li:last-child { border: none; }
+  .selected-list .lock {
+    font-size: 11px;
+    color: var(--grey-500);
+  }
+  .singles-counter {
+    font-size: 12px;
+    color: var(--grey-500);
+    font-weight: 500;
+  }
+  /* Step 3 — calc work blocks */
+  .step3-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 24px;
+  }
+  .input-stack > * + * { margin-top: 16px; }
+  .radio-row {
+    display: flex;
+    gap: 16px;
+  }
+  .radio-row label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .toggle-row {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--grey-300);
+    border-radius: 6px;
+    overflow: hidden;
+    width: fit-content;
+  }
+  .toggle-row button {
+    background: white;
+    border: none;
+    padding: 6px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--grey-700);
+  }
+  .toggle-row button.active {
+    background: var(--primary);
+    color: white;
+  }
+  .calc-section {
+    margin-bottom: 16px;
+  }
+  .calc-section h4 {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--grey-700);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .reagent-header {
+    padding: 8px 14px;
+    border-radius: 6px 6px 0 0;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .reagent-header.beads { background: var(--bead-bg); color: #713f12; }
+  .reagent-header.ab { background: var(--ab-bg); color: #14532d; }
+  .reagent-header.pe { background: var(--pe-bg); color: #831843; }
+  .calc-block {
+    border: 1px solid var(--grey-200);
+    border-radius: 0 0 6px 6px;
+    background: white;
+    padding: 12px 14px;
+  }
+  .calc-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+  .calc-row .label { color: var(--grey-700); }
+  .calc-row .value {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    color: var(--grey-900);
+  }
+  .calc-row.total {
+    border-top: 1px solid var(--grey-200);
+    margin-top: 4px;
+    padding-top: 8px;
+    font-weight: 600;
+  }
+  .grey-block { background: var(--grey-50); border-radius: 6px; padding: 12px 14px; margin-top: 8px; }
+  .yellow-block { background: var(--warn-soft); border-radius: 6px; padding: 12px 14px; margin-top: 8px; border-left: 3px solid var(--warn); }
+  .calc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 13px;
+  }
+  .calc-table th, .calc-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--grey-200);
+  }
+  .calc-table th {
+    background: var(--primary-soft);
+    color: var(--grey-900);
+    font-weight: 600;
+    font-size: 12px;
+  }
+  .calc-table td.num {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    text-align: right;
+  }
+  /* Step 3 well summary */
+  .well-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .well-stat {
+    background: var(--grey-50);
+    border: 1px solid var(--grey-200);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+  .well-stat .num {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--grey-900);
+  }
+  .well-stat .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--grey-500);
+    margin-top: 4px;
+  }
+  /* Step 4 — form */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .form-field.full { grid-column: 1 / -1; }
+  /* Step 5 — output */
+  .output-section {
+    margin-bottom: 24px;
+  }
+  .output-section h3 {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    font-weight: 600;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary-soft);
+  }
+  .doc-grid {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 8px 16px;
+    font-size: 13px;
+  }
+  .doc-grid dt {
+    color: var(--grey-500);
+    font-weight: 500;
+  }
+  .doc-grid dd {
+    margin: 0;
+    color: var(--grey-900);
+    font-weight: 500;
+  }
+  .action-row {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    padding-top: 16px;
+    border-top: 1px solid var(--grey-200);
+  }
+  .note {
+    background: var(--primary-soft);
+    border-left: 3px solid var(--primary);
+    padding: 12px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--grey-700);
+    margin: 16px 0;
+  }
+  .note strong { color: var(--grey-900); }
+</style>
+</head>
+<body>
+<div class="doc-header">
+  <h1>Immunoplex Assay Calculator — Workflow UI Overhaul Mockups</h1>
+  <div class="subtitle">Proposal mockups for colleague review. Click each step to walk through the proposed workflow. These are visual proposals only — no app code has changed.</div>
+</div>
+
+<nav class="step-nav">
+  <button class="step-btn active" data-step="1">Step 1 — Platform / Species / Panel</button>
+  <button class="step-btn" data-step="2">Step 2 — Analytes</button>
+  <button class="step-btn" data-step="3">Step 3 — Calculator</button>
+  <button class="step-btn" data-step="4">Step 4 — Documentation</button>
+  <button class="step-btn" data-step="5">Step 5 — Output</button>
+</nav>
+
+<!-- =================== STEP 1 =================== -->
+<section class="step-page active" data-step="1">
+  <div class="step-card">
+    <h2>Select Platform, Species, and Panel</h2>
+
+    <div class="note">
+      <strong>Note:</strong> The <em>Request Number</em> field below was moved here from Step 4 per your feedback ("should be entered at the beginning"). Confirm placement.
+    </div>
+
+    <div class="section-label">Request Number</div>
+    <input type="text" class="input input-small" value="REQ-2026-0142" />
+
+    <div class="section-label">Select Platform</div>
+    <div class="card-grid">
+      <div class="platform-card selected">
+        <span class="selected-badge">Selected</span>
+        <h3>Millipore</h3>
+        <p>Millipore Milliplex MAP immunoassay platform</p>
+      </div>
+      <div class="platform-card">
+        <h3>Bio-Rad</h3>
+        <p>Bio-Rad Bio-Plex immunoassay platform</p>
+      </div>
+      <div class="platform-card">
+        <h3>Thermofisher</h3>
+        <p>Thermo Fisher ProCartaPlex immunoassay platform</p>
+      </div>
+    </div>
+    <div class="confirm-banner"><strong>Platform Selected:</strong> Millipore</div>
+
+    <div class="section-label">Select Species</div>
+    <div class="pill-row">
+      <button class="pill selected">Mouse</button>
+      <button class="pill">Human</button>
+      <button class="pill">Rat</button>
+    </div>
+    <div class="confirm-banner"><strong>Species selected:</strong> Mouse</div>
+
+    <div class="section-label">Select Panel</div>
+    <div class="pill-row">
+      <button class="pill selected">Panel 1</button>
+      <button class="pill">Panel 2</button>
+      <button class="pill">Panel 3</button>
+      <button class="pill">Panel 4</button>
+      <button class="pill">Panel 5</button>
+    </div>
+    <div class="confirm-banner"><strong>Panel selected:</strong> Panel 1</div>
+  </div>
+
+  <div class="wizard-footer">
+    <button class="btn btn-secondary" disabled>← Previous</button>
+    <div class="step-indicator">Step 1 of 5 — Platform, Species &amp; Panel</div>
+    <button class="btn" onclick="goStep(2)">Next →</button>
+  </div>
+</section>
+
+<!-- =================== STEP 2 =================== -->
+<section class="step-page" data-step="2">
+  <div class="step-card">
+    <div style="display:flex; justify-content: space-between; align-items: center;">
+      <h2>Select Analytes</h2>
+      <span class="singles-counter">5 singles available (max 5 per assay)</span>
+    </div>
+
+    <div class="note">
+      <strong>Scoped to:</strong> Millipore / Mouse / Panel 1.
+      Premix and analyte lists below show only items from this tab.
+      The "No Premix (Custom Assay)" tile and out-of-panel premixes have been removed.
+    </div>
+
+    <div class="section-label">Premix Panels</div>
+    <div class="pill-row" style="margin-bottom: 8px;">
+      <button class="pill">Premix Panel I 33-plex</button>
+      <button class="pill">JAMmate A 6-plex</button>
+      <button class="pill">JAMmate B 6-plex</button>
+      <button class="pill">JAMmate C 6-plex</button>
+    </div>
+    <div class="pill-row" style="margin-bottom: 8px;">
+      <button class="pill">JAMmate D 6-plex</button>
+      <button class="pill selected">JAMmate E 5-plex ✓</button>
+      <button class="pill">JAMmate F 4-plex</button>
+    </div>
+    <div class="pill-row">
+      <button class="pill">JAMmate G 6-plex</button>
+      <button class="pill">JAMmate H 5-plex</button>
+      <button class="pill">JAMmate I 6-plex</button>
+    </div>
+
+    <div class="analyte-layout" style="margin-top: 24px;">
+      <div>
+        <div class="section-label">Panel 1 Analytes</div>
+        <div class="analyte-grid">
+          <div class="analyte-tile"><div class="name">BAFF</div><div class="meta"><span class="bead-region">81</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">Eotaxin (CCL11)</div><div class="meta"><span class="bead-region">14</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">Exodus-2/CC…</div><div class="meta"><span class="bead-region">55</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">G-CSF</div><div class="meta"><span class="bead-region">13</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">GDF-15</div><div class="meta"><span class="bead-region">82</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">GM-CSF</div><div class="meta"><span class="bead-region">15</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">Granzyme B</div><div class="meta"><span class="bead-region">46</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile disabled" title="In premix — locked"><div class="name">IFN-alpha</div><div class="meta"><span class="bead-region">39</span><span class="meta-x">in premix</span></div></div>
+          <div class="analyte-tile disabled" title="In premix — locked"><div class="name">IFN-beta</div><div class="meta"><span class="bead-region">27</span><span class="meta-x">in premix</span></div></div>
+          <div class="analyte-tile"><div class="name">IFN-gamma</div><div class="meta"><span class="bead-region">19</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">IL-1alpha</div><div class="meta"><span class="bead-region">21</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">IL-1beta</div><div class="meta"><span class="bead-region">25</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">IL-2</div><div class="meta"><span class="bead-region">26</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">IL-3</div><div class="meta"><span class="bead-region">29</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">IL-4</div><div class="meta"><span class="bead-region">28</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">IL-5</div><div class="meta"><span class="bead-region">30</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">IL-6</div><div class="meta"><span class="bead-region">34</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">IL-7</div><div class="meta"><span class="bead-region">36</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile disabled" title="In premix — locked"><div class="name">IL-12p70</div><div class="meta"><span class="bead-region">47</span><span class="meta-x">in premix</span></div></div>
+          <div class="analyte-tile"><div class="name">IL-13</div><div class="meta"><span class="bead-region">52</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile disabled" title="In premix — locked"><div class="name">IL-15</div><div class="meta"><span class="bead-region">54</span><span class="meta-x">in premix</span></div></div>
+          <div class="analyte-tile disabled" title="In premix — locked"><div class="name">IL-18</div><div class="meta"><span class="bead-region">33</span><span class="meta-x">in premix</span></div></div>
+          <div class="analyte-tile"><div class="name">IL-33</div><div class="meta"><span class="bead-region">18</span><span class="meta-x">20×</span></div></div>
+          <div class="analyte-tile"><div class="name">IP-10/CXCL10</div><div class="meta"><span class="bead-region">57</span><span class="meta-x">20×</span></div></div>
+        </div>
+      </div>
+
+      <div class="selected-panel">
+        <h3>Selected Analytes <span style="color: var(--grey-500); font-weight: 400;">(5)</span></h3>
+        <ul class="selected-list">
+          <li><span>IFN-alpha <span style="color:var(--grey-500); font-size: 11px;">B39</span></span> <span class="lock">🔒 premix</span></li>
+          <li><span>IFN-beta <span style="color:var(--grey-500); font-size: 11px;">B27</span></span> <span class="lock">🔒 premix</span></li>
+          <li><span>IL-12p70 <span style="color:var(--grey-500); font-size: 11px;">B47</span></span> <span class="lock">🔒 premix</span></li>
+          <li><span>IL-15 <span style="color:var(--grey-500); font-size: 11px;">B54</span></span> <span class="lock">🔒 premix</span></li>
+          <li><span>IL-18 <span style="color:var(--grey-500); font-size: 11px;">B33</span></span> <span class="lock">🔒 premix</span></li>
+        </ul>
+        <div style="margin-top:12px; font-size: 11px; color: var(--grey-500); border-top: 1px solid var(--grey-200); padding-top:8px;">
+          Premix members locked together (one vial). Click greyed tiles in the grid to see why.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wizard-footer">
+    <button class="btn btn-secondary" onclick="goStep(1)">← Previous</button>
+    <div class="step-indicator">Step 2 of 5 — Analytes</div>
+    <button class="btn" onclick="goStep(3)">Next →</button>
+  </div>
+</section>
+
+<!-- =================== STEP 3 =================== -->
+<section class="step-page" data-step="3">
+  <div class="step-card">
+    <h2>Calculator Inputs &amp; Work</h2>
+
+    <div class="note">
+      <strong>Plate visualization removed.</strong> Calculator runs before samples are submitted — operator only enters sample count.
+      All calculation work shown to the right is now visible for review (was hidden before).
+    </div>
+
+    <div class="step3-layout">
+      <!-- LEFT: INPUTS -->
+      <div class="input-stack">
+        <div>
+          <label class="field-label">Number of Plates</label>
+          <input type="number" class="input input-small" value="2" />
+          <div class="input-hint">Hard cap: 20 plates/day (5 Hamiltons × 4 plates)</div>
+        </div>
+
+        <div>
+          <label class="field-label">Replicate Mode</label>
+          <div class="radio-row">
+            <label><input type="radio" name="rep" checked /> Singles <span style="color:var(--grey-500); font-size: 11px;">(72 wells/plate)</span></label>
+            <label><input type="radio" name="rep" /> Duplicates <span style="color:var(--grey-500); font-size: 11px;">(36)</span></label>
+            <label><input type="radio" name="rep" /> Triplicates <span style="color:var(--grey-500); font-size: 11px;">(24)</span></label>
+          </div>
+        </div>
+
+        <div>
+          <label class="field-label">Number of Samples</label>
+          <input type="number" class="input input-small" value="126" />
+        </div>
+
+        <div>
+          <label class="field-label">Old volume available?</label>
+          <div class="toggle-row">
+            <button class="active">Yes</button>
+            <button>No</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="field-label">Old Beads (mL)</label>
+          <input type="number" class="input input-small" value="1" />
+          <div class="input-hint">Max: 1.8 mL (20% of 9 mL total)</div>
+        </div>
+
+        <div>
+          <label class="field-label">Old Antibodies (mL)</label>
+          <input type="number" class="input input-small" value="1" />
+          <div class="input-hint">Max: 1.8 mL (20% of 9 mL total)</div>
+        </div>
+
+        <div>
+          <label class="field-label">Number of Setups</label>
+          <input type="number" class="input input-small" value="2" />
+          <div class="input-hint">For 2 plates: 1 or 2 setups allowed</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: CALCULATION WORK -->
+      <div>
+        <div class="well-summary">
+          <div class="well-stat"><div class="num">174</div><div class="label">Total Wells</div></div>
+          <div class="well-stat"><div class="num">126</div><div class="label">Unknown Wells</div></div>
+          <div class="well-stat"><div class="num">48</div><div class="label">Standard Wells</div></div>
+        </div>
+
+        <div class="calc-section">
+          <h4>Per-Reagent Calculation (Capture Beads)</h4>
+          <div class="reagent-header beads">Capture Beads — JAMmate E 5-plex (20×)</div>
+          <div class="calc-block">
+            <div class="grey-block">
+              <div class="calc-row"><span class="label">Reagent / well</span><span class="value">0.025 mL</span></div>
+              <div class="calc-row"><span class="label">× 174 wells (Reagents total)</span><span class="value">4.35 mL</span></div>
+              <div class="calc-row"><span class="label">Dead volume (2 Hamiltons × 2 mL)</span><span class="value">+ 4.00 mL</span></div>
+              <div class="calc-row total"><span class="label">Subtotal</span><span class="value">8.35 mL</span></div>
+              <div class="calc-row"><span class="label">Top-off to nearest 1.0 mL</span><span class="value">→ 9 mL</span></div>
+            </div>
+            <div class="yellow-block">
+              <div class="calc-row"><span class="label">Old beads available</span><span class="value">− 1 mL</span></div>
+              <div class="calc-row total"><span class="label">New Reagents (Beads) needed</span><span class="value">8 mL</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="calc-section">
+          <h4>Per-Reagent Calculation (Detection Antibodies)</h4>
+          <div class="reagent-header ab">Detection Antibodies — JAMmate E 5-plex (20×)</div>
+          <div class="calc-block">
+            <div class="grey-block">
+              <div class="calc-row"><span class="label">Reagent / well</span><span class="value">0.025 mL</span></div>
+              <div class="calc-row"><span class="label">Reagents total + Dead</span><span class="value">8.35 mL</span></div>
+              <div class="calc-row total"><span class="label">Top-off</span><span class="value">9 mL</span></div>
+            </div>
+            <div class="yellow-block">
+              <div class="calc-row"><span class="label">Old antibodies available</span><span class="value">− 1 mL</span></div>
+              <div class="calc-row total"><span class="label">New Reagents (Abs) needed</span><span class="value">8 mL</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="calc-section">
+          <h4>SA-PE</h4>
+          <div class="reagent-header pe">SA-PE (1×) — returned to bottle, no old/new tracking</div>
+          <div class="calc-block">
+            <div class="calc-row"><span class="label">Total volume</span><span class="value">9 mL</span></div>
+          </div>
+        </div>
+
+        <div class="calc-section">
+          <h4>Final Per-Analyte Recipe (Round-up + Top-off)</h4>
+          <table class="calc-table">
+            <thead>
+              <tr><th>New Reagents</th><th style="text-align:right;">Volume per analyte</th><th style="text-align:right;">Top-off with Assay Buffer</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Beads</td><td class="num">400 µL</td><td class="num">7.6 mL</td></tr>
+              <tr><td>Antibodies</td><td class="num">400 µL</td><td class="num">7.6 mL</td></tr>
+              <tr><td>SA-PE (1×)</td><td class="num">9 mL</td><td class="num">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wizard-footer">
+    <button class="btn btn-secondary" onclick="goStep(2)">← Previous</button>
+    <div class="step-indicator">Step 3 of 5 — Calculator</div>
+    <button class="btn" onclick="goStep(4)">Next →</button>
+  </div>
+</section>
+
+<!-- =================== STEP 4 =================== -->
+<section class="step-page" data-step="4">
+  <div class="step-card">
+    <h2>Documentation Entry</h2>
+
+    <div class="note">
+      <strong>Read-only fields</strong> (greyed) come from earlier steps — to change, go back to that step.
+      <strong>Removed:</strong> Hamilton (deferred), Run plate position + Standard position (tied to removed well selector).
+    </div>
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="field-label">Request Number</label>
+        <input type="text" class="input readonly" value="REQ-2026-0142" readonly />
+        <div class="input-hint">Captured on Step 1</div>
+      </div>
+      <div class="form-field">
+        <label class="field-label">Requester (User)</label>
+        <input type="text" class="input" value="Dr. Smith" />
+      </div>
+      <div class="form-field">
+        <label class="field-label">Operator</label>
+        <input type="text" class="input" value="J. Paw" />
+      </div>
+      <div class="form-field">
+        <label class="field-label">Date</label>
+        <input type="date" class="input" value="2026-06-24" />
+      </div>
+      <div class="form-field">
+        <label class="field-label">Platform</label>
+        <input type="text" class="input readonly" value="Millipore" readonly />
+      </div>
+      <div class="form-field">
+        <label class="field-label">Species</label>
+        <input type="text" class="input readonly" value="Mouse" readonly />
+      </div>
+      <div class="form-field">
+        <label class="field-label">Panel</label>
+        <input type="text" class="input readonly" value="Panel 1" readonly />
+      </div>
+      <div class="form-field">
+        <label class="field-label">Sample Type</label>
+        <select class="input">
+          <option>Serum</option>
+          <option>Plasma</option>
+          <option>Cell culture supernatant</option>
+          <option>Lysate</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="field-label">Sample count</label>
+        <input type="text" class="input readonly" value="126" readonly />
+      </div>
+      <div class="form-field">
+        <label class="field-label">Replicate mode</label>
+        <input type="text" class="input readonly" value="Singles (72 wells/plate)" readonly />
+      </div>
+      <div class="form-field">
+        <label class="field-label">Plate Count</label>
+        <input type="text" class="input readonly" value="2" readonly />
+      </div>
+      <div class="form-field">
+        <label class="field-label">Dilution Factor</label>
+        <input type="number" class="input" value="2" />
+      </div>
+      <div class="form-field full">
+        <label class="field-label">Comments</label>
+        <textarea class="input" rows="3" placeholder="Optional notes about this run…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="wizard-footer">
+    <button class="btn btn-secondary" onclick="goStep(3)">← Previous</button>
+    <div class="step-indicator">Step 4 of 5 — Documentation</div>
+    <button class="btn" onclick="goStep(5)">Next →</button>
+  </div>
+</section>
+
+<!-- =================== STEP 5 =================== -->
+<section class="step-page" data-step="5">
+  <div class="step-card">
+    <h2>Run Documentation Output</h2>
+
+    <div class="note">
+      <strong>Step 5 awaiting further input from colleague.</strong>
+      Below is a working draft of what the saved/printable run document could contain — three sections per the spec.
+      Save / Print / Export actions at the bottom are placeholders.
+    </div>
+
+    <!-- Section 1: Documentation -->
+    <div class="output-section">
+      <h3>1. Documentation</h3>
+      <dl class="doc-grid">
+        <dt>Request Number</dt><dd>REQ-2026-0142</dd>
+        <dt>Requester</dt><dd>Dr. Smith</dd>
+        <dt>Operator</dt><dd>J. Paw</dd>
+        <dt>Date</dt><dd>2026-06-24</dd>
+        <dt>Platform / Species / Panel</dt><dd>Millipore / Mouse / Panel 1</dd>
+        <dt>Sample Type</dt><dd>Serum</dd>
+        <dt>Sample count</dt><dd>126 (Singles, 72 wells/plate)</dd>
+        <dt>Plate Count</dt><dd>2</dd>
+        <dt>Dilution Factor</dt><dd>2</dd>
+        <dt>Number of Setups</dt><dd>2</dd>
+        <dt>Premix Panel</dt><dd>JAMmate E 5-plex (locked)</dd>
+        <dt>Comments</dt><dd>—</dd>
+      </dl>
+    </div>
+
+    <!-- Section 2: Bead Regions -->
+    <div class="output-section">
+      <h3>2. Table of Bead Regions</h3>
+      <table class="calc-table">
+        <thead>
+          <tr><th>Analyte</th><th>Bead Region</th><th>Source</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>IFN-alpha</td><td>B39</td><td>JAMmate E 5-plex (premix)</td></tr>
+          <tr><td>IFN-beta</td><td>B27</td><td>JAMmate E 5-plex (premix)</td></tr>
+          <tr><td>IL-12p70</td><td>B47</td><td>JAMmate E 5-plex (premix)</td></tr>
+          <tr><td>IL-15</td><td>B54</td><td>JAMmate E 5-plex (premix)</td></tr>
+          <tr><td>IL-18</td><td>B33</td><td>JAMmate E 5-plex (premix)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 3: Calculation Documentation -->
+    <div class="output-section">
+      <h3>3. Calculation Documentation</h3>
+      <table class="calc-table">
+        <thead>
+          <tr><th>Step</th><th style="text-align:right;">Beads</th><th style="text-align:right;">Antibodies</th><th style="text-align:right;">SA-PE</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Volume per well</td><td class="num">0.025 mL</td><td class="num">0.025 mL</td><td class="num">—</td></tr>
+          <tr><td>Reagents total (× 174 wells)</td><td class="num">4.35 mL</td><td class="num">4.35 mL</td><td class="num">—</td></tr>
+          <tr><td>Dead volume (2 Hamiltons × 2 mL)</td><td class="num">4.00 mL</td><td class="num">4.00 mL</td><td class="num">—</td></tr>
+          <tr><td>Subtotal</td><td class="num">8.35 mL</td><td class="num">8.35 mL</td><td class="num">—</td></tr>
+          <tr><td>Top-off to nearest 1.0 mL</td><td class="num">9 mL</td><td class="num">9 mL</td><td class="num">9 mL</td></tr>
+          <tr><td>Old reagent used</td><td class="num">− 1 mL</td><td class="num">− 1 mL</td><td class="num">—</td></tr>
+          <tr><td><strong>New reagent needed</strong></td><td class="num"><strong>8 mL</strong></td><td class="num"><strong>8 mL</strong></td><td class="num"><strong>9 mL</strong></td></tr>
+          <tr><td>Per-analyte stock (at 20×)</td><td class="num">400 µL</td><td class="num">400 µL</td><td class="num">—</td></tr>
+          <tr><td>Top-off with Assay Buffer (per analyte)</td><td class="num">7.6 mL</td><td class="num">7.6 mL</td><td class="num">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-secondary">Save Draft</button>
+      <button class="btn btn-secondary">Print</button>
+      <button class="btn">Finalize &amp; Save</button>
+    </div>
+  </div>
+
+  <div class="wizard-footer">
+    <button class="btn btn-secondary" onclick="goStep(4)">← Previous</button>
+    <div class="step-indicator">Step 5 of 5 — Output</div>
+    <button class="btn" disabled style="opacity:0.5;">Done</button>
+  </div>
+</section>
+
+<script>
+  function goStep(n) {
+    document.querySelectorAll('.step-page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.step-page[data-step="' + n + '"]').classList.add('active');
+    document.querySelector('.step-btn[data-step="' + n + '"]').classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  document.querySelectorAll('.step-btn').forEach(btn => {
+    btn.addEventListener('click', () => goStep(btn.dataset.step));
+  });
+</script>
+</body>
+</html>
